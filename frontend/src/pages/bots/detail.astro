@@ -3,8 +3,6 @@ import Layout from "../../layouts/Layout.astro";
 import BotConnection from "../../components/BotConnection.astro";
 import ClientList from "../../components/clients/ClientList.astro";
 import ClientModal from "../../components/clients/ClientModal.astro";
-
-const botId = Astro.url.searchParams.get("id") || "";
 ---
 
 <Layout title="Bot Detail">
@@ -192,12 +190,11 @@ const botId = Astro.url.searchParams.get("id") || "";
                         Listado de Clientes
                     </h3>
                     <div class="flex gap-2">
-                        <!-- ClientModal Component Handles the 'Create' button -->
-                        <ClientModal botId={botId} />
+                        <ClientModal />
                     </div>
                 </div>
 
-                <ClientList botId={botId} />
+                <ClientList />
             </div>
         </div>
 
@@ -1034,7 +1031,7 @@ const botId = Astro.url.searchParams.get("id") || "";
             aiConfig: {
                 aiEnabled: false,
                 aiProvider: "GEMINI",
-                aiModel: "gemini-2.0-flash",
+                aiModel: "gemini-3-flash-preview",
                 systemPrompt: "",
                 temperature: 0.7,
                 messageDelay: 0,
@@ -1078,7 +1075,7 @@ const botId = Astro.url.searchParams.get("id") || "";
                     this.aiConfig = {
                         aiEnabled: this.bot.aiEnabled || false,
                         aiProvider: this.bot.aiProvider || "GEMINI",
-                        aiModel: this.bot.aiModel || "gemini-2.0-flash",
+                        aiModel: this.bot.aiModel || "gemini-3-flash-preview",
                         systemPrompt: this.bot.systemPrompt || "",
                         temperature: this.bot.temperature ?? 0.7,
                         messageDelay: this.bot.messageDelay ?? 0,
