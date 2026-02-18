@@ -1,4 +1,5 @@
 import { Elysia } from "elysia";
+import { node } from "@elysiajs/node";
 import { Worker } from "bullmq";
 import { Redis } from "ioredis";
 
@@ -57,7 +58,7 @@ import { clientRoutes } from "./api/client.routes";
 import { toolController } from "./api/tool.controller";
 import { cors } from "@elysiajs/cors";
 
-const app = new Elysia()
+const app = new Elysia({ adapter: node() })
     .use(cors({
         origin: [
             'https://app.angelviajero.com.mx', 
@@ -89,5 +90,5 @@ const app = new Elysia()
     });
 
 console.log(
-    `🦊 Agentic is running at ${app.server?.hostname}:${app.server?.port}`
+    `Agentic is running at 0.0.0.0:${PORT}`
 );
