@@ -50,12 +50,18 @@ export class BaileysService {
         let socketAgent;
 
         if (botConfig?.ipv6Address) {
-            console.log(`[Baileys] Bot ${botConfig.name} will bind to IPv6: ${botConfig.ipv6Address}`);
-            socketAgent = new https.Agent({
-                localAddress: botConfig.ipv6Address,
-                family: 6,
-                keepAlive: true
-            });
+            // Check if the IPv6 address is actually available on this machine
+            const isAvailable = await this.isAddressAvailable(botConfig.ipv6Address);
+            if (isAvailable) {
+                console.log(`[Baileys] Bot ${botConfig.name} will bind to IPv6: ${botConfig.ipv6Address}`);
+                socketAgent = new https.Agent({
+                    localAddress: botConfig.ipv6Address,
+                    family: 6,
+                    keepAlive: true
+                });
+            } else {
+                console.log(`[Baileys] IPv6 ${botConfig.ipv6Address} not available locally, using default network interface`);
+            }
         }
 
         console.log(`[${new Date().toISOString()}] [Baileys] Using WA v${version.join('.')}, isLatest: ${isLatest}`);
@@ -339,5 +345,21 @@ export class BaileysService {
             // Rethrow so caller can handle/log, but with more context
             throw new Error(`Baileys send failed (${errorCode}): ${errorMsg}`);
         }
+    }
+
+    /**
+     * Check if a local address is available for binding.
+     * Compares against OS network interfaces.
+     */
+    private static async isAddressAvailable(address: string): Promise<boolean> {
+        const { networkInterfaces } = await import('os');
+        const nets = networkInterfaces();
+        for (const ifaces of Object.values(nets)) {
+            if (!ifaces) continue;
+            for (const iface of ifaces) {
+                if (iface.address === address) return true;
+            }
+        }
+        return false;
     }
 }
