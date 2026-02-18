@@ -1,7 +1,8 @@
 import { Elysia, t } from "elysia";
 import { prisma } from "../services/postgres.service";
-import { Platform } from "@prisma/client";
+import { Platform, AIProvider } from "@prisma/client";
 import { BaileysService } from "../services/baileys.service";
+import { ConversationService } from "../services/conversation.service";
 import { authMiddleware } from "../middleware/auth.middleware";
 
 // Configuration
@@ -110,23 +111,45 @@ export const botController = new Elysia({ prefix: "/bots" })
         return bot;
     })
     .put("/:id", async ({ params: { id }, body, set }) => {
-        const { name, identifier, platform, credentials, ipv6Address } = body as any;
+        const { name, identifier, platform, credentials, ipv6Address,
+            aiEnabled, aiProvider, aiModel, systemPrompt, temperature } = body as any;
 
         try {
-            const bot = await prisma.bot.update({
-                where: { id },
-                data: {
-                    name,
-                    identifier,
-                    platform: platform as Platform,
-                    credentials: credentials || undefined,
-                    ipv6Address
-                }
-            });
+            const data: any = {};
+            if (name !== undefined) data.name = name;
+            if (identifier !== undefined) data.identifier = identifier;
+            if (platform !== undefined) data.platform = platform as Platform;
+            if (credentials !== undefined) data.credentials = credentials;
+            if (ipv6Address !== undefined) data.ipv6Address = ipv6Address;
+            if (aiEnabled !== undefined) data.aiEnabled = aiEnabled;
+            if (aiProvider !== undefined) data.aiProvider = aiProvider as AIProvider;
+            if (aiModel !== undefined) data.aiModel = aiModel;
+            if (systemPrompt !== undefined) data.systemPrompt = systemPrompt;
+            if (temperature !== undefined) data.temperature = temperature;
+
+            const bot = await prisma.bot.update({ where: { id }, data });
             return bot;
         } catch (e: any) {
             set.status = 500;
             return "Failed to update bot";
+        }
+    })
+    // Clear all conversation histories for a bot
+    .post("/:id/clear-conversations", async ({ params: { id }, set }) => {
+        try {
+            const sessions = await prisma.session.findMany({
+                where: { botId: id },
+                select: { id: true },
+            });
+
+            for (const session of sessions) {
+                await ConversationService.clear(session.id);
+            }
+
+            return { success: true, cleared: sessions.length };
+        } catch (e: any) {
+            set.status = 500;
+            return { error: "Failed to clear conversations" };
         }
     })
     .delete("/:id", async ({ params: { id }, set }) => {
