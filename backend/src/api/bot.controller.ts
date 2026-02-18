@@ -115,6 +115,18 @@ export const botController = new Elysia({ prefix: "/bots" })
             aiEnabled, aiProvider, aiModel, systemPrompt, temperature, messageDelay } = body as any;
 
         try {
+            // Check if system prompt or provider/model changed — if so, clear conversations
+            let shouldClearConversations = false;
+            if (systemPrompt !== undefined || aiProvider !== undefined || aiModel !== undefined) {
+                const currentBot = await prisma.bot.findUnique({ where: { id }, select: { systemPrompt: true, aiProvider: true, aiModel: true } });
+                if (currentBot) {
+                    shouldClearConversations =
+                        (systemPrompt !== undefined && systemPrompt !== currentBot.systemPrompt) ||
+                        (aiProvider !== undefined && aiProvider !== currentBot.aiProvider) ||
+                        (aiModel !== undefined && aiModel !== currentBot.aiModel);
+                }
+            }
+
             const data: any = {};
             if (name !== undefined) data.name = name;
             if (identifier !== undefined) data.identifier = identifier;
@@ -129,6 +141,19 @@ export const botController = new Elysia({ prefix: "/bots" })
             if (messageDelay !== undefined) data.messageDelay = messageDelay;
 
             const bot = await prisma.bot.update({ where: { id }, data });
+
+            // Auto-clear conversation histories when AI config changes
+            if (shouldClearConversations) {
+                const sessions = await prisma.session.findMany({
+                    where: { botId: id },
+                    select: { id: true },
+                });
+                for (const session of sessions) {
+                    await ConversationService.clear(session.id);
+                }
+                console.log(`[Bot] Cleared ${sessions.length} conversation(s) for bot ${id} due to AI config change`);
+            }
+
             return bot;
         } catch (e: any) {
             set.status = 500;
