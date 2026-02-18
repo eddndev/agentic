@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import argon2 from "argon2";
 
 const prisma = new PrismaClient();
 
@@ -7,7 +8,7 @@ async function main() {
     const password = process.env.SUPER_ADMIN_PASSWORD || "password123";
 
     if (!process.env.SUPER_ADMIN_EMAIL || !process.env.SUPER_ADMIN_PASSWORD) {
-        console.warn("⚠️  Using default credentials for Admin. Set SUPER_ADMIN_EMAIL and SUPER_ADMIN_PASSWORD in .env for production.");
+        console.warn("Warning: Using default credentials for Admin. Set SUPER_ADMIN_EMAIL and SUPER_ADMIN_PASSWORD in .env for production.");
     }
 
     const existingUser = await prisma.user.findUnique({
@@ -19,8 +20,8 @@ async function main() {
         return;
     }
 
-    const passwordHash = await Bun.password.hash(password, {
-        algorithm: "argon2id",
+    const passwordHash = await argon2.hash(password, {
+        type: argon2.argon2id,
         memoryCost: 4096,
         timeCost: 3
     });
