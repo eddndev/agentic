@@ -1,0 +1,254 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Platform {
+  WHATSAPP
+  TELEGRAM
+}
+
+enum SessionStatus {
+  CONNECTED
+  DISCONNECTED
+  AUTHENTICATING
+  FAILED
+}
+
+enum MatchType {
+  EXACT
+  CONTAINS
+  REGEX
+}
+
+enum StepType {
+  TEXT
+  IMAGE
+  AUDIO
+  VIDEO
+  DOCUMENT
+  PTT // "Voice Note" (Push-To-Talk) simulation
+  CONDITIONAL_TIME // Time-based branching
+}
+
+enum TriggerScope {
+  INCOMING
+  OUTGOING
+  BOTH
+}
+
+
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String
+  fullName      String?
+  isActive      Boolean  @default(true)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Bot {
+  id          String   @id @default(uuid())
+  name        String
+  platform    Platform
+  identifier  String   @unique // Phone number (WhatsApp) or Token (Telegram)
+  credentials Json?    // { apiKey, webhookVerifyToken, etc. }
+  ipv6Address String?  // Optional IPv6 for outgoing connection
+  
+  flows       Flow[]
+  sessions    Session[]
+  triggers    Trigger[] // Global triggers for this bot
+  clients     Client[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Session {
+  id            String        @id @default(uuid())
+  platform      Platform
+  identifier    String        // User phone/id. NOTE: Not unique globally anymore, only unique per Bot
+  
+  botId         String
+  bot           Bot           @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  name          String?
+  status        SessionStatus @default(DISCONNECTED)
+  authData      Json?         
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  messages      Message[]
+  triggers      Trigger[]
+  executions    Execution[]
+
+  @@unique([botId, identifier]) // Unique user per bot
+}
+
+model Trigger {
+  id          String    @id @default(uuid())
+  
+  botId       String
+  bot         Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  sessionId   String?   // Optional: If set, purely local to a session. If null, global for the bot.
+  session     Session?  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  keyword     String
+  matchType   MatchType    @default(CONTAINS)
+  scope       TriggerScope @default(INCOMING)
+  
+  isActive    Boolean   @default(true)
+  
+  flowId      String
+  flow        Flow      @relation(fields: [flowId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Flow {
+  id          String    @id @default(uuid())
+  
+  botId       String
+  bot         Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  
+  usageLimit  Int       @default(0)
+  cooldownMs  Int       @default(0)
+  
+  excludesFlows String[] @default([]) // List of Flow IDs that, if executed previously in the session, block this flow.
+
+  steps       Step[]
+  triggers    Trigger[]
+  executions  Execution[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Step {
+  id          String   @id @default(uuid())
+  flowId      String
+  flow        Flow     @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  
+  type        StepType
+  content     String?  @db.Text
+  mediaUrl    String?  
+  metadata    Json?    
+  
+  delayMs     Int      @default(1000) 
+  jitterPct   Int      @default(10)   
+  
+  order       Int      
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([flowId, order])
+}
+
+model Execution {
+  id              String   @id @default(uuid())
+  sessionId       String
+  session         Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  flowId          String
+  flow            Flow     @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  
+  platformUserId  String   
+  status          String   @default("RUNNING") 
+  currentStep     Int      @default(0)
+  
+  variableContext Json?    
+  
+  trigger         String?
+  error           String?  @db.Text
+
+  startedAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  completedAt     DateTime?
+
+  @@index([sessionId, platformUserId])
+  @@index([status])
+}
+
+model Message {
+  id            String   @id @default(uuid())
+  externalId    String   @unique 
+  sessionId     String
+  session       Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  sender        String   
+  fromMe        Boolean  @default(false)
+  content       String?  @db.Text
+  type          String   
+  metadata      Json?    
+  
+  isProcessed   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@index([externalId])
+  @@index([sessionId])
+}
+
+model CommandLog {
+  id        String   @id @default(uuid())
+  name      String
+  user      String
+  status    String
+  result    String?  @db.Text
+  createdAt DateTime @default(now())
+}
+
+model Client {
+  id                  String    @id @default(uuid())
+  email               String    @unique
+  phoneNumber         String
+  name                String
+  
+  appointmentDate     DateTime?
+  captureLine         String?
+  
+  // PDF Paths
+  captureLinePdfPath   String?
+  accreditationPdfPath String?
+  appointmentPdfPath   String?
+  
+  // Extra contact info (non-unique as requested)
+  contactNumber       String?
+  
+  botId               String
+  bot                 Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  status              ClientStatus @default(PAGO_PENDIENTE)
+  
+  // Sensitive Data
+  encryptedPassword   String
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([email])
+  @@index([phoneNumber])
+  @@index([botId])
+}
+
+enum ClientStatus {
+  LINEA_DE_CAPTURA_CREADA
+  CITA_AGENDADA
+  PAGO_PENDIENTE
+  PAGADO
+}

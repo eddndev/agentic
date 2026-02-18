@@ -1,0 +1,835 @@
+---
+import Layout from "../layouts/Layout.astro";
+import MediaPicker from "../components/MediaPicker.astro";
+---
+
+<Layout title="Flow Editor">
+    <!-- Main container hidden until loaded -->
+    <div
+        x-data="flowEditor"
+        x-show="ready"
+        class="h-[calc(100vh-100px)] flex flex-col"
+        style="display: none;"
+    >
+        <!-- Header -->
+        <header
+            class="flex justify-between items-center mb-6 border-b border-white/10 pb-4"
+        >
+            <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                    <span
+                        class="text-[10px] font-mono text-brand-purple bg-brand-purple/10 px-2 py-0.5"
+                        x-text="bot.platform || 'BOT'"></span>
+                    <span
+                        class="text-[10px] font-mono text-gray-500"
+                        x-text="bot.identifier || '...'"></span>
+                </div>
+                <input
+                    type="text"
+                    x-model="flow.name"
+                    class="bg-transparent text-2xl font-bold uppercase tracking-tighter w-full focus:outline-none focus:border-b border-brand-purple"
+                    :placeholder="$t('flow_name')"
+                />
+                <input
+                    type="text"
+                    x-model="flow.description"
+                    class="bg-transparent text-xs text-gray-400 font-mono w-full focus:outline-none mt-1"
+                    :placeholder="$t('flow_description')"
+                />
+            </div>
+
+            <div class="flex gap-4">
+                <a
+                    :href="'/bots/detail?id=' + (bot.id || new URLSearchParams(window.location.search).get('botId') || '')"
+                    role="button"
+                    class="px-6 py-2 border border-white/10 text-gray-400 font-mono uppercase text-xs tracking-widest hover:text-white hover:bg-white/5 transition-colors flex items-center"
+                    x-text="$t('back')"
+                >
+                </a>
+                <button
+                    @click="save()"
+                    :disabled="saving"
+                    class="px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors disabled:opacity-50"
+                >
+                    <span x-text="saving ? $t('saving') : $t('save_flow')"
+                    ></span>
+                </button>
+            </div>
+        </header>
+
+        <div
+            class="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-3 gap-8"
+        >
+            <!-- LEFT PANEL: Triggers & Settings -->
+            <div class="col-span-1 overflow-y-auto pr-2">
+                <!-- Triggers -->
+                <div
+                    class="bg-brand-panel/30 border border-white/5 p-6 mb-6 relative group"
+                >
+                    <div class="cross-marker -top-[2px] -left-[2px]"></div>
+                    <div class="cross-marker -top-[2px] -right-[2px]"></div>
+
+                    <div
+                        class="text-xs text-brand-purple uppercase tracking-widest mb-4 flex justify-between items-center"
+                    >
+                        <span x-text="$t('triggers')"></span>
+                        <button
+                            @click="addTrigger()"
+                            class="w-6 h-6 flex items-center justify-center bg-brand-purple/20 hover:bg-brand-purple/40 text-brand-purple hover:text-white text-lg leading-none transition-colors"
+                            :title="$t('add_trigger')">+</button
+                        >
+                    </div>
+
+                    <!-- Flow Global Settings -->
+                    <div class="mb-4 bg-[#0f172a] p-3 border border-white/10">
+                        <h4
+                            class="text-[10px] text-gray-500 uppercase font-mono mb-2"
+                        >
+                            Flow Limits & Rules
+                        </h4>
+                        <div class="flex gap-4 mb-3">
+                            <div class="flex-1">
+                                <label
+                                    class="block text-[10px] text-gray-400 font-mono mb-1"
+                                    x-text="$t('usage_limit')"></label>
+                                <select
+                                    x-model="flow.usageLimit"
+                                    class="w-full bg-white/5 text-gray-200 text-xs px-2 py-1.5 border border-white/10 focus:outline-none focus:border-brand-purple"
+                                >
+                                    <option
+                                        value="0"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >∞</option
+                                    >
+                                    <option
+                                        value="1"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >1x</option
+                                    >
+                                    <option
+                                        value="3"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >3x</option
+                                    >
+                                    <option
+                                        value="5"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >5x</option
+                                    >
+                                    <option
+                                        value="10"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >10x</option
+                                    >
+                                </select>
+                            </div>
+                            <div class="flex-1">
+                                <label
+                                    class="block text-[10px] text-gray-400 font-mono mb-1"
+                                    x-text="$t('cooldown')"></label>
+                                <select
+                                    x-model="flow.cooldownMs"
+                                    class="w-full bg-white/5 text-gray-200 text-xs px-2 py-1.5 border border-white/10 focus:outline-none focus:border-brand-purple"
+                                >
+                                    <option
+                                        value="0"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >-</option
+                                    >
+                                    <option
+                                        value="60000"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >1min</option
+                                    >
+                                    <option
+                                        value="300000"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >5min</option
+                                    >
+                                    <option
+                                        value="3600000"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >1h</option
+                                    >
+                                    <option
+                                        value="86400000"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >24h</option
+                                    >
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Mutual Exclusions -->
+                         <div x-show="availableFlows.length > 0 || true">
+                            <label class="block text-[10px] text-gray-400 font-mono mb-2" title="If any of these flows have run in the session, this flow will NOT run.">
+                                MUTUALLY EXCLUSIVE WITH:
+                            </label>
+                            <div class="max-h-32 overflow-y-auto space-y-1 pr-1 bg-black/20 p-2 border border-white/5">
+                                <template x-for="f in availableFlows" :key="f.id">
+                                    <label class="flex items-center gap-2 cursor-pointer hover:bg-white/5 p-1 rounded">
+                                        <input type="checkbox" :value="f.id" x-model="flow.excludesFlows" class="accent-brand-purple">
+                                        <span class="text-[10px] font-mono text-gray-300 truncate" x-text="f.name"></span>
+                                    </label>
+                                </template>
+                                <div x-show="availableFlows.length === 0" class="text-[10px] text-gray-600 font-mono italic p-1">
+                                    (No other flows available)
+                                </div>
+                            </div>
+                         </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <template
+                            x-for="(trigger, index) in flow.triggers"
+                            :key="index"
+                        >
+                            <div
+                                class="bg-[#0f172a] p-4 border border-white/10 space-y-3"
+                            >
+                                <!-- Row 1: Selects and Delete -->
+                                <div class="flex justify-between items-center gap-2">
+                                    <div class="flex gap-2 items-center flex-1">
+                                        <select
+                                            x-model="trigger.scope"
+                                            class="bg-white/10 text-[10px] font-mono text-brand-purple px-2 py-1.5 border border-white/20 focus:outline-none focus:border-brand-purple flex-1"
+                                            title="Trigger Scope"
+                                        >
+                                            <option value="INCOMING">INCOMING</option>
+                                            <option value="OUTGOING">OUTGOING</option>
+                                            <option value="BOTH">ALL</option>
+                                        </select>
+                                        <select
+                                            x-model="trigger.matchType"
+                                            class="bg-white/10 text-xs font-mono text-white px-2 py-1.5 border border-white/20 focus:outline-none focus:border-brand-purple flex-1"
+                                        >
+                                            <template
+                                                x-for="opt in ['CONTAINS', 'EXACT', 'REGEX']"
+                                            >
+                                                <option
+                                                    :value="opt"
+                                                    x-text="opt"
+                                                    class="bg-[#0f172a]"></option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                    <button
+                                        @click="removeTrigger(index)"
+                                        class="text-red-500 hover:text-red-400 font-bold px-2 py-1 text-lg"
+                                        >&times;</button
+                                    >
+                                </div>
+
+                                <!-- Row 2: Keyword Input -->
+                                <div>
+                                    <textarea
+                                        x-model="trigger.keyword"
+                                        rows="1"
+                                        class="w-full bg-white/5 text-sm px-3 py-2 border border-white/10 focus:outline-none focus:border-brand-purple resize-none overflow-hidden font-mono leading-relaxed"
+                                        :placeholder="$t('keyword') || 'Enter keyword or regex...'"
+                                        x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
+                                        @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+                                    ></textarea>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div
+                            x-show="flow.triggers.length === 0"
+                            class="text-center py-4 text-gray-600 text-xs font-mono"
+                            x-text="$t('no_triggers')"
+                        >
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: Steps Builder -->
+            <div class="col-span-1 lg:col-span-2 flex flex-col h-full min-h-0">
+                <div class="flex justify-between items-center mb-4">
+                    <h3
+                        class="text-xs text-brand-purple uppercase tracking-widest"
+                        x-text="$t('sequence_steps')"
+                    >
+                    </h3>
+                    <div class="flex gap-2">
+                        <button
+                            @click="addStep('TEXT')"
+                            class="px-3 py-1 bg-white/5 hover:bg-white/10 text-[10px] uppercase font-mono border border-white/10"
+                            x-text="$t('add_step_text')"></button>
+                        <button
+                            @click="addStep('IMAGE')"
+                            class="px-3 py-1 bg-white/5 hover:bg-white/10 text-[10px] uppercase font-mono border border-white/10"
+                            x-text="$t('add_step_image')"></button>
+                        <button
+                            @click="addStep('AUDIO')"
+                            class="px-3 py-1 bg-white/5 hover:bg-white/10 text-[10px] uppercase font-mono border border-white/10"
+                            x-text="$t('add_step_audio')"></button>
+                        <button
+                            @click="addStep('CONDITIONAL_TIME')"
+                            class="px-3 py-1 bg-brand-purple/20 text-brand-purple hover:bg-brand-purple/40 text-[10px] uppercase font-mono border border-brand-purple/30"
+                            title="Time Condition"
+                        >🕒 TIME</button>
+                    </div>
+                </div>
+
+                <div
+                    class="flex-1 overflow-y-auto bg-brand-panel/10 border border-white/5 relative"
+                >
+                    <div id="steps-container" class="p-6 space-y-4 pb-20">
+                        <template
+                            x-for="(step, index) in flow.steps"
+                            :key="step.tempId || step.id || index"
+                        >
+                            <div
+                                class="step-card bg-[#0f172a] border border-white/10 p-4 relative group hover:border-brand-purple/50 transition-colors"
+                                :data-id="index"
+                            >
+                                <!-- Reorder Controls -->
+                                <div
+                                    class="absolute left-2 top-4 flex flex-col gap-1 items-center z-10 w-6"
+                                >
+                                    <button 
+                                        @click="moveUp(index)" 
+                                        class="text-gray-600 hover:text-brand-purple text-[10px] leading-none p-1 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                                        :disabled="index === 0"
+                                    >▲</button>
+                                    
+                                    <div class="text-gray-500 cursor-move handle py-1 hover:text-white select-none" title="Drag">⋮⋮</div>
+                                    
+                                    <button 
+                                        @click="moveDown(index)" 
+                                        class="text-gray-600 hover:text-brand-purple text-[10px] leading-none p-1 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                                        :disabled="index === flow.steps.length - 1"
+                                    >▼</button>
+                                </div>
+
+                                <div class="pl-10">
+                                    <div
+                                        class="flex justify-between text-xs font-mono text-gray-400 mb-3 uppercase tracking-wide items-center"
+                                    >
+                                        <span
+                                            x-text="step.type"
+                                            class="text-brand-purple font-bold"
+                                        ></span>
+                                        <div
+                                            class="flex gap-4 items-center flex-wrap"
+                                        >
+                                            <span
+                                                class="flex items-center gap-1 text-gray-400"
+                                            >
+                                                <span x-text="$t('delay')"
+                                                ></span>:
+                                                <input
+                                                    type="number"
+                                                    x-model="step.delayMs"
+                                                    class="w-16 bg-white/10 text-center px-2 py-1 border border-white/20 focus:outline-none focus:border-brand-purple text-white"
+                                                    min="0"
+                                                /><span class="text-gray-500"
+                                                    >ms</span
+                                                >
+                                            </span>
+                                            <span
+                                                class="flex items-center gap-1 text-gray-400"
+                                            >
+                                                <span class="text-gray-500"
+                                                    >±</span
+                                                >
+                                                <input
+                                                    type="number"
+                                                    x-model="step.jitterPct"
+                                                    class="w-14 bg-white/10 text-center px-2 py-1 border border-white/20 focus:outline-none focus:border-brand-purple text-white"
+                                                    min="0"
+                                                    max="100"
+                                                /><span class="text-gray-500"
+                                                    >%</span
+                                                >
+                                            </span>
+                                            <button
+                                                @click="removeStep(index)"
+                                                class="text-red-500 hover:text-white px-2 py-1 hover:bg-red-500/20 transition-colors"
+                                                x-text="$t('remove')"></button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step Content -->
+                                    <div class="space-y-2">
+                                        <template x-if="step.type === 'TEXT'">
+                                            <textarea
+                                                x-model="step.content"
+                                                rows="2"
+                                                class="w-full bg-black/20 border border-white/5 p-2 text-sm focus:border-brand-purple focus:outline-none resize-none overflow-hidden font-mono leading-relaxed min-h-[60px]"
+                                                :placeholder="$t('message_content')"
+                                                x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
+                                                @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+                                            ></textarea>
+                                        </template>
+
+                                        <template
+                                            x-if="['IMAGE', 'AUDIO', 'VIDEO', 'DOCUMENT'].includes(step.type)"
+                                        >
+                                            <div>
+                                                <div class="flex gap-2 mb-2">
+                                                    <input
+                                                        type="text"
+                                                        x-model="step.mediaUrl"
+                                                        class="flex-1 bg-black/20 border border-white/5 p-2 text-xs font-mono"
+                                                        :placeholder="$t('media_url_placeholder')"
+                                                    />
+                                                    <button
+                                                        @click="selectMedia(index)"
+                                                        class="bg-white/10 px-3 text-xs uppercase hover:bg-white/20"
+                                                        x-text="$t('select_media')"
+                                                    ></button>
+                                                </div>
+                                                <template
+                                                    x-if="step.type === 'IMAGE' && step.mediaUrl"
+                                                >
+                                                    <img
+                                                        :src="step.mediaUrl"
+                                                        class="h-24 opacity-50 hover:opacity-100 transition-opacity border border-white/10"
+                                                    />
+                                                </template>
+                                                <template
+                                                    x-if="step.type === 'IMAGE'"
+                                                >
+                                                    <textarea
+                                                        x-model="step.content"
+                                                        rows="1"
+                                                        class="w-full bg-black/20 border border-white/5 p-2 text-xs mt-1 focus:border-brand-purple focus:outline-none resize-none overflow-hidden font-mono leading-relaxed min-h-[38px]"
+                                                        :placeholder="$t('caption_placeholder')"
+                                                        x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
+                                                        @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+                                                    ></textarea>
+                                                </template>
+                                            </div>
+                                        </template>
+
+                                        <!-- Conditional Time Step -->
+                                        <template x-if="step.type === 'CONDITIONAL_TIME'">
+                                            <div class="space-y-4" x-init="!step.metadata && (step.metadata = { branches: [], fallback: { type: 'TEXT', content: '' } })">
+                                                
+                                                <template x-if="step.metadata && step.metadata.branches && step.metadata.fallback">
+                                                    <div>
+                                                        <div class="text-[10px] text-gray-500 font-mono mb-2" x-text="$t('time_condition_desc')"></div>
+                                                        
+                                                        <!-- Branches -->
+                                                        <template x-for="(branch, bIndex) in step.metadata.branches" :key="bIndex">
+                                                            <div class="bg-black/20 border border-white/5 p-3 relative group/branch">
+                                                                <div class="flex justify-between items-center mb-2">
+                                                                    <div class="flex gap-2 items-center">
+                                                                        <input type="time" x-model="branch.startTime" class="bg-white/10 text-white text-xs px-2 py-1 border border-white/10 focus:border-brand-purple focus:outline-none rounded font-mono">
+                                                                        <span class="text-gray-500 text-xs">-</span>
+                                                                        <input type="time" x-model="branch.endTime" class="bg-white/10 text-white text-xs px-2 py-1 border border-white/10 focus:border-brand-purple focus:outline-none rounded font-mono">
+                                                                    </div>
+                                                                    <button @click="step.metadata.branches.splice(bIndex, 1)" class="text-red-500 hover:text-white font-bold">&times;</button>
+                                                                </div>
+
+                                                                <div class="flex gap-2 mb-2">
+                                                                    <select x-model="branch.type" class="bg-white/5 text-[10px] text-gray-300 border border-white/10 px-2 py-1 w-full focus:outline-none uppercase font-mono">
+                                                                        <option value="TEXT">TEXT</option>
+                                                                        <option value="IMAGE">IMAGE</option>
+                                                                        <option value="AUDIO">AUDIO</option>
+                                                                    </select>
+                                                                </div>
+
+                                                                <div class="space-y-2">
+                                                                    <textarea 
+                                                                        x-model="branch.content" 
+                                                                        rows="2" 
+                                                                        class="w-full bg-black/20 border border-white/5 p-2 text-xs focus:border-brand-purple focus:outline-none resize-none overflow-hidden min-h-[38px] font-mono" 
+                                                                        :placeholder="branch.type === 'TEXT' ? $t('message_content') : $t('caption_placeholder')" 
+                                                                        x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = ($el.scrollHeight + 2) + 'px' })"
+                                                                        @input="$el.style.height = 'auto'; $el.style.height = ($el.scrollHeight + 2) + 'px'"></textarea>
+                                                                    
+                                                                    <div x-show="branch.type !== 'TEXT'" class="flex gap-2">
+                                                                        <input type="text" x-model="branch.mediaUrl" class="flex-1 bg-black/20 border border-white/5 p-2 text-xs font-mono" :placeholder="$t('media_url_placeholder')">
+                                                                        <button @click="selectMediaForBranch(index, bIndex)" class="bg-white/10 px-2 text-[10px] uppercase hover:bg-white/20" x-text="$t('pick')"></button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+
+                                                        <button @click="step.metadata.branches.push({ startTime: '09:00', endTime: '18:00', type: 'TEXT', content: '' })" class="w-full py-2 border border-dashed border-white/10 text-xs text-gray-500 hover:text-brand-purple hover:border-brand-purple/30 transition-colors uppercase font-mono" x-text="'+ ' + $t('add_time_range')"></button>
+
+                                                        <div x-show="hasOverlap(step.metadata.branches)" class="text-red-400 text-[10px] font-mono mt-2 bg-red-500/10 p-2 border border-red-500/20 flex items-center gap-2">
+                                                            <span>⚠</span> <span x-text="$t('overlap_warning')"></span>
+                                                        </div>
+
+                                                        <!-- Fallback -->
+                                                        <div class="mt-4 pt-4 border-t border-white/10">
+                                                            <div class="text-[10px] uppercase text-gray-500 mb-2 font-mono" x-text="$t('fallback_label')"></div>
+                                                            <div class="bg-black/20 p-3 border border-white/5">
+                                                                <div class="flex gap-2 mb-2">
+                                                                    <select x-model="step.metadata.fallback.type" class="bg-white/5 text-[10px] text-gray-300 border border-white/10 px-2 py-1 w-full focus:outline-none uppercase font-mono">
+                                                                        <option value="TEXT">TEXT</option>
+                                                                        <option value="IMAGE">IMAGE</option>
+                                                                        <option value="AUDIO">AUDIO</option>
+                                                                    </select>
+                                                                </div>
+                                                                <textarea 
+                                                                    x-model="step.metadata.fallback.content" 
+                                                                    rows="2" 
+                                                                    class="w-full bg-black/20 border border-white/5 p-2 text-xs focus:border-brand-purple focus:outline-none resize-none overflow-hidden min-h-[38px] font-mono" 
+                                                                    :placeholder="$t('message_content')" 
+                                                                    x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = ($el.scrollHeight + 2) + 'px' })"
+                                                                    @input="$el.style.height = 'auto'; $el.style.height = ($el.scrollHeight + 2) + 'px'"></textarea>
+                                                                <div x-show="step.metadata.fallback.type !== 'TEXT'" class="flex gap-2 mt-2">
+                                                                    <input type="text" x-model="step.metadata.fallback.mediaUrl" class="flex-1 bg-black/20 border border-white/5 p-2 text-xs font-mono" :placeholder="$t('media_url_placeholder')">
+                                                                    <button @click="selectMediaForFallback(index)" class="bg-white/10 px-2 text-[10px] uppercase hover:bg-white/20" x-text="$t('pick')"></button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div
+                            x-show="flow.steps.length === 0"
+                            class="text-center py-12 text-gray-500"
+                        >
+                            <p
+                                class="text-xs font-mono uppercase"
+                                x-text="$t('empty_flow')"
+                            >
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div
+            x-show="!ready"
+            class="fixed inset-0 flex items-center justify-center bg-[#0f172a] z-50"
+        >
+            <div
+                class="text-brand-purple animate-pulse text-xs font-mono uppercase"
+                x-text="$t('loading')"
+            >
+            </div>
+        </div>
+    </div>
+
+    <MediaPicker />
+</Layout>
+
+<script>
+    // @ts-ignore
+    declare const Alpine: any;
+
+    import { ApiClient } from "../lib/api";
+    import Sortable from "sortablejs";
+
+    // TS Definitions
+    interface Trigger {
+        keyword: string;
+        matchType: string;
+        scope?: string;
+    }
+    interface Step {
+        id?: string;
+        tempId?: number; // For frontend keys
+        type: string;
+        content: string;
+        mediaUrl?: string;
+        delayMs: number;
+        jitterPct: number;
+        order: number;
+    }
+    interface Flow {
+        name: string;
+        description: string;
+        usageLimit: number;
+        cooldownMs: number;
+        excludesFlows: string[];
+        triggers: Trigger[];
+        steps: Step[];
+    }
+
+    document.addEventListener("alpine:init", () => {
+        Alpine.data("flowEditor", () => ({
+            id: null as string | null,
+            ready: false,
+            saving: false,
+            availableFlows: [] as { id: string; name: string }[],
+            bot: { id: null } as {
+                id: string | null;
+                platform?: string;
+                identifier?: string;
+            },
+            flow: {
+                name: "",
+                description: "",
+                usageLimit: 0,
+                cooldownMs: 0,
+                excludesFlows: [],
+                triggers: [],
+                steps: [],
+            } as Flow,
+            botId: null as string | null,
+
+            getBranches(step: Step) {
+                if (step.type !== 'CONDITIONAL_TIME' || !step.metadata) return [];
+                return step.metadata.branches || [];
+            },
+
+            getFallback(step: Step) {
+                if (step.type !== 'CONDITIONAL_TIME' || !step.metadata) return { type: 'TEXT', content: '' };
+                return step.metadata.fallback || { type: 'TEXT', content: '' };
+            },
+
+            hasOverlap(branches: any[]) {
+                if (!branches || branches.length < 2) return false;
+                
+                // Prepare normalized ranges (handling midnight crossing)
+                const ranges: { start: number, end: number }[] = [];
+                
+                branches.forEach(b => {
+                    const [sh, sm] = (b.startTime || "00:00").split(':').map(Number);
+                    const [eh, em] = (b.endTime || "00:00").split(':').map(Number);
+                    const start = sh * 60 + sm;
+                    const end = eh * 60 + em;
+
+                    if (start < end) {
+                        ranges.push({ start, end });
+                    } else {
+                        // Crosses midnight: Split into [start, 1440] and [0, end]
+                        // e.g. 22:00 (1320) to 06:00 (360) -> [1320, 1440] and [0, 360]
+                        ranges.push({ start, end: 24 * 60 });
+                        ranges.push({ start: 0, end });
+                    }
+                });
+
+                // Sort by start time
+                ranges.sort((a, b) => a.start - b.start);
+
+                // Check for overlaps
+                for (let i = 0; i < ranges.length - 1; i++) {
+                    // If current end is greater than next start, we have an overlap
+                    // We use > because touching boundaries (12:00 end, 12:00 start) is usually allowed
+                    if (ranges[i].end > ranges[i + 1].start) return true;
+                }
+                return false;
+            },
+
+            async init() {
+                // Watch for ready state to trigger initial resize
+                this.$watch('ready', (value) => {
+                    if (value) {
+                        // Wait for transition/render
+                        setTimeout(() => {
+                            const textareas = document.querySelectorAll('#steps-container textarea') as NodeListOf<HTMLTextAreaElement>;
+                            textareas.forEach(el => {
+                                el.style.height = 'auto';
+                                el.style.height = (el.scrollHeight + 2) + 'px';
+                            });
+                        }, 300); // 300ms to be safe after x-show transition
+                    }
+                });
+
+                // Client-side Router Logic
+                const params = new URLSearchParams(window.location.search);
+                this.id = params.get("id");
+                this.botId = params.get("botId");
+
+                if (this.id && this.id !== "new") {
+                    // Editing existing flow - load flow data first
+                    await this.loadFlow(this.id);
+                } else if (this.botId) {
+                    // Creating new flow - load bot info
+                    try {
+                        this.bot = await ApiClient.get(`/bots/${this.botId}`);
+                    } catch (e) {
+                        console.error("Failed to load bot info", e);
+                    }
+                    this.flow.name = "New Flow";
+                    this.ready = true;
+                } else {
+                    // No context, redirect to bots
+                    window.location.href = "/bots";
+                    return;
+                }
+
+                // Initialize Sortable
+                // @ts-ignore
+                this.$nextTick(() => {
+                    const el = document.getElementById("steps-container");
+                    if (el) {
+                        Sortable.create(el, {
+                            handle: ".handle",
+                            draggable: ".step-card",
+                            animation: 150,
+                            onEnd: (evt: any) => {
+                                const { oldIndex, newIndex } = evt;
+                                if (oldIndex === newIndex) return;
+
+                                // Reorder array
+                                const item = this.flow.steps.splice(
+                                    oldIndex,
+                                    1,
+                                )[0];
+                                this.flow.steps.splice(newIndex, 0, item);
+
+                                // Update order
+                                this.updateOrder();
+                            },
+                        });
+                    }
+                });
+            },
+
+            updateOrder() {
+                this.flow.steps.forEach((s: Step, i: number) => (s.order = i));
+            },
+
+            moveUp(index: number) {
+                if (index === 0) return;
+                const item = this.flow.steps.splice(index, 1)[0];
+                this.flow.steps.splice(index - 1, 0, item);
+                this.updateOrder();
+            },
+
+            moveDown(index: number) {
+                if (index === this.flow.steps.length - 1) return;
+                const item = this.flow.steps.splice(index, 1)[0];
+                this.flow.steps.splice(index + 1, 0, item);
+                this.updateOrder();
+            },
+
+            async loadFlow(id: string) {
+                try {
+                    const res = await ApiClient.get(`/flows/${id}`);
+                    this.flow = res;
+                    // Extract botId from flow for back navigation
+                    if (res.botId) {
+                        this.botId = res.botId;
+                        this.bot = { id: res.botId };
+                        // Optionally load full bot info
+                        try {
+                            this.bot = await ApiClient.get(
+                                `/bots/${res.botId}`,
+                            );
+                        } catch (e) {
+                            // Bot info is optional, continue with just ID
+                        }
+                    }
+                    this.ready = true;
+                    this.loadAvailableFlows();
+                } catch (e) {
+                    alert("Failed to load flow");
+                    window.location.href = "/bots";
+                }
+            },
+            
+            async loadAvailableFlows() {
+                if (!this.botId) return;
+                try {
+                    // Fetch all flows for this bot to populate the exclusion list
+                    // We need a lightweight list. Assuming /flows?botId=... returns list
+                    const flows = await ApiClient.get(`/flows?botId=${this.botId}`);
+                    // Filter out current flow
+                    this.availableFlows = flows.filter((f: any) => f.id !== this.id);
+                } catch (e) {
+                    console.error("Failed to load available flows", e);
+                }
+            },
+
+            addTrigger() {
+                this.flow.triggers.push({
+                    keyword: "",
+                    matchType: "CONTAINS",
+                    scope: "INCOMING",
+                });
+            },
+
+            removeTrigger(index: number) {
+                this.flow.triggers.splice(index, 1);
+            },
+
+            addStep(type: string) {
+                this.flow.steps.push({
+                    tempId: Date.now(),
+                    type,
+                    content: "",
+                    mediaUrl: "",
+                    delayMs: 1000,
+                    jitterPct: 10,
+                    order: this.flow.steps.length,
+                });
+
+                // @ts-ignore
+                this.$nextTick(() => {
+                    const container =
+                        document.getElementById("steps-container");
+                    if (container) container.scrollTop = container.scrollHeight;
+                });
+            },
+
+            removeStep(index: number) {
+                this.flow.steps.splice(index, 1);
+            },
+
+            selectMedia(stepIndex: number) {
+                window.dispatchEvent(
+                    new CustomEvent("open-media-picker", {
+                        detail: {
+                            callback: (url: string) => {
+                                if (this.flow.steps[stepIndex]) {
+                                    this.flow.steps[stepIndex].mediaUrl = url;
+                                }
+                            },
+                        },
+                    }),
+                );
+            },
+
+            async save() {
+                if (!this.flow.name) return alert("Name Required");
+
+                this.saving = true;
+                try {
+                    // Normalize steps order and convert numeric types
+                    this.flow.steps.forEach((s: Step, i: number) => {
+                        s.order = i;
+                        s.delayMs = parseInt(s.delayMs as any, 10) || 1000;
+                        s.jitterPct = parseInt(s.jitterPct as any, 10) || 10;
+                    });
+
+                    // Convert trigger numeric types is no longer needed/relevant for limits, but kept for robustness if other fields exist
+
+                    if (!this.id || this.id === "new") {
+                        // Create
+                        const params = new URLSearchParams(
+                            window.location.search,
+                        );
+                        const botId = params.get("botId");
+
+                        if (!botId) throw new Error("Missing Bot Context");
+
+                        const res = await ApiClient.post("/flows", {
+                            ...this.flow,
+                            botId,
+                        });
+                        // Redirect to edit mode
+                        window.location.href = `/editor?id=${res.id}`;
+                    } else {
+                        // Update
+                        await ApiClient.put(`/flows/${this.id}`, this.flow);
+                        alert("Saved!");
+                    }
+                } catch (e) {
+                    alert("Error saving flow");
+                    console.error(e);
+                } finally {
+                    this.saving = false;
+                }
+            },
+        }));
+    });
+</script>

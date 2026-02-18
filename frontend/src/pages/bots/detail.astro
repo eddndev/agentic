@@ -1,0 +1,1162 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import BotConnection from "../../components/BotConnection.astro";
+import ClientList from "../../components/clients/ClientList.astro";
+import ClientModal from "../../components/clients/ClientModal.astro";
+
+const botId = Astro.url.searchParams.get("id") || "";
+---
+
+<Layout title="Bot Detail">
+    <div
+        x-data="botDetail"
+        x-show="ready"
+        class="space-y-8"
+        style="display: none;"
+    >
+        <!-- Header -->
+        <header
+            class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-white/10 pb-6 relative gap-4"
+        >
+            <div class="cross-marker -bottom-[5px] -left-[5px]"></div>
+            <div class="cross-marker -bottom-[5px] -right-[5px]"></div>
+
+            <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                    <a
+                        href="/bots"
+                        class="text-gray-500 hover:text-brand-purple transition-colors"
+                        title="Back to Bots"
+                    >
+                        <svg
+                            class="w-5 h-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </a>
+                    <span
+                        class="text-[10px] font-mono text-brand-purple bg-brand-purple/10 px-2 py-0.5 uppercase"
+                        x-text="bot.platform"></span>
+                </div>
+
+                <h1
+                    class="text-3xl font-bold tracking-tighter uppercase"
+                    x-text="bot.name"
+                >
+                </h1>
+                <p
+                    class="text-xs font-mono text-gray-500 mt-1"
+                    x-text="bot.identifier"
+                >
+                </p>
+                <p 
+                    x-show="bot.ipv6Address"
+                    class="text-[10px] font-mono text-brand-purple/70 mt-2 flex items-center gap-2"
+                >
+                    <span class="uppercase tracking-widest">IPv6:</span>
+                    <span x-text="bot.ipv6Address"></span>
+                </p>
+            </div>
+
+            <div class="flex gap-3">
+                <div class="flex gap-3">
+                    <a
+                        :href="'/editor?botId=' + botId"
+                        class="px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors flex items-center gap-2 rounded-full"
+                    >
+                        <span>+</span>
+                        <span x-text="$t('new_flow')">New Flow</span>
+                    </a>
+                    <button
+                        @click="openImportModal()"
+                        class="px-4 py-2 border border-white/10 text-gray-400 font-mono uppercase text-xs hover:bg-white/5 transition-colors rounded-full flex items-center gap-2"
+                        :title="$t('import_flow') || 'Import Flow'"
+                    >
+                        <svg
+                            class="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                            ></path>
+                        </svg>
+                        <span x-text="$t('import') || 'Import'">Import</span>
+                    </button>
+                </div>
+                <div class="flex gap-3">
+                    <button
+                        @click="editBot()"
+                        class="px-4 py-2 border border-white/10 text-gray-400 font-mono uppercase text-xs hover:bg-white/5 transition-colors rounded-full"
+                        :title="$t('edit')"
+                    >
+                        <svg
+                            class="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            ></path>
+                        </svg>
+                    </button>
+                    <button
+                        @click="deleteBot()"
+                        class="px-4 py-2 border border-red-500/30 text-red-500 font-mono uppercase text-xs hover:bg-red-500/10 transition-colors rounded-full"
+                        :title="$t('delete')"
+                    >
+                        <svg
+                            class="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            ></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <div class="flex gap-2 mb-8 bg-white/5 p-1 rounded-full w-fit">
+            <button
+                @click="activeTab = 'flows'"
+                class="px-6 py-2 text-xs font-mono uppercase tracking-widest transition-all rounded-full"
+                :class="activeTab === 'flows' ? 'bg-brand-purple text-white shadow-lg' : 'text-gray-500 hover:text-white'"
+            >
+                <span x-text="$t('flows')">Flows</span>
+            </button>
+            <button
+                @click="activeTab = 'clients'"
+                class="px-6 py-2 text-xs font-mono uppercase tracking-widest transition-all rounded-full"
+                :class="activeTab === 'clients' ? 'bg-brand-purple text-white shadow-lg' : 'text-gray-500 hover:text-white'"
+            >
+                <span>Clientes</span>
+            </button>
+            <button
+                @click="activeTab = 'logs'; loadLogs()"
+                class="px-6 py-2 text-xs font-mono uppercase tracking-widest transition-all rounded-full"
+                :class="activeTab === 'logs' ? 'bg-brand-purple text-white shadow-lg' : 'text-gray-500 hover:text-white'"
+            >
+                <span x-text="$t('logs')">Logs</span>
+            </button>
+        </div>
+
+        <!-- Clients Tab -->
+        <div x-show="activeTab === 'clients'" style="display: none;">
+            <div
+                class="bg-brand-panel/30 border border-white/5 p-6 relative min-h-[400px]"
+            >
+                <div class="cross-marker -top-[2px] -left-[2px]"></div>
+                <div class="cross-marker -top-[2px] -right-[2px]"></div>
+
+                <div class="flex justify-between items-center mb-6">
+                    <h3
+                        class="text-xs text-brand-purple uppercase tracking-widest"
+                    >
+                        Listado de Clientes
+                    </h3>
+                    <div class="flex gap-2">
+                        <!-- ClientModal Component Handles the 'Create' button -->
+                        <ClientModal botId={botId} />
+                    </div>
+                </div>
+
+                <ClientList botId={botId} />
+            </div>
+        </div>
+
+        <!-- Flows Tab -->
+        <div
+            x-show="activeTab === 'flows'"
+            class="grid grid-cols-1 lg:grid-cols-3 gap-8"
+        >
+            <!-- Connection Panel -->
+            <div class="lg:col-span-1">
+                <div
+                    class="bg-brand-panel/30 border border-white/5 p-1 relative"
+                >
+                    <div class="cross-marker -top-[2px] -left-[2px]"></div>
+                    <div class="cross-marker -top-[2px] -right-[2px]"></div>
+
+                    <div class="px-4 pt-4 mb-2">
+                        <h3
+                            class="text-xs text-brand-purple uppercase tracking-widest"
+                            x-text="$t('connection')"
+                        >
+                        </h3>
+                    </div>
+
+                    <!-- BotConnection using Alpine re-initialization -->
+                    <div x-show="botId" x-html="connectionHtml"></div>
+                </div>
+            </div>
+
+            <!-- Flows Panel -->
+            <div class="lg:col-span-2">
+                <div
+                    class="bg-brand-panel/30 border border-white/5 p-6 relative"
+                >
+                    <div class="cross-marker -top-[2px] -left-[2px]"></div>
+                    <div class="cross-marker -top-[2px] -right-[2px]"></div>
+
+                    <div class="flex justify-between items-center mb-6">
+                        <h3
+                            class="text-xs text-brand-purple uppercase tracking-widest"
+                            x-text="$t('flows')"
+                        >
+                            Flows
+                        </h3>
+                        <span
+                            class="text-xs font-mono text-gray-500"
+                            x-text="flows.length + ' total'"></span>
+                    </div>
+
+                    <!-- Flow List -->
+                    <template x-if="flows.length > 0">
+                        <div class="space-y-3">
+                            <template x-for="flow in flows" :key="flow.id">
+                                <a
+                                    :href="'/editor?id=' + flow.id"
+                                    class="block p-4 bg-[#0f172a] border border-white/10 hover:border-brand-purple/30 transition-all group"
+                                >
+                                    <div
+                                        class="flex justify-between items-start"
+                                    >
+                                        <div class="flex-1">
+                                            <h4
+                                                class="font-bold uppercase tracking-tight group-hover:text-brand-purple transition-colors"
+                                                x-text="flow.name"
+                                            >
+                                            </h4>
+                                            <p
+                                                x-show="flow.description"
+                                                class="text-xs text-gray-500 mt-1"
+                                                x-text="flow.description"
+                                            >
+                                            </p>
+                                            <div
+                                                class="flex gap-2 mt-3 flex-wrap"
+                                            >
+                                                <template
+                                                    x-for="trigger in flow.triggers.slice(0, 3)"
+                                                    :key="trigger.id"
+                                                >
+                                                    <span
+                                                        class="text-[10px] font-mono bg-white/5 px-2 py-0.5 text-gray-400"
+                                                        x-text="trigger.matchType + ': ' + trigger.keyword"
+                                                    ></span>
+                                                </template>
+                                                <span
+                                                    x-show="flow.triggers.length > 3"
+                                                    class="text-[10px] font-mono text-gray-500"
+                                                    x-text="'+' + (flow.triggers.length - 3) + ' more'"
+                                                ></span>
+                                            </div>
+                                        </div>
+                                        <svg
+                                            class="w-4 h-4 text-gray-600 group-hover:text-brand-purple transition-colors flex-shrink-0 mt-1"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </div>
+                                </a>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Empty State -->
+                    <template x-if="flows.length === 0">
+                        <div
+                            class="text-center py-12 border border-dashed border-white/10"
+                        >
+                            <svg
+                                class="w-10 h-10 mx-auto mb-4 text-gray-600"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="1"
+                                    d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+                                ></path>
+                            </svg>
+                            <p
+                                class="text-xs font-mono text-gray-500 uppercase mb-4"
+                                x-text="$t('no_flows')"
+                            >
+                                No flows configured
+                            </p>
+                            <a
+                                :href="'/editor?botId=' + botId"
+                                class="inline-block px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors"
+                            >
+                                + <span x-text="$t('new_flow')"
+                                    >Create Flow</span
+                                >
+                            </a>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Tab -->
+        <div x-show="activeTab === 'logs'" style="display: none;">
+            <div class="bg-brand-panel/30 border border-white/5 p-6 relative">
+                <div class="cross-marker -top-[2px] -left-[2px]"></div>
+                <div class="cross-marker -top-[2px] -right-[2px]"></div>
+
+                <!-- Filters -->
+                <div class="flex flex-wrap gap-4 mb-6 items-end">
+                    <div>
+                        <label
+                            class="block text-[10px] font-mono text-gray-500 uppercase mb-1"
+                            x-text="$t('filter_status')">Status</label
+                        >
+                        <select
+                            x-model="filters.status"
+                            @change="logsPagination.offset = 0; loadLogs()"
+                            class="bg-[#0f172a] border border-white/10 text-white text-xs p-2 min-w-[120px] focus:border-brand-purple focus:outline-none"
+                        >
+                            <option value="ALL" x-text="$t('status_all')"
+                                >All</option
+                            >
+                            <option
+                                value="RUNNING"
+                                x-text="$t('status_running') || 'Running'"
+                                >Running</option
+                            >
+                            <option
+                                value="COMPLETED"
+                                x-text="$t('status_completed')"
+                                >Completed</option
+                            >
+                            <option value="FAILED" x-text="$t('status_failed')"
+                                >Failed</option
+                            >
+                        </select>
+                    </div>
+
+                    <div class="flex-1 min-w-[200px]">
+                        <label
+                            class="block text-[10px] font-mono text-gray-500 uppercase mb-1"
+                            x-text="$t('filter_user')">User</label
+                        >
+                        <input
+                            type="text"
+                            x-model="filters.search"
+                            @input.debounce="logsPagination.offset = 0; loadLogs()"
+                            class="w-full bg-[#0f172a] border border-white/10 text-white text-xs p-2 focus:border-brand-purple focus:outline-none placeholder-gray-700"
+                            :placeholder="$t('filter_user') + ' / Trigger...'"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-[10px] font-mono text-gray-500 uppercase mb-1"
+                            x-text="$t('filter_date_from')">From</label
+                        >
+                        <input
+                            type="date"
+                            x-model="filters.startDate"
+                            @change="logsPagination.offset = 0; loadLogs()"
+                            class="bg-[#0f172a] border border-white/10 text-white text-xs p-2 focus:border-brand-purple focus:outline-none"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-[10px] font-mono text-gray-500 uppercase mb-1"
+                            x-text="$t('filter_date_to')">To</label
+                        >
+                        <input
+                            type="date"
+                            x-model="filters.endDate"
+                            @change="logsPagination.offset = 0; loadLogs()"
+                            class="bg-[#0f172a] border border-white/10 text-white text-xs p-2 focus:border-brand-purple focus:outline-none"
+                        />
+                    </div>
+
+                    <button
+                        @click="loadLogs()"
+                        class="px-4 py-2 border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                        :title="$t('refresh')"
+                    >
+                        <span :class="{'animate-spin': loadingLogs}">⟳</span>
+                    </button>
+                </div>
+
+                <!-- Logs Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr
+                                class="text-[10px] uppercase font-mono text-gray-500 border-b border-white/10"
+                            >
+                                <th class="p-3" x-text="$t('col_status')"
+                                    >Status</th
+                                >
+                                <th class="p-3" x-text="$t('col_date')">Date</th
+                                >
+                                <th class="p-3" x-text="$t('col_user')">User</th
+                                >
+                                <th class="p-3" x-text="$t('col_flow')">Flow</th
+                                >
+                                <th class="p-3" x-text="$t('col_trigger')"
+                                    >Trigger</th
+                                >
+                                <th class="p-3" x-text="$t('col_error')"
+                                    >Error</th
+                                >
+                            </tr>
+                        </thead>
+                        <tbody class="text-xs font-mono">
+                            <template x-if="loadingLogs">
+                                <tr
+                                    ><td
+                                        colspan="6"
+                                        class="p-8 text-center text-gray-500"
+                                        x-text="$t('loading')">Loading...</td
+                                    ></tr
+                                >
+                            </template>
+                            <template x-if="!loadingLogs && logs.length === 0">
+                                <tr
+                                    ><td
+                                        colspan="6"
+                                        class="p-8 text-center text-gray-500"
+                                        x-text="$t('no_logs')">No logs found</td
+                                    ></tr
+                                >
+                            </template>
+
+                            <template x-for="log in logs" :key="log.id">
+                                <tr
+                                    class="border-b border-white/5 hover:bg-white/5 transition-colors"
+                                >
+                                    <td class="p-3">
+                                        <span
+                                            x-show="log.status === 'COMPLETED'"
+                                            class="text-green-500">✔</span
+                                        >
+                                        <span
+                                            x-show="log.status === 'FAILED'"
+                                            class="text-red-500">✖</span
+                                        >
+                                        <span
+                                            x-show="log.status === 'RUNNING'"
+                                            class="text-blue-500 animate-pulse"
+                                            >●</span
+                                        >
+                                    </td>
+                                    <td
+                                        class="p-3 text-gray-400"
+                                        x-text="formatDate(log.startedAt)"></td>
+                                    <td class="p-3">
+                                        <div
+                                            class="text-white font-medium"
+                                            x-text="log.session?.name || 'Unknown'"
+                                        >
+                                        </div>
+                                        <div
+                                            class="text-[10px] text-gray-500"
+                                            x-text="log.platformUserId"
+                                        >
+                                        </div>
+                                    </td>
+                                    <td
+                                        class="p-3 text-brand-purple"
+                                        x-text="log.flow?.name || '-'"></td>
+                                    <td class="p-3 text-gray-400">
+                                        <span
+                                            x-show="log.trigger"
+                                            class="bg-white/5 px-1 py-0.5"
+                                            x-text="log.trigger"></span>
+                                        <span x-show="!log.trigger">-</span>
+                                    </td>
+                                    <td class="p-3">
+                                        <template x-if="log.error">
+                                            <div
+                                                class="group relative inline-block cursor-help"
+                                            >
+                                                <span
+                                                    class="text-red-400 truncate max-w-[150px] block"
+                                                    x-text="log.error"></span>
+                                                <!-- Tooltip -->
+                                                <div
+                                                    class="absolute bottom-full left-0 mb-1 w-64 p-2 bg-black border border-red-500/30 text-red-200 text-[10px] rounded hidden group-hover:block z-50 shadow-xl"
+                                                >
+                                                    <span x-text="log.error"
+                                                    ></span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <span
+                                            x-show="!log.error"
+                                            class="text-gray-600">-</span
+                                        >
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div
+                    class="flex items-center justify-between mt-6 pt-4 border-t border-white/10"
+                >
+                    <div class="text-xs font-mono text-gray-500">
+                        <span x-text="$t('showing') || 'Showing'"></span>
+                        <span
+                            x-text="Math.min(logsPagination.offset + 1, logsPagination.total)"
+                        ></span>
+                        -
+                        <span
+                            x-text="Math.min(logsPagination.offset + logsPagination.limit, logsPagination.total)"
+                        ></span>
+                        <span x-text="$t('of') || 'of'"></span>
+                        <span x-text="logsPagination.total" class="text-white"
+                        ></span>
+                        <span x-text="$t('records') || 'records'"></span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button
+                            @click="prevPage()"
+                            :disabled="logsPagination.offset === 0"
+                            class="px-3 py-1 border border-white/10 text-gray-400 text-xs font-mono uppercase hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        >
+                            ← <span x-text="$t('prev') || 'Prev'"></span>
+                        </button>
+                        <span class="text-xs font-mono text-gray-500">
+                            <span x-text="$t('page') || 'Page'"></span>
+                            <span
+                                x-text="Math.floor(logsPagination.offset / logsPagination.limit) + 1"
+                                class="text-white"></span>
+                            /
+                            <span
+                                x-text="Math.ceil(logsPagination.total / logsPagination.limit) || 1"
+                            ></span>
+                        </span>
+                        <button
+                            @click="nextPage()"
+                            :disabled="logsPagination.offset + logsPagination.limit >= logsPagination.total"
+                            class="px-3 py-1 border border-white/10 text-gray-400 text-xs font-mono uppercase hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        >
+                            <span x-text="$t('next') || 'Next'"></span> →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Loading State -->
+        <div
+            x-data="botDetail"
+            x-show="!ready && !error"
+            class="flex items-center justify-center min-h-[60vh]"
+        >
+            <div
+                class="text-brand-purple animate-pulse text-xs font-mono uppercase"
+                x-text="$t('loading')"
+            >
+                Loading...
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div
+            x-data="botDetail"
+            x-show="error"
+            class="flex items-center justify-center min-h-[60vh]"
+        >
+            <div class="text-center">
+                <h1 class="text-4xl font-bold text-red-500 mb-4">404</h1>
+                <p
+                    class="text-gray-500 font-mono uppercase mb-8"
+                    x-text="error"
+                >
+                </p>
+                <a
+                    href="/bots"
+                    class="px-6 py-3 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors"
+                >
+                    ← Back to Bots
+                </a>
+            </div>
+        </div>
+
+        <!-- Import Flow Modal -->
+        <div
+            x-show="showImportModal"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            style="display: none;"
+        >
+            <div
+                class="bg-[#0f172a] border border-white/10 p-8 max-w-md w-full relative"
+                @click.outside="showImportModal = false"
+            >
+                <div class="cross-marker -top-[2px] -left-[2px]"></div>
+                <div class="cross-marker -top-[2px] -right-[2px]"></div>
+                <div class="cross-marker -bottom-[2px] -left-[2px]"></div>
+                <div class="cross-marker -bottom-[2px] -right-[2px]"></div>
+
+                <h2 class="text-xl font-bold uppercase mb-6 tracking-tight">
+                    Import Flow
+                </h2>
+
+                <div class="space-y-4">
+                    <!-- Step 1: Source Bot -->
+                    <div>
+                        <label
+                            class="block text-xs font-mono text-gray-400 mb-2 uppercase"
+                            >Source Bot</label
+                        >
+                        <select
+                            x-model="importData.sourceBotId"
+                            @change="loadSourceFlows()"
+                            class="w-full bg-black/40 border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none"
+                        >
+                            <option value="">Select a Bot...</option>
+                            <template x-for="b in sourceBots" :key="b.id">
+                                <option
+                                    :value="b.id"
+                                    x-text="b.name + ' (' + b.identifier + ')'"
+                                    class="bg-[#0f172a]"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <!-- Step 2: Source Flow -->
+                    <div x-show="importData.sourceBotId">
+                        <label
+                            class="block text-xs font-mono text-gray-400 mb-2 uppercase"
+                            >Flow to Import</label
+                        >
+                        <select
+                            x-model="importData.sourceFlowId"
+                            class="w-full bg-black/40 border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none"
+                        >
+                            <option value="">Select a Flow...</option>
+                            <template x-for="f in sourceFlows" :key="f.id">
+                                <option
+                                    :value="f.id"
+                                    x-text="f.name"
+                                    class="bg-[#0f172a]"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <div class="pt-4 flex justify-end gap-3">
+                        <button
+                            @click="showImportModal = false"
+                            class="px-4 py-2 border border-white/10 text-gray-400 text-xs uppercase hover:bg-white/5 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            @click="importFlow()"
+                            :disabled="!importData.sourceFlowId || loadingImport"
+                            class="px-6 py-2 bg-brand-purple text-white text-xs uppercase hover:bg-brand-purple/80 transition-colors disabled:opacity-50 flex items-center gap-2"
+                        >
+                            <span
+                                x-show="loadingImport"
+                                class="animate-spin text-white">⟳</span
+                            >
+                            Import
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Bot Modal -->
+        <div
+            x-show="showEditModal"
+            x-cloak
+            class="fixed inset-0 z-50 flex items-center justify-center"
+            style="display: none;"
+        >
+            <!-- Backdrop -->
+            <div
+                class="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                @click="showEditModal = false"
+            >
+            </div>
+
+            <!-- Modal -->
+            <div
+                class="relative bg-brand-dark border border-white/10 p-8 w-full max-w-md"
+            >
+                <div class="cross-marker -top-[2px] -left-[2px]"></div>
+                <div class="cross-marker -top-[2px] -right-[2px]"></div>
+                <div class="cross-marker -bottom-[2px] -left-[2px]"></div>
+                <div class="cross-marker -bottom-[2px] -right-[2px]"></div>
+
+                <h2
+                    class="text-xl font-bold uppercase tracking-tight mb-6"
+                    x-text="$t('edit_bot') || 'Edit Bot'"
+                >
+                    Edit Bot
+                </h2>
+
+                <form @submit.prevent="submitEditBot()" class="space-y-4">
+                    <div>
+                        <label
+                            class="block text-xs text-gray-400 font-mono uppercase mb-2"
+                            x-text="$t('bot_name') || 'Name'"></label>
+                        <input
+                            type="text"
+                            x-model="editForm.name"
+                            required
+                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white"
+                            placeholder="My WhatsApp Bot"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-xs text-gray-400 font-mono uppercase mb-2"
+                            x-text="$t('bot_identifier') || 'Identifier'"
+                        ></label>
+                        <input
+                            type="text"
+                            x-model="editForm.identifier"
+                            required
+                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white"
+                            placeholder="+1234567890"
+                        />
+                    </div>
+
+                    <div class="flex gap-4 pt-4">
+                        <button
+                            type="button"
+                            @click="showEditModal = false"
+                            class="flex-1 px-4 py-3 border border-white/10 text-gray-400 font-mono uppercase text-xs hover:bg-white/5"
+                            x-text="$t('cancel') || 'Cancel'"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="savingEdit"
+                            class="flex-1 px-4 py-3 bg-brand-purple text-white font-mono uppercase text-xs hover:bg-brand-purple/80 disabled:opacity-50"
+                            x-text="savingEdit ? ($t('loading') || 'Saving...') : ($t('save') || 'Save')"
+                        >
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    declare const Alpine: any;
+    import { ApiClient } from "../../lib/api";
+
+    // TypeScript interfaces
+    interface Bot {
+        id: string;
+        name: string;
+        identifier: string;
+        platform: "WHATSAPP" | "TELEGRAM" | "INSTAGRAM";
+        userId: string;
+        ipv6Address?: string;
+    }
+
+    interface Trigger {
+        id: string;
+        keyword: string;
+        matchType: string;
+    }
+
+    interface Flow {
+        id: string;
+        name: string;
+        description: string;
+        triggers: Trigger[];
+    }
+
+    interface Execution {
+        id: string;
+        status: string;
+        startedAt: string;
+        completedAt?: string;
+        platformUserId: string;
+        trigger?: string;
+        error?: string;
+        flow: { name: string };
+    }
+
+    interface LogFilters {
+        status: string;
+        search: string;
+        startDate: string;
+        endDate: string;
+    }
+
+    document.addEventListener("alpine:init", () => {
+        Alpine.data("botDetail", () => ({
+            botId: null as string | null,
+            bot: {} as Bot,
+            flows: [] as Flow[],
+            ready: false,
+            error: null as string | null,
+            connectionHtml: "",
+
+            // Import State
+            showImportModal: false,
+            loadingImport: false,
+            sourceBots: [] as Bot[],
+            sourceFlows: [] as Flow[],
+            importData: {
+                sourceBotId: "",
+                sourceFlowId: "",
+            },
+
+            // Edit Bot State
+            showEditModal: false,
+            savingEdit: false,
+            editForm: {
+                name: "",
+                identifier: "",
+            },
+
+            // Logs State
+            activeTab: "flows", // 'flows' | 'logs'
+            logs: [] as Execution[],
+            loadingLogs: false,
+            logsPagination: { total: 0, limit: 50, offset: 0 },
+            filters: {
+                status: "ALL",
+                search: "",
+                startDate: "",
+                endDate: "",
+            } as LogFilters,
+
+            async init() {
+                const params = new URLSearchParams(window.location.search);
+                this.botId = params.get("id");
+
+                if (!this.botId) {
+                    this.error = "No bot ID provided";
+                    return;
+                }
+
+                try {
+                    // Fetch bot details
+                    this.bot = await ApiClient.get(`/bots/${this.botId}`);
+
+                    // Fetch flows for this bot
+                    this.flows = await ApiClient.get(
+                        `/flows?botId=${this.botId}`,
+                    );
+
+                    // Generate connection component HTML (will be hydrated by Alpine)
+                    this.connectionHtml = this.generateConnectionHtml();
+
+                    this.ready = true;
+
+                    // Re-initialize Alpine on the injected content
+                    // @ts-ignore
+                    this.$nextTick(() => {
+                        const container = document.querySelector(
+                            '[x-html="connectionHtml"]',
+                        );
+                        if (container) {
+                            Alpine.initTree(container);
+                        }
+                    });
+                } catch (e: unknown) {
+                    const error = e as Error;
+                    this.error = error.message || "Bot not found";
+                }
+            },
+
+            generateConnectionHtml(): string {
+                return `
+                    <div class="p-4" x-data="botConnection_${this.botId?.replace(/-/g, "_")}" x-init="init()">
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <span class="w-3 h-3 rounded-full" :class="connected ? 'bg-green-500' : 'bg-gray-600'"></span>
+                                <span class="text-sm font-mono" :class="connected ? 'text-green-400' : 'text-gray-400'" x-text="connected ? $t('active') : $t('disconnected')"></span>
+                            </div>
+                            <template x-if="qr && !connected">
+                                <div class="bg-white p-4 w-fit">
+                                    <img :src="qr" alt="QR Code" class="w-48 h-48" />
+                                </div>
+                            </template>
+                            <template x-if="!connected && !qr">
+                                <button @click="connect()" :disabled="loading" class="w-full px-4 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors disabled:opacity-50 rounded-full" x-text="loading ? $t('initializing') : $t('start_connection')"></button>
+                            </template>
+                            <template x-if="connected">
+                                <button @click="disconnect()" :disabled="loading" class="w-full px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 font-mono uppercase text-xs tracking-widest hover:bg-red-500/30 transition-colors disabled:opacity-50 rounded-full" x-text="loading ? $t('disconnecting') : $t('disconnect')"></button>
+                            </template>
+                        </div>
+                    </div>
+                `;
+            },
+
+            editBot() {
+                this.editForm.name = this.bot.name;
+                this.editForm.identifier = this.bot.identifier;
+                this.showEditModal = true;
+            },
+
+            async submitEditBot() {
+                if (!this.editForm.name || !this.editForm.identifier) return;
+
+                this.savingEdit = true;
+                try {
+                    const updated = await ApiClient.put(`/bots/${this.botId}`, {
+                        name: this.editForm.name,
+                        identifier: this.editForm.identifier,
+                        platform: this.bot.platform,
+                    });
+                    this.bot = updated;
+                    this.showEditModal = false;
+                } catch (e: unknown) {
+                    const error = e as Error;
+                    alert(error.message || "Failed to update bot");
+                } finally {
+                    this.savingEdit = false;
+                }
+            },
+
+            async deleteBot() {
+                const confirmed = confirm(
+                    "Delete this bot? This will also delete all associated flows.",
+                );
+                if (!confirmed) return;
+
+                try {
+                    await ApiClient.delete(`/bots/${this.botId}`);
+                    window.location.href = "/bots";
+                } catch (e: unknown) {
+                    const error = e as Error;
+                    alert(error.message || "Failed to delete bot");
+                }
+            },
+
+            async openImportModal() {
+                this.showImportModal = true;
+                this.importData = { sourceBotId: "", sourceFlowId: "" };
+                this.sourceFlows = [];
+
+                try {
+                    // Fetch all bots to choose from
+                    this.sourceBots = await ApiClient.get("/bots");
+                    // Filter out current bot optionally, but maybe self-import/duplication is useful?
+                    // Let's keep it to allow duplicating flows within same bot.
+                } catch (e) {
+                    console.error("Failed to load bots", e);
+                }
+            },
+
+            async loadSourceFlows() {
+                if (!this.importData.sourceBotId) {
+                    this.sourceFlows = [];
+                    return;
+                }
+                try {
+                    this.sourceFlows = await ApiClient.get(
+                        `/flows?botId=${this.importData.sourceBotId}`,
+                    );
+                } catch (e) {
+                    console.error("Failed to load flows", e);
+                }
+            },
+
+            async loadLogs() {
+                this.loadingLogs = true;
+                try {
+                    const params = new URLSearchParams();
+                    params.append("botId", this.botId!);
+                    params.append("limit", String(this.logsPagination.limit));
+                    params.append("offset", String(this.logsPagination.offset));
+                    if (this.filters.status !== "ALL")
+                        params.append("status", this.filters.status);
+                    if (this.filters.search)
+                        params.append("search", this.filters.search);
+                    if (this.filters.startDate)
+                        params.append("startDate", this.filters.startDate);
+                    if (this.filters.endDate)
+                        params.append("endDate", this.filters.endDate);
+
+                    const res = await ApiClient.get(
+                        `/executions?${params.toString()}`,
+                    );
+                    this.logs = res.data;
+                    this.logsPagination = {
+                        ...this.logsPagination,
+                        total: res.pagination.total,
+                    };
+                } catch (e) {
+                    console.error("Failed to load logs", e);
+                } finally {
+                    this.loadingLogs = false;
+                }
+            },
+
+            prevPage() {
+                if (this.logsPagination.offset > 0) {
+                    this.logsPagination.offset = Math.max(
+                        0,
+                        this.logsPagination.offset - this.logsPagination.limit,
+                    );
+                    this.loadLogs();
+                }
+            },
+
+            nextPage() {
+                if (
+                    this.logsPagination.offset + this.logsPagination.limit <
+                    this.logsPagination.total
+                ) {
+                    this.logsPagination.offset += this.logsPagination.limit;
+                    this.loadLogs();
+                }
+            },
+
+            formatDate(dateStr: string) {
+                if (!dateStr) return "-";
+                return new Date(dateStr).toLocaleString();
+            },
+
+            async importFlow() {
+                if (!this.importData.sourceFlowId) return;
+
+                this.loadingImport = true;
+                try {
+                    await ApiClient.post("/flows/import", {
+                        sourceFlowId: this.importData.sourceFlowId,
+                        targetBotId: this.botId,
+                    });
+
+                    this.showImportModal = false;
+                    // Reload flows
+                    this.flows = await ApiClient.get(
+                        `/flows?botId=${this.botId}`,
+                    );
+                } catch (e: any) {
+                    alert("Import failed: " + (e.message || "Unknown error"));
+                } finally {
+                    this.loadingImport = false;
+                }
+            },
+        }));
+
+        // Dynamic registration of bot connection component
+        const params = new URLSearchParams(window.location.search);
+        const botId = params.get("id");
+        if (botId) {
+            const safeId = botId.replace(/-/g, "_");
+            Alpine.data(`botConnection_${safeId}`, () => ({
+                connected: false,
+                loading: false,
+                qr: null as string | null,
+                pollInterval: null as ReturnType<typeof setInterval> | null,
+
+                init() {
+                    this.checkStatus();
+                    this.pollInterval = setInterval(
+                        () => this.checkStatus(),
+                        3000,
+                    );
+                },
+
+                destroy() {
+                    if (this.pollInterval) clearInterval(this.pollInterval);
+                },
+
+                async checkStatus() {
+                    try {
+                        const status = await ApiClient.get(
+                            `/bots/${botId}/status`,
+                        );
+                        this.connected = status.connected;
+                        if (status.hasQr && !this.connected) {
+                            const qrData = await ApiClient.get(
+                                `/bots/${botId}/qr`,
+                            );
+                            this.qr = qrData.qr;
+                        } else {
+                            this.qr = null;
+                        }
+                    } catch (e) {
+                        // Silent fail for status check
+                    }
+                },
+
+                async connect() {
+                    this.loading = true;
+                    try {
+                        await ApiClient.post(`/bots/${botId}/connect`, {});
+                        // Start polling for QR
+                        await this.checkStatus();
+                    } catch (e: unknown) {
+                        const error = e as Error;
+                        alert(error.message || "Failed to start connection");
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async disconnect() {
+                    // @ts-ignore
+                    if (
+                        !confirm(
+                            this.$t("disconnect_confirm") ||
+                                "¿Desconectar este bot de WhatsApp?",
+                        )
+                    )
+                        return;
+
+                    this.loading = true;
+                    try {
+                        await ApiClient.post(`/bots/${botId}/disconnect`, {});
+                        this.connected = false;
+                        this.qr = null;
+                    } catch (e: unknown) {
+                        const error = e as Error;
+                        alert(error.message || "Failed to disconnect");
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+            }));
+        }
+    });
+</script>

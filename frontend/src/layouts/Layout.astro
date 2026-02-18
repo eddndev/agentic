@@ -1,0 +1,124 @@
+---
+import "../styles/global.css";
+import Sidebar from "../components/Sidebar.astro";
+
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<script>
+	import Alpine from "alpinejs";
+	import { i18nPlugin } from "../i18n";
+	import storePlugin from "../lib/store";
+	import { ApiClient } from "../lib/api";
+
+	document.addEventListener("alpine:init", () => {
+		i18nPlugin(Alpine);
+		storePlugin(Alpine);
+
+		// Auth Store
+		Alpine.store("auth", {
+			user: null,
+			loading: true,
+			init() {
+				this.checkSession();
+			},
+			async checkSession() {
+				console.log("[Auth] Checking session...");
+				try {
+					const response = await ApiClient.get("/auth/me");
+					console.log("[Auth] Session valid:", response);
+					this.user = response;
+					this.loading = false;
+				} catch (e) {
+					console.error("[Auth] Session check failed:", e);
+					// Verify we aren't already on login page to avoid loop (though Layout shouldn't be used on login ideally)
+					if (window.location.pathname !== "/login") {
+						console.log("[Auth] Redirecting to login");
+						window.location.href = "/login";
+					} else {
+						this.loading = false; // Just show content if on login (though login page usually doesn't use this layout config)
+					}
+				}
+			},
+			async logout() {
+				try {
+					await ApiClient.post("/auth/logout", {});
+					window.location.href = "/login";
+				} catch (e) {
+					console.error("Logout failed", e);
+				}
+			},
+		});
+
+		// Initialize stores
+		Alpine.store("bot").init();
+		Alpine.store("sidebar").init();
+		// @ts-ignore
+		Alpine.store("auth").init();
+	});
+</script>
+
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="Sentinel Bot Orchestrator" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title} | Sentinel</title>
+	</head>
+	<body
+		class="selection:bg-brand-purple selection:text-white relative bg-slate-950 min-h-screen text-slate-200 font-mono antialiased overflow-x-hidden"
+		x-data
+		x-cloak
+		style="display: none !important;"
+		x-show="!$store.auth.loading"
+		x-init="$el.style.display = ''"
+	>
+		<!-- Sidebar -->
+		<Sidebar />
+
+		<!-- Mobile Menu Button -->
+		<button
+			@click="$store.sidebar.toggleMobile()"
+			class="fixed top-4 right-4 z-40 p-2 bg-brand-purple/20 border border-brand-purple/50 text-brand-purple rounded-md md:hidden hover:bg-brand-purple/40 transition-colors backdrop-blur-md"
+			x-show="!$store.sidebar.mobileOpen"
+			x-transition:enter="transition ease-out duration-300"
+			x-transition:enter-start="opacity-0 scale-90"
+			x-transition:enter-end="opacity-100 scale-100"
+		>
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				class="h-6 w-6"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke="currentColor"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M4 6h16M4 12h16M4 18h16"></path>
+			</svg>
+		</button>
+
+		<!-- Main Content Wrapper -->
+		<div
+			class="min-h-screen transition-all duration-300 relative z-10"
+			:class="$store.sidebar.expanded ? 'md:ml-64' : 'md:ml-16'"
+		>
+			<!-- Ambient Glow -->
+			<div
+				class="fixed top-0 left-0 w-full h-96 bg-brand-purple/5 blur-[120px] pointer-events-none -z-10"
+			>
+			</div>
+
+			<main class="p-4 md:p-8 max-w-7xl mx-auto">
+				<slot />
+			</main>
+		</div>
+	</body>
+</html>
