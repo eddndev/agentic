@@ -1,5 +1,6 @@
 import { prisma } from "../../services/postgres.service";
 import { BaileysService } from "../../services/baileys.service";
+import { EncryptionService } from "../../services/encryption.service";
 import type { Session } from "@prisma/client";
 
 export interface ToolResult {
@@ -171,19 +172,98 @@ export class ToolExecutor {
 
             case "register_client": {
                 if (!args.curp || !args.email || !args.phoneNumber) {
-                    return { success: false, data: "Faltan campos obligatorios: curp, email, phoneNumber" };
+                    return { success: false, data: "Faltan campos obligatorios: curp, email, phoneNumber. NO inventes datos, pídelos al usuario." };
                 }
-                const client = await prisma.client.create({
-                    data: {
+
+                // Validate email format
+                if (!args.email.includes("@") || args.email.length < 5) {
+                    return { success: false, data: "El email proporcionado no es válido. Pide un email real al usuario." };
+                }
+
+                // Validate phone format (only digits, 10-15 chars)
+                const cleanPhone = String(args.phoneNumber).replace(/\D/g, "");
+                if (cleanPhone.length < 10 || cleanPhone.length > 15) {
+                    return { success: false, data: "El número de teléfono no es válido (debe tener 10-15 dígitos). Pide un número real al usuario." };
+                }
+
+                // Validate CURP format (18 alphanumeric chars)
+                if (!/^[A-Z0-9]{18}$/i.test(args.curp)) {
+                    return { success: false, data: "La CURP no es válida (debe tener 18 caracteres alfanuméricos)." };
+                }
+
+                // Upsert: if a client with this CURP already exists, update their data
+                const client = await prisma.client.upsert({
+                    where: {
+                        curp: args.curp.toUpperCase(),
+                    },
+                    update: {
+                        name: args.name || undefined,
+                        email: args.email,
+                        phoneNumber: cleanPhone,
+                    },
+                    create: {
                         botId,
                         name: args.name || "Pendiente",
-                        curp: args.curp,
+                        curp: args.curp.toUpperCase(),
                         email: args.email,
-                        phoneNumber: args.phoneNumber,
+                        phoneNumber: cleanPhone,
                     },
-                    select: { id: true, name: true, email: true, curp: true, status: true },
+                    select: { id: true, name: true, email: true, curp: true, phoneNumber: true, status: true },
                 });
                 return { success: true, data: client };
+            }
+
+            case "save_credentials": {
+                if (!args.email || !args.password) {
+                    return { success: false, data: "Faltan campos obligatorios: email y password de Llave CDMX. Pídelos al usuario." };
+                }
+
+                if (!args.email.includes("@") || args.email.length < 5) {
+                    return { success: false, data: "El email no es válido. Pide el correo real de Llave CDMX al usuario." };
+                }
+
+                // Find existing client by email, phone, or CURP
+                const existing = await prisma.client.findFirst({
+                    where: {
+                        botId,
+                        OR: [
+                            { email: args.email },
+                            { phoneNumber: session.identifier.replace("@s.whatsapp.net", "") },
+                            ...(args.curp ? [{ curp: args.curp.toUpperCase() }] : []),
+                        ],
+                    },
+                });
+
+                const encrypted = EncryptionService.encrypt(args.password);
+
+                if (existing) {
+                    // Update existing client with credentials
+                    const updated = await prisma.client.update({
+                        where: { id: existing.id },
+                        data: {
+                            encryptedPassword: encrypted,
+                            email: args.email,
+                            ...(args.curp ? { curp: args.curp.toUpperCase() } : {}),
+                        },
+                        select: { id: true, name: true, email: true, curp: true, status: true },
+                    });
+                    return { success: true, data: { ...updated, message: "Credenciales guardadas correctamente." } };
+                } else {
+                    // Create new client with credentials
+                    const phoneFromSession = session.identifier.replace("@s.whatsapp.net", "");
+                    const created = await prisma.client.create({
+                        data: {
+                            botId,
+                            name: args.name || "Pendiente",
+                            email: args.email,
+                            phoneNumber: phoneFromSession,
+                            encryptedPassword: encrypted,
+                            curp: args.curp?.toUpperCase() || null,
+                        },
+                        select: { id: true, name: true, email: true, curp: true, status: true },
+                    });
+                    return { success: true, data: { ...created, message: "Cliente registrado con credenciales." } };
+                }
             }
 
             case "get_current_time": {
