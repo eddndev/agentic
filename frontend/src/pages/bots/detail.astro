@@ -262,16 +262,16 @@ const botId = Astro.url.searchParams.get("id") || "";
 
                     <!-- Message Delay -->
                     <div>
-                        <label class="block text-xs font-mono text-gray-400 uppercase mb-2">
-                            <span x-text="$t('message_delay')">Message Delay</span>:
-                            <span x-text="aiConfig.messageDelay + 's'" class="text-brand-purple"></span>
-                        </label>
-                        <input type="range" x-model.number="aiConfig.messageDelay" min="0" max="30" step="1"
-                            class="w-full accent-brand-purple" />
+                        <label class="block text-xs font-mono text-gray-400 uppercase mb-2" x-text="$t('message_delay')">Message Delay</label>
+                        <div class="flex items-center gap-3">
+                            <input type="number" x-model.number="aiConfig.messageDelay" min="0" max="60" step="1"
+                                class="w-24 bg-[#0f172a] border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none" />
+                            <span class="text-xs text-gray-400">s</span>
+                        </div>
                         <p class="text-[10px] text-gray-600 mt-1"
                             x-text="aiConfig.messageDelay === 0
                                 ? ($t('message_delay_off') || 'Immediate processing (no accumulation)')
-                                : ($t('message_delay_desc') || 'Wait') + ' ' + aiConfig.messageDelay + 's'">
+                                : ($t('message_delay_desc') || 'Wait for more messages before processing')">
                         </p>
                     </div>
 

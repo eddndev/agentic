@@ -116,13 +116,13 @@ export class AIEngine {
 
             // 6. Build messages array
             const history = await ConversationService.getHistory(sessionId);
-            const messages: AIMessage[] = [];
+            const aiMessages: AIMessage[] = [];
 
             if (bot.systemPrompt) {
-                messages.push({ role: "system", content: bot.systemPrompt });
+                aiMessages.push({ role: "system", content: bot.systemPrompt });
             }
 
-            messages.push(...history);
+            aiMessages.push(...history);
 
             // 7. Get AI provider and call (with automatic fallback)
             let activeProvider = getAIProvider(bot.aiProvider);
@@ -131,7 +131,7 @@ export class AIEngine {
 
             const chatRequest: AICompletionRequest = {
                 model: activeModel,
-                messages,
+                messages: aiMessages,
                 tools: toolDefinitions.length > 0 ? toolDefinitions : undefined,
                 temperature: bot.temperature,
             };
