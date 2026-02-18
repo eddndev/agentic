@@ -6,8 +6,8 @@ import { StepProcessor } from "./processors/StepProcessor";
 // but Workers need a connection definition.
 const REDIS_URL = process.env['REDIS_URL'] || "redis://localhost:6379";
 
-export const startSentinelWorker = () => {
-    console.log(`[Worker] Starting Sentinel Worker on queue: ${QUEUE_NAME}`);
+export const startAgenticWorker = () => {
+    console.log(`[Worker] Starting Agentic Worker on queue: ${QUEUE_NAME}`);
 
     const worker = new Worker(
         QUEUE_NAME,

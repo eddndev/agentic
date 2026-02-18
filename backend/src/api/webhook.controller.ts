@@ -20,7 +20,7 @@ export const webhookController = new Elysia({ prefix: "/webhook" })
         try {
             // 1. Resolve Bot (Target System)
             // For now, accept 'botId' in body, or default to the Seed Bot
-            const botIdentifier = (body as any).botId || "SENTINEL_DEMO_BOT";
+            const botIdentifier = (body as any).botId || "AGENTIC_DEMO_BOT";
 
             const bot = await prisma.bot.findUnique({
                 where: { identifier: botIdentifier }

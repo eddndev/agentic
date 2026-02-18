@@ -16,8 +16,8 @@ redis.on("error", (err) => console.error("Redis Client Error", err));
 redis.on("connect", () => console.log("Redis Connected"));
 
 // --- Workers ---
-import { startSentinelWorker } from "./workers/message.worker";
-const worker = startSentinelWorker();
+import { startAgenticWorker } from "./workers/message.worker";
+const worker = startAgenticWorker();
 
 // --- Global Error Handlers (Prevent Crash) ---
 process.on('uncaughtException', (err) => {
@@ -74,10 +74,10 @@ const app = new Elysia()
     .use(executionController)
     .use(authController)
     .use(clientRoutes)
-    .get("/", () => "Sentinel Orchestrator Active")
+    .get("/", () => "Agentic Orchestrator Active")
     .get("/health", () => ({ status: "ok", timestamp: new Date().toISOString() }))
     .get("/info", () => ({
-        service: "Sentinel",
+        service: "Agentic",
         version: "1.0.0",
         redis: redis.status
     }))
@@ -87,5 +87,5 @@ const app = new Elysia()
     });
 
 console.log(
-    `🦊 Sentinel is running at ${app.server?.hostname}:${app.server?.port}`
+    `🦊 Agentic is running at ${app.server?.hostname}:${app.server?.port}`
 );

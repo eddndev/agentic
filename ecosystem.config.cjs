@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "sentinel-backend",
+      name: "agentic-backend",
       cwd: "./backend",
       script: "bun",
       args: "run dist/index.js",

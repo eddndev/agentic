@@ -1,7 +1,7 @@
 import { Queue } from "bullmq";
 import { redis } from "./redis.service";
 
-export const QUEUE_NAME = "sentinel-message-queue";
+export const QUEUE_NAME = "agentic-message-queue";
 
 class QueueService {
     private queue: Queue;

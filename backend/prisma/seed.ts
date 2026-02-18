@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-    const email = process.env.SUPER_ADMIN_EMAIL || "admin@sentinel.com";
+    const email = process.env.SUPER_ADMIN_EMAIL || "admin@agentic.com";
     const password = process.env.SUPER_ADMIN_PASSWORD || "password123";
 
     if (!process.env.SUPER_ADMIN_EMAIL || !process.env.SUPER_ADMIN_PASSWORD) {

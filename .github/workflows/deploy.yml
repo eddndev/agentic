@@ -1,4 +1,4 @@
-name: Deploy Sentinel (Native)
+name: Deploy Agentic (Native)
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
 
             echo "Starting Deployment..."
             
-            cd /var/www/sentinel
+            cd /var/www/agentic
 
             echo "Pulling latest code..."
             git fetch --all
@@ -42,7 +42,7 @@ jobs:
             cd ../frontend
             bun install
             # Ensure PUBLIC_API_URL is set if needed for the build
-            export PUBLIC_API_URL="https://api-sentinel.angelviajero.com.mx"
+            export PUBLIC_API_URL="https://api-agentic.angelviajero.com.mx"
             bun run build
             
             echo "Restarting PM2..."

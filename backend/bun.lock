@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "sentinel-backend",
+      "name": "agentic-backend",
       "dependencies": {
         "@elysiajs/cors": "^1.4.0",
         "@elysiajs/jwt": "^1.4.0",

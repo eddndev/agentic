@@ -7,12 +7,12 @@ async function main() {
 
     // 1. Ensure Bot Exists
     const bot = await prisma.bot.upsert({
-        where: { identifier: "SENTINEL_DEMO_BOT" },
+        where: { identifier: "AGENTIC_DEMO_BOT" },
         update: {},
         create: {
-            name: "Sentinel Demo",
+            name: "Agentic Demo",
             platform: Platform.WHATSAPP,
-            identifier: "SENTINEL_DEMO_BOT",
+            identifier: "AGENTIC_DEMO_BOT",
             credentials: { token: "demo_token" }
         }
     });
@@ -70,7 +70,7 @@ async function main() {
         data: {
             flowId: flow.id,
             type: StepType.TEXT,
-            content: "¡Hola! Soy Sentinel, tu asistente virtual. 🤖",
+            content: "¡Hola! Soy Agentic, tu asistente virtual. 🤖",
             order: 0,
             delayMs: 1000,
             jitterPct: 10
@@ -94,7 +94,7 @@ async function main() {
         data: {
             flowId: flow.id,
             type: StepType.IMAGE,
-            mediaUrl: "https://via.placeholder.com/300.png?text=Sentinel+Demo",
+            mediaUrl: "https://via.placeholder.com/300.png?text=Agentic+Demo",
             order: 2,
             delayMs: 1500,
             jitterPct: 10

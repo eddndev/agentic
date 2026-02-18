@@ -1,5 +1,5 @@
 {
-    "name": "sentinel-backend",
+    "name": "agentic-backend",
     "module": "src/index.ts",
     "type": "module",
     "scripts": {

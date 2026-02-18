@@ -1,10 +1,10 @@
-# Sentinel
+# Agentic
 
-**Sentinel** is a high-performance bot orchestration platform designed for robust session management and message deduplication across WhatsApp and Telegram. It leverages modern, high-throughput technologies to ensure reliability and speed.
+**Agentic** is a high-performance bot orchestration platform designed for robust session management and message deduplication across WhatsApp and Telegram. It leverages modern, high-throughput technologies to ensure reliability and speed.
 
 ## Architecture
 
-Sentinel is built on a high-performance stack focusing on I/O speed and concurrency:
+Agentic is built on a high-performance stack focusing on I/O speed and concurrency:
 
 *   **Runtime:** [Bun](https://bun.sh) (v1.0+) - Chosen for superior I/O performance and startup time.
 *   **Web Framework:** [Elysia](https://elysiajs.com) - A high-performance, type-safe web framework for Bun.
