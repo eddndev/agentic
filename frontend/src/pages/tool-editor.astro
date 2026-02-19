@@ -23,7 +23,7 @@ const botId = Astro.url.searchParams.get("botId") || "";
                 <h1 class="text-3xl font-bold tracking-tight" x-text="$t('tool_editor')">Tool Editor</h1>
             </div>
 
-            <div class="flex gap-3">
+            <div class="flex flex-wrap gap-3">
                 <button @click="saveTool()" :disabled="saving"
                     class="px-6 py-2 bg-wa-green text-white text-sm font-medium rounded-lg hover:bg-wa-green-hover transition-colors disabled:opacity-50"
                     x-text="saving ? ($t('saving') || 'Saving...') : ($t('save_changes') || 'Save')">
@@ -59,7 +59,7 @@ const botId = Astro.url.searchParams.get("botId") || "";
                 <!-- Action Type -->
                 <div>
                     <label class="block text-xs text-wa-text-secondary mb-2" x-text="$t('tool_action_type')">Action Type</label>
-                    <div class="flex gap-2">
+                    <div class="flex flex-wrap gap-2">
                         <button type="button" @click="form.actionType = 'FLOW'"
                             class="px-4 py-2 text-sm border transition-colors rounded-lg"
                             :class="form.actionType === 'FLOW' ? 'border-wa-green text-wa-green bg-wa-green/10' : 'border-wa-border text-wa-text-secondary hover:text-white'">
@@ -95,7 +95,7 @@ const botId = Astro.url.searchParams.get("botId") || "";
                 <div class="bg-wa-bg-panel border border-wa-border rounded-xl p-6 relative">
                     <label class="block text-xs text-wa-text-secondary mb-2" x-text="$t('tool_parameters')">Parameters</label>
                     <textarea x-model="form.parametersJson" rows="8"
-                        class="w-full bg-wa-bg-deep border border-wa-border text-white text-xs p-3 rounded-lg focus:border-wa-green focus:outline-none resize-y font-mono"
+                        class="w-full bg-wa-bg-deep border border-wa-border text-white text-xs p-3 rounded-lg focus:border-wa-green focus:outline-none resize-y font-mono min-h-[200px]"
                         placeholder='{"type": "object", "properties": {"query": {"type": "string", "description": "Search query"}}}'></textarea>
                     <p x-show="paramError" class="text-red-400 text-[10px] mt-1" x-text="paramError"></p>
                 </div>

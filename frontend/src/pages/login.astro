@@ -12,10 +12,10 @@ import "../styles/global.css";
         class="bg-wa-bg-deep min-h-screen flex items-center justify-center font-sans text-wa-text-primary antialiased relative overflow-hidden"
     >
         <!-- Login Container -->
-        <main class="w-full max-w-md p-8 relative z-10" x-data="loginForm">
+        <main class="w-full max-w-md p-4 sm:p-8 relative z-10" x-data="loginForm">
             <!-- Header -->
             <div class="mb-12 text-center">
-                <h1 class="text-4xl font-bold tracking-tight mb-2">
+                <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
                     Agentic <span
                         class="text-wa-green text-xs tracking-wide align-top"
                         >ID</span
@@ -31,7 +31,7 @@ import "../styles/global.css";
             <!-- Form -->
             <form @submit.prevent="submit" class="space-y-6 relative">
                 <div
-                    class="p-8 bg-wa-bg-panel border border-wa-border rounded-xl relative"
+                    class="p-4 sm:p-8 bg-wa-bg-panel border border-wa-border rounded-xl relative"
                 >
                     <!-- Error Message -->
                     <div

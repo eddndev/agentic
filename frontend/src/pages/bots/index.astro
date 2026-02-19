@@ -6,7 +6,7 @@ import Layout from "../../layouts/Layout.astro";
 	<main class="space-y-8" x-data="botList">
 		<!-- Header -->
 		<header
-			class="flex justify-between items-center border-b border-wa-border pb-6 relative"
+			class="flex flex-wrap justify-between items-center gap-4 border-b border-wa-border pb-6 relative"
 		>
 			<div>
 				<h1
@@ -161,7 +161,7 @@ import Layout from "../../layouts/Layout.astro";
 		x-show="visible"
 		x-cloak
 		@open-create-bot.window="open()"
-		class="fixed inset-0 z-50 flex items-center justify-center"
+		class="fixed inset-0 z-50 flex items-center justify-center p-4"
 		style="display: none;"
 	>
 		<!-- Backdrop -->
@@ -173,7 +173,7 @@ import Layout from "../../layouts/Layout.astro";
 
 		<!-- Modal -->
 		<div
-			class="relative bg-wa-bg-panel border border-wa-border rounded-xl p-8 w-full max-w-md"
+			class="relative bg-wa-bg-panel border border-wa-border rounded-xl p-4 sm:p-8 w-full max-w-md"
 		>
 			<h2
 				class="text-xl font-bold tracking-tight mb-6"
