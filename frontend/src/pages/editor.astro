@@ -13,27 +13,27 @@ import MediaPicker from "../components/MediaPicker.astro";
     >
         <!-- Header -->
         <header
-            class="flex justify-between items-center mb-6 border-b border-white/10 pb-4"
+            class="flex justify-between items-center mb-6 border-b border-wa-border pb-4"
         >
             <div class="flex-1">
                 <div class="flex items-center gap-2 mb-1">
                     <span
-                        class="text-[10px] font-mono text-brand-purple bg-brand-purple/10 px-2 py-0.5"
+                        class="text-[10px] font-sans text-wa-green bg-wa-green/10 px-2 py-0.5 rounded-lg"
                         x-text="bot.platform || 'BOT'"></span>
                     <span
-                        class="text-[10px] font-mono text-gray-500"
+                        class="text-[10px] font-sans text-wa-text-secondary"
                         x-text="bot.identifier || '...'"></span>
                 </div>
                 <input
                     type="text"
                     x-model="flow.name"
-                    class="bg-transparent text-2xl font-bold uppercase tracking-tighter w-full focus:outline-none focus:border-b border-brand-purple"
+                    class="bg-transparent text-2xl font-bold tracking-tight w-full focus:outline-none focus:border-b border-wa-green rounded-lg"
                     :placeholder="$t('flow_name')"
                 />
                 <input
                     type="text"
                     x-model="flow.description"
-                    class="bg-transparent text-xs text-gray-400 font-mono w-full focus:outline-none mt-1"
+                    class="bg-transparent text-xs text-wa-text-secondary font-sans w-full focus:outline-none mt-1 rounded-lg"
                     :placeholder="$t('flow_description')"
                 />
             </div>
@@ -42,14 +42,14 @@ import MediaPicker from "../components/MediaPicker.astro";
                 <a
                     :href="'/bots/detail?id=' + (bot.id || new URLSearchParams(window.location.search).get('botId') || '')"
                     role="button"
-                    class="px-6 py-2 border border-white/10 text-gray-400 font-mono uppercase text-xs tracking-widest hover:text-white hover:bg-white/5 transition-colors flex items-center"
+                    class="px-6 py-2 border border-wa-border text-wa-text-secondary font-sans text-xs hover:text-white hover:bg-wa-bg-hover transition-colors flex items-center rounded-lg"
                     x-text="$t('back')"
                 >
                 </a>
                 <button
                     @click="save()"
                     :disabled="saving"
-                    class="px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors disabled:opacity-50"
+                    class="px-6 py-2 bg-wa-green text-white font-sans text-xs hover:bg-wa-green-hover transition-colors disabled:opacity-50 rounded-lg"
                 >
                     <span x-text="saving ? $t('saving') : $t('save_flow')"
                     ></span>
@@ -64,96 +64,93 @@ import MediaPicker from "../components/MediaPicker.astro";
             <div class="col-span-1 overflow-y-auto pr-2">
                 <!-- Triggers -->
                 <div
-                    class="bg-brand-panel/30 border border-white/5 p-6 mb-6 relative group"
+                    class="bg-wa-bg-panel border border-wa-border p-6 mb-6 relative group rounded-xl"
                 >
-                    <div class="cross-marker -top-[2px] -left-[2px]"></div>
-                    <div class="cross-marker -top-[2px] -right-[2px]"></div>
-
                     <div
-                        class="text-xs text-brand-purple uppercase tracking-widest mb-4 flex justify-between items-center"
+                        class="text-xs text-wa-green mb-4 flex justify-between items-center"
                     >
                         <span x-text="$t('triggers')"></span>
                         <button
                             @click="addTrigger()"
-                            class="w-6 h-6 flex items-center justify-center bg-brand-purple/20 hover:bg-brand-purple/40 text-brand-purple hover:text-white text-lg leading-none transition-colors"
+                            class="w-6 h-6 flex items-center justify-center bg-wa-green/20 hover:bg-wa-green/40 text-wa-green hover:text-white text-lg leading-none transition-colors rounded-lg"
                             :title="$t('add_trigger')">+</button
                         >
                     </div>
 
                     <!-- Flow Global Settings -->
-                    <div class="mb-4 bg-[#0f172a] p-3 border border-white/10">
+                    <div class="mb-4 bg-wa-bg-deep p-3 border border-wa-border rounded-lg">
                         <h4
-                            class="text-[10px] text-gray-500 uppercase font-mono mb-2"
+                            class="text-[10px] text-wa-text-secondary font-sans mb-2"
                         >
                             Flow Limits & Rules
                         </h4>
                         <div class="flex gap-4 mb-3">
                             <div class="flex-1">
                                 <label
-                                    class="block text-[10px] text-gray-400 font-mono mb-1"
+                                    class="block text-[10px] text-wa-text-secondary font-sans mb-1"
                                     x-text="$t('usage_limit')"></label>
                                 <select
                                     x-model="flow.usageLimit"
-                                    class="w-full bg-white/5 text-gray-200 text-xs px-2 py-1.5 border border-white/10 focus:outline-none focus:border-brand-purple"
+                                    class="w-full bg-wa-bg-hover text-gray-200 text-xs px-2 py-1.5 border border-wa-border focus:outline-none focus:border-wa-green rounded-lg"
                                 >
                                     <option
                                         value="0"
-                                        class="bg-[#0f172a] text-gray-300"
-                                        >∞</option
+                                        class="bg-wa-bg-deep text-gray-300"
+                                        >&#8734;</option
                                     >
                                     <option
                                         value="1"
-                                        class="bg-[#0f172a] text-gray-300"
+                                        class="bg-wa-bg-deep text-gray-300"
                                         >1x</option
                                     >
                                     <option
                                         value="3"
-                                        class="bg-[#0f172a] text-gray-300"
+                                        class="bg-wa-bg-deep text-gray-300"
                                         >3x</option
                                     >
                                     <option
                                         value="5"
-                                        class="bg-[#0f172a] text-gray-300"
+                                        class="bg-wa-bg-deep text-gray-300"
                                         >5x</option
                                     >
                                     <option
                                         value="10"
-                                        class="bg-[#0f172a] text-gray-300"
+                                        class="bg-wa-bg-deep text-gray-300"
                                         >10x</option
                                     >
                                 </select>
                             </div>
                             <div class="flex-1">
                                 <label
-                                    class="block text-[10px] text-gray-400 font-mono mb-1"
+                                    class="block text-[10px] text-wa-text-secondary font-sans mb-1"
                                     x-text="$t('cooldown')"></label>
                                 <select
                                     x-model="flow.cooldownMs"
-                                    class="w-full bg-white/5 text-gray-200 text-xs px-2 py-1.5 border border-white/10 focus:outline-none focus:border-brand-purple"
+                                    class="w-full bg-wa-bg-hover text-gray-200 text-xs px-2 py-1.5 border border-wa-border focus:outline-none focus:border-wa-green rounded-lg"
                                 >
                                     <option
                                         value="0"
-                                        class="bg-[#0f172a] text-gray-300"
+                                        class="bg-wa-bg-deep text-gray-300"
                                         >-</option
                                     >
                                     <option
                                         value="60000"
-                                        class="bg-[#0f172a] text-gray-300"
+                                        class="bg-wa-bg-deep text-gray-300"
                                         >1min</option
                                     >
                                     <option
                                         value="300000"
-                                        class="bg-[#0f172a] text-gray-300"
+                                        class="bg-wa-bg-deep text-gray-300"
                                         >5min</option
                                     >
                                     <option
                                         value="3600000"
-                                        class="bg-[#0f172a] text-gray-300"
+                                        class="bg-wa-bg-deep text-gray-300"
                                         >1h</option
                                     >
                                     <option
                                         value="86400000"
-                                        class="bg-[#0f172a] text-gray-300"
+                                        class="bg-wa-bg-deep text-gray-300"
                                         >24h</option
                                     >
                                 </select>
@@ -162,17 +159,17 @@ import MediaPicker from "../components/MediaPicker.astro";
 
                         <!-- Mutual Exclusions -->
                          <div x-show="availableFlows.length > 0 || true">
-                            <label class="block text-[10px] text-gray-400 font-mono mb-2" title="If any of these flows have run in the session, this flow will NOT run.">
+                            <label class="block text-[10px] text-wa-text-secondary font-sans mb-2" title="If any of these flows have run in the session, this flow will NOT run.">
                                 MUTUALLY EXCLUSIVE WITH:
                             </label>
-                            <div class="max-h-32 overflow-y-auto space-y-1 pr-1 bg-black/20 p-2 border border-white/5">
+                            <div class="max-h-32 overflow-y-auto space-y-1 pr-1 bg-wa-bg-deep/50 p-2 border border-wa-border rounded-lg">
                                 <template x-for="f in availableFlows" :key="f.id">
-                                    <label class="flex items-center gap-2 cursor-pointer hover:bg-white/5 p-1 rounded">
-                                        <input type="checkbox" :value="f.id" x-model="flow.excludesFlows" class="accent-brand-purple">
+                                    <label class="flex items-center gap-2 cursor-pointer hover:bg-wa-bg-hover p-1 rounded">
+                                        <input type="checkbox" :value="f.id" x-model="flow.excludesFlows" class="accent-wa-green">
                                         <span class="text-[10px] font-mono text-gray-300 truncate" x-text="f.name"></span>
                                     </label>
                                 </template>
-                                <div x-show="availableFlows.length === 0" class="text-[10px] text-gray-600 font-mono italic p-1">
+                                <div x-show="availableFlows.length === 0" class="text-[10px] text-wa-text-secondary font-sans italic p-1">
                                     (No other flows available)
                                 </div>
                             </div>
@@ -185,14 +182,14 @@ import MediaPicker from "../components/MediaPicker.astro";
                             :key="index"
                         >
                             <div
-                                class="bg-[#0f172a] p-4 border border-white/10 space-y-3"
+                                class="bg-wa-bg-deep p-4 border border-wa-border space-y-3 rounded-lg"
                             >
                                 <!-- Row 1: Selects and Delete -->
                                 <div class="flex justify-between items-center gap-2">
                                     <div class="flex gap-2 items-center flex-1">
                                         <select
                                             x-model="trigger.scope"
-                                            class="bg-white/10 text-[10px] font-mono text-brand-purple px-2 py-1.5 border border-white/20 focus:outline-none focus:border-brand-purple flex-1"
+                                            class="bg-wa-bg-hover text-[10px] font-mono text-wa-green px-2 py-1.5 border border-wa-border focus:outline-none focus:border-wa-green flex-1 rounded-lg"
                                             title="Trigger Scope"
                                         >
                                             <option value="INCOMING">INCOMING</option>
@@ -201,7 +198,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                                         </select>
                                         <select
                                             x-model="trigger.matchType"
-                                            class="bg-white/10 text-xs font-mono text-white px-2 py-1.5 border border-white/20 focus:outline-none focus:border-brand-purple flex-1"
+                                            class="bg-wa-bg-hover text-xs font-mono text-white px-2 py-1.5 border border-wa-border focus:outline-none focus:border-wa-green flex-1 rounded-lg"
                                         >
                                             <template
                                                 x-for="opt in ['CONTAINS', 'EXACT', 'REGEX']"
@@ -209,7 +206,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                 <option
                                                     :value="opt"
                                                     x-text="opt"
-                                                    class="bg-[#0f172a]"></option>
+                                                    class="bg-wa-bg-deep"></option>
                                             </template>
                                         </select>
                                     </div>
@@ -225,7 +222,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                                     <textarea
                                         x-model="trigger.keyword"
                                         rows="1"
-                                        class="w-full bg-white/5 text-sm px-3 py-2 border border-white/10 focus:outline-none focus:border-brand-purple resize-none overflow-hidden font-mono leading-relaxed"
+                                        class="w-full bg-wa-bg-hover text-sm px-3 py-2 border border-wa-border focus:outline-none focus:border-wa-green resize-none overflow-hidden font-mono leading-relaxed rounded-lg"
                                         :placeholder="$t('keyword') || 'Enter keyword or regex...'"
                                         x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
                                         @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
@@ -236,7 +233,7 @@ import MediaPicker from "../components/MediaPicker.astro";
 
                         <div
                             x-show="flow.triggers.length === 0"
-                            class="text-center py-4 text-gray-600 text-xs font-mono"
+                            class="text-center py-4 text-wa-text-secondary text-xs font-sans"
                             x-text="$t('no_triggers')"
                         >
                         </div>
@@ -248,33 +245,33 @@ import MediaPicker from "../components/MediaPicker.astro";
             <div class="col-span-1 lg:col-span-2 flex flex-col h-full min-h-0">
                 <div class="flex justify-between items-center mb-4">
                     <h3
-                        class="text-xs text-brand-purple uppercase tracking-widest"
+                        class="text-xs text-wa-green font-sans"
                         x-text="$t('sequence_steps')"
                     >
                     </h3>
                     <div class="flex gap-2">
                         <button
                             @click="addStep('TEXT')"
-                            class="px-3 py-1 bg-white/5 hover:bg-white/10 text-[10px] uppercase font-mono border border-white/10"
+                            class="px-3 py-1 bg-wa-bg-hover hover:bg-wa-bg-hover text-[10px] font-sans border border-wa-border rounded-lg"
                             x-text="$t('add_step_text')"></button>
                         <button
                             @click="addStep('IMAGE')"
-                            class="px-3 py-1 bg-white/5 hover:bg-white/10 text-[10px] uppercase font-mono border border-white/10"
+                            class="px-3 py-1 bg-wa-bg-hover hover:bg-wa-bg-hover text-[10px] font-sans border border-wa-border rounded-lg"
                             x-text="$t('add_step_image')"></button>
                         <button
                             @click="addStep('AUDIO')"
-                            class="px-3 py-1 bg-white/5 hover:bg-white/10 text-[10px] uppercase font-mono border border-white/10"
+                            class="px-3 py-1 bg-wa-bg-hover hover:bg-wa-bg-hover text-[10px] font-sans border border-wa-border rounded-lg"
                             x-text="$t('add_step_audio')"></button>
                         <button
                             @click="addStep('CONDITIONAL_TIME')"
-                            class="px-3 py-1 bg-brand-purple/20 text-brand-purple hover:bg-brand-purple/40 text-[10px] uppercase font-mono border border-brand-purple/30"
+                            class="px-3 py-1 bg-wa-green/20 text-wa-green hover:bg-wa-green/40 text-[10px] font-sans border border-wa-green/30 rounded-lg"
                             title="Time Condition"
                         >🕒 TIME</button>
                     </div>
                 </div>
 
                 <div
-                    class="flex-1 overflow-y-auto bg-brand-panel/10 border border-white/5 relative"
+                    class="flex-1 overflow-y-auto bg-wa-bg-panel/30 border border-wa-border relative rounded-xl"
                 >
                     <div id="steps-container" class="p-6 space-y-4 pb-20">
                         <template
@@ -282,72 +279,72 @@ import MediaPicker from "../components/MediaPicker.astro";
                             :key="step.tempId || step.id || index"
                         >
                             <div
-                                class="step-card bg-[#0f172a] border border-white/10 p-4 relative group hover:border-brand-purple/50 transition-colors"
+                                class="step-card bg-wa-bg-deep border border-wa-border rounded-lg p-4 relative group hover:border-wa-green/50 transition-colors"
                                 :data-id="index"
                             >
                                 <!-- Reorder Controls -->
                                 <div
                                     class="absolute left-2 top-4 flex flex-col gap-1 items-center z-10 w-6"
                                 >
-                                    <button 
-                                        @click="moveUp(index)" 
-                                        class="text-gray-600 hover:text-brand-purple text-[10px] leading-none p-1 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                                    <button
+                                        @click="moveUp(index)"
+                                        class="text-wa-text-secondary hover:text-wa-green text-[10px] leading-none p-1 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
                                         :disabled="index === 0"
                                     >▲</button>
-                                    
-                                    <div class="text-gray-500 cursor-move handle py-1 hover:text-white select-none" title="Drag">⋮⋮</div>
-                                    
-                                    <button 
-                                        @click="moveDown(index)" 
-                                        class="text-gray-600 hover:text-brand-purple text-[10px] leading-none p-1 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+
+                                    <div class="text-wa-text-secondary cursor-move handle py-1 hover:text-white select-none" title="Drag">⋮⋮</div>
+
+                                    <button
+                                        @click="moveDown(index)"
+                                        class="text-wa-text-secondary hover:text-wa-green text-[10px] leading-none p-1 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
                                         :disabled="index === flow.steps.length - 1"
                                     >▼</button>
                                 </div>
 
                                 <div class="pl-10">
                                     <div
-                                        class="flex justify-between text-xs font-mono text-gray-400 mb-3 uppercase tracking-wide items-center"
+                                        class="flex justify-between text-xs font-sans text-wa-text-secondary mb-3 tracking-wide items-center"
                                     >
                                         <span
                                             x-text="step.type"
-                                            class="text-brand-purple font-bold"
+                                            class="text-wa-green font-bold"
                                         ></span>
                                         <div
                                             class="flex gap-4 items-center flex-wrap"
                                         >
                                             <span
-                                                class="flex items-center gap-1 text-gray-400"
+                                                class="flex items-center gap-1 text-wa-text-secondary"
                                             >
                                                 <span x-text="$t('delay')"
                                                 ></span>:
                                                 <input
                                                     type="number"
                                                     x-model="step.delayMs"
-                                                    class="w-16 bg-white/10 text-center px-2 py-1 border border-white/20 focus:outline-none focus:border-brand-purple text-white"
+                                                    class="w-16 bg-wa-bg-hover text-center px-2 py-1 border border-wa-border focus:outline-none focus:border-wa-green text-white rounded-lg"
                                                     min="0"
-                                                /><span class="text-gray-500"
+                                                /><span class="text-wa-text-secondary"
                                                     >ms</span
                                                 >
                                             </span>
                                             <span
-                                                class="flex items-center gap-1 text-gray-400"
+                                                class="flex items-center gap-1 text-wa-text-secondary"
                                             >
-                                                <span class="text-gray-500"
+                                                <span class="text-wa-text-secondary"
                                                     >±</span
                                                 >
                                                 <input
                                                     type="number"
                                                     x-model="step.jitterPct"
-                                                    class="w-14 bg-white/10 text-center px-2 py-1 border border-white/20 focus:outline-none focus:border-brand-purple text-white"
+                                                    class="w-14 bg-wa-bg-hover text-center px-2 py-1 border border-wa-border focus:outline-none focus:border-wa-green text-white rounded-lg"
                                                     min="0"
                                                     max="100"
-                                                /><span class="text-gray-500"
+                                                /><span class="text-wa-text-secondary"
                                                     >%</span
                                                 >
                                             </span>
                                             <button
                                                 @click="removeStep(index)"
-                                                class="text-red-500 hover:text-white px-2 py-1 hover:bg-red-500/20 transition-colors"
+                                                class="text-red-500 hover:text-white px-2 py-1 hover:bg-red-500/20 transition-colors rounded-lg"
                                                 x-text="$t('remove')"></button>
                                         </div>
                                     </div>
@@ -358,7 +355,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                                             <textarea
                                                 x-model="step.content"
                                                 rows="2"
-                                                class="w-full bg-black/20 border border-white/5 p-2 text-sm focus:border-brand-purple focus:outline-none resize-none overflow-hidden font-mono leading-relaxed min-h-[60px]"
+                                                class="w-full bg-wa-bg-deep/50 border border-wa-border p-2 text-sm focus:border-wa-green focus:outline-none resize-none overflow-hidden font-mono leading-relaxed min-h-[60px] rounded-lg"
                                                 :placeholder="$t('message_content')"
                                                 x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
                                                 @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
@@ -373,12 +370,12 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                     <input
                                                         type="text"
                                                         x-model="step.mediaUrl"
-                                                        class="flex-1 bg-black/20 border border-white/5 p-2 text-xs font-mono"
+                                                        class="flex-1 bg-wa-bg-deep/50 border border-wa-border p-2 text-xs font-mono rounded-lg"
                                                         :placeholder="$t('media_url_placeholder')"
                                                     />
                                                     <button
                                                         @click="selectMedia(index)"
-                                                        class="bg-white/10 px-3 text-xs uppercase hover:bg-white/20"
+                                                        class="bg-wa-bg-hover px-3 text-xs hover:bg-wa-bg-hover rounded-lg"
                                                         x-text="$t('select_media')"
                                                     ></button>
                                                 </div>
@@ -387,7 +384,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                 >
                                                     <img
                                                         :src="step.mediaUrl"
-                                                        class="h-24 opacity-50 hover:opacity-100 transition-opacity border border-white/10"
+                                                        class="h-24 opacity-50 hover:opacity-100 transition-opacity border border-wa-border rounded-lg"
                                                     />
                                                 </template>
                                                 <template
@@ -396,7 +393,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                     <textarea
                                                         x-model="step.content"
                                                         rows="1"
-                                                        class="w-full bg-black/20 border border-white/5 p-2 text-xs mt-1 focus:border-brand-purple focus:outline-none resize-none overflow-hidden font-mono leading-relaxed min-h-[38px]"
+                                                        class="w-full bg-wa-bg-deep/50 border border-wa-border p-2 text-xs mt-1 focus:border-wa-green focus:outline-none resize-none overflow-hidden font-mono leading-relaxed min-h-[38px] rounded-lg"
                                                         :placeholder="$t('caption_placeholder')"
                                                         x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
                                                         @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
@@ -408,25 +405,25 @@ import MediaPicker from "../components/MediaPicker.astro";
                                         <!-- Conditional Time Step -->
                                         <template x-if="step.type === 'CONDITIONAL_TIME'">
                                             <div class="space-y-4" x-init="!step.metadata && (step.metadata = { branches: [], fallback: { type: 'TEXT', content: '' } })">
-                                                
+
                                                 <template x-if="step.metadata && step.metadata.branches && step.metadata.fallback">
                                                     <div>
-                                                        <div class="text-[10px] text-gray-500 font-mono mb-2" x-text="$t('time_condition_desc')"></div>
-                                                        
+                                                        <div class="text-[10px] text-wa-text-secondary font-sans mb-2" x-text="$t('time_condition_desc')"></div>
+
                                                         <!-- Branches -->
                                                         <template x-for="(branch, bIndex) in step.metadata.branches" :key="bIndex">
-                                                            <div class="bg-black/20 border border-white/5 p-3 relative group/branch">
+                                                            <div class="bg-wa-bg-deep/50 border border-wa-border p-3 relative group/branch rounded-lg">
                                                                 <div class="flex justify-between items-center mb-2">
                                                                     <div class="flex gap-2 items-center">
-                                                                        <input type="time" x-model="branch.startTime" class="bg-white/10 text-white text-xs px-2 py-1 border border-white/10 focus:border-brand-purple focus:outline-none rounded font-mono">
-                                                                        <span class="text-gray-500 text-xs">-</span>
-                                                                        <input type="time" x-model="branch.endTime" class="bg-white/10 text-white text-xs px-2 py-1 border border-white/10 focus:border-brand-purple focus:outline-none rounded font-mono">
+                                                                        <input type="time" x-model="branch.startTime" class="bg-wa-bg-hover text-white text-xs px-2 py-1 border border-wa-border focus:border-wa-green focus:outline-none rounded-lg font-mono">
+                                                                        <span class="text-wa-text-secondary text-xs">-</span>
+                                                                        <input type="time" x-model="branch.endTime" class="bg-wa-bg-hover text-white text-xs px-2 py-1 border border-wa-border focus:border-wa-green focus:outline-none rounded-lg font-mono">
                                                                     </div>
                                                                     <button @click="step.metadata.branches.splice(bIndex, 1)" class="text-red-500 hover:text-white font-bold">&times;</button>
                                                                 </div>
 
                                                                 <div class="flex gap-2 mb-2">
-                                                                    <select x-model="branch.type" class="bg-white/5 text-[10px] text-gray-300 border border-white/10 px-2 py-1 w-full focus:outline-none uppercase font-mono">
+                                                                    <select x-model="branch.type" class="bg-wa-bg-hover text-[10px] text-gray-300 border border-wa-border px-2 py-1 w-full focus:outline-none font-mono rounded-lg">
                                                                         <option value="TEXT">TEXT</option>
                                                                         <option value="IMAGE">IMAGE</option>
                                                                         <option value="AUDIO">AUDIO</option>
@@ -434,49 +431,49 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                                 </div>
 
                                                                 <div class="space-y-2">
-                                                                    <textarea 
-                                                                        x-model="branch.content" 
-                                                                        rows="2" 
-                                                                        class="w-full bg-black/20 border border-white/5 p-2 text-xs focus:border-brand-purple focus:outline-none resize-none overflow-hidden min-h-[38px] font-mono" 
-                                                                        :placeholder="branch.type === 'TEXT' ? $t('message_content') : $t('caption_placeholder')" 
+                                                                    <textarea
+                                                                        x-model="branch.content"
+                                                                        rows="2"
+                                                                        class="w-full bg-wa-bg-deep/50 border border-wa-border p-2 text-xs focus:border-wa-green focus:outline-none resize-none overflow-hidden min-h-[38px] font-mono rounded-lg"
+                                                                        :placeholder="branch.type === 'TEXT' ? $t('message_content') : $t('caption_placeholder')"
                                                                         x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = ($el.scrollHeight + 2) + 'px' })"
                                                                         @input="$el.style.height = 'auto'; $el.style.height = ($el.scrollHeight + 2) + 'px'"></textarea>
-                                                                    
+
                                                                     <div x-show="branch.type !== 'TEXT'" class="flex gap-2">
-                                                                        <input type="text" x-model="branch.mediaUrl" class="flex-1 bg-black/20 border border-white/5 p-2 text-xs font-mono" :placeholder="$t('media_url_placeholder')">
-                                                                        <button @click="selectMediaForBranch(index, bIndex)" class="bg-white/10 px-2 text-[10px] uppercase hover:bg-white/20" x-text="$t('pick')"></button>
+                                                                        <input type="text" x-model="branch.mediaUrl" class="flex-1 bg-wa-bg-deep/50 border border-wa-border p-2 text-xs font-mono rounded-lg" :placeholder="$t('media_url_placeholder')">
+                                                                        <button @click="selectMediaForBranch(index, bIndex)" class="bg-wa-bg-hover px-2 text-[10px] hover:bg-wa-bg-hover rounded-lg" x-text="$t('pick')"></button>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </template>
 
-                                                        <button @click="step.metadata.branches.push({ startTime: '09:00', endTime: '18:00', type: 'TEXT', content: '' })" class="w-full py-2 border border-dashed border-white/10 text-xs text-gray-500 hover:text-brand-purple hover:border-brand-purple/30 transition-colors uppercase font-mono" x-text="'+ ' + $t('add_time_range')"></button>
+                                                        <button @click="step.metadata.branches.push({ startTime: '09:00', endTime: '18:00', type: 'TEXT', content: '' })" class="w-full py-2 border border-dashed border-wa-border text-xs text-wa-text-secondary hover:text-wa-green hover:border-wa-green/30 transition-colors font-sans rounded-lg" x-text="'+ ' + $t('add_time_range')"></button>
 
-                                                        <div x-show="hasOverlap(step.metadata.branches)" class="text-red-400 text-[10px] font-mono mt-2 bg-red-500/10 p-2 border border-red-500/20 flex items-center gap-2">
+                                                        <div x-show="hasOverlap(step.metadata.branches)" class="text-red-400 text-[10px] font-sans mt-2 bg-red-500/10 p-2 border border-red-500/20 flex items-center gap-2 rounded-lg">
                                                             <span>⚠</span> <span x-text="$t('overlap_warning')"></span>
                                                         </div>
 
                                                         <!-- Fallback -->
-                                                        <div class="mt-4 pt-4 border-t border-white/10">
-                                                            <div class="text-[10px] uppercase text-gray-500 mb-2 font-mono" x-text="$t('fallback_label')"></div>
-                                                            <div class="bg-black/20 p-3 border border-white/5">
+                                                        <div class="mt-4 pt-4 border-t border-wa-border">
+                                                            <div class="text-[10px] text-wa-text-secondary mb-2 font-sans" x-text="$t('fallback_label')"></div>
+                                                            <div class="bg-wa-bg-deep/50 p-3 border border-wa-border rounded-lg">
                                                                 <div class="flex gap-2 mb-2">
-                                                                    <select x-model="step.metadata.fallback.type" class="bg-white/5 text-[10px] text-gray-300 border border-white/10 px-2 py-1 w-full focus:outline-none uppercase font-mono">
+                                                                    <select x-model="step.metadata.fallback.type" class="bg-wa-bg-hover text-[10px] text-gray-300 border border-wa-border px-2 py-1 w-full focus:outline-none font-mono rounded-lg">
                                                                         <option value="TEXT">TEXT</option>
                                                                         <option value="IMAGE">IMAGE</option>
                                                                         <option value="AUDIO">AUDIO</option>
                                                                     </select>
                                                                 </div>
-                                                                <textarea 
-                                                                    x-model="step.metadata.fallback.content" 
-                                                                    rows="2" 
-                                                                    class="w-full bg-black/20 border border-white/5 p-2 text-xs focus:border-brand-purple focus:outline-none resize-none overflow-hidden min-h-[38px] font-mono" 
-                                                                    :placeholder="$t('message_content')" 
+                                                                <textarea
+                                                                    x-model="step.metadata.fallback.content"
+                                                                    rows="2"
+                                                                    class="w-full bg-wa-bg-deep/50 border border-wa-border p-2 text-xs focus:border-wa-green focus:outline-none resize-none overflow-hidden min-h-[38px] font-mono rounded-lg"
+                                                                    :placeholder="$t('message_content')"
                                                                     x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = ($el.scrollHeight + 2) + 'px' })"
                                                                     @input="$el.style.height = 'auto'; $el.style.height = ($el.scrollHeight + 2) + 'px'"></textarea>
                                                                 <div x-show="step.metadata.fallback.type !== 'TEXT'" class="flex gap-2 mt-2">
-                                                                    <input type="text" x-model="step.metadata.fallback.mediaUrl" class="flex-1 bg-black/20 border border-white/5 p-2 text-xs font-mono" :placeholder="$t('media_url_placeholder')">
-                                                                    <button @click="selectMediaForFallback(index)" class="bg-white/10 px-2 text-[10px] uppercase hover:bg-white/20" x-text="$t('pick')"></button>
+                                                                    <input type="text" x-model="step.metadata.fallback.mediaUrl" class="flex-1 bg-wa-bg-deep/50 border border-wa-border p-2 text-xs font-mono rounded-lg" :placeholder="$t('media_url_placeholder')">
+                                                                    <button @click="selectMediaForFallback(index)" class="bg-wa-bg-hover px-2 text-[10px] hover:bg-wa-bg-hover rounded-lg" x-text="$t('pick')"></button>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -491,10 +488,10 @@ import MediaPicker from "../components/MediaPicker.astro";
 
                         <div
                             x-show="flow.steps.length === 0"
-                            class="text-center py-12 text-gray-500"
+                            class="text-center py-12 text-wa-text-secondary"
                         >
                             <p
-                                class="text-xs font-mono uppercase"
+                                class="text-xs font-sans"
                                 x-text="$t('empty_flow')"
                             >
                             </p>
@@ -506,10 +503,10 @@ import MediaPicker from "../components/MediaPicker.astro";
 
         <div
             x-show="!ready"
-            class="fixed inset-0 flex items-center justify-center bg-[#0f172a] z-50"
+            class="fixed inset-0 flex items-center justify-center bg-wa-bg-deep z-50"
         >
             <div
-                class="text-brand-purple animate-pulse text-xs font-mono uppercase"
+                class="text-wa-green animate-pulse text-xs font-sans"
                 x-text="$t('loading')"
             >
             </div>
@@ -586,10 +583,10 @@ import MediaPicker from "../components/MediaPicker.astro";
 
             hasOverlap(branches: any[]) {
                 if (!branches || branches.length < 2) return false;
-                
+
                 // Prepare normalized ranges (handling midnight crossing)
                 const ranges: { start: number, end: number }[] = [];
-                
+
                 branches.forEach(b => {
                     const [sh, sm] = (b.startTime || "00:00").split(':').map(Number);
                     const [eh, em] = (b.endTime || "00:00").split(':').map(Number);
@@ -726,7 +723,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                     window.location.href = "/bots";
                 }
             },
-            
+
             async loadAvailableFlows() {
                 if (!this.botId) return;
                 try {

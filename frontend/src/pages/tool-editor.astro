@@ -8,28 +8,28 @@ const botId = Astro.url.searchParams.get("botId") || "";
 <Layout title="Tool Editor">
     <div x-data="toolEditor" x-show="ready" class="space-y-8" style="display: none;">
         <!-- Header -->
-        <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-white/10 pb-6 gap-4">
+        <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-wa-border pb-6 gap-4">
             <div>
                 <div class="flex items-center gap-3 mb-2">
                     <a id="back-link" href="/bots"
-                        class="text-gray-500 hover:text-brand-purple transition-colors" title="Back">
+                        class="text-wa-text-secondary hover:text-wa-green transition-colors" title="Back">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                         </svg>
                     </a>
-                    <span class="text-[10px] font-mono text-brand-purple bg-brand-purple/10 px-2 py-0.5 uppercase"
+                    <span class="text-[10px] text-wa-green bg-wa-green/10 px-2 py-0.5 rounded-md"
                         x-text="isEdit ? 'Edit Tool' : 'New Tool'"></span>
                 </div>
-                <h1 class="text-3xl font-bold tracking-tighter uppercase" x-text="$t('tool_editor')">Tool Editor</h1>
+                <h1 class="text-3xl font-bold tracking-tight" x-text="$t('tool_editor')">Tool Editor</h1>
             </div>
 
             <div class="flex gap-3">
                 <button @click="saveTool()" :disabled="saving"
-                    class="px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors disabled:opacity-50 rounded-full"
+                    class="px-6 py-2 bg-wa-green text-white text-sm font-medium rounded-lg hover:bg-wa-green-hover transition-colors disabled:opacity-50"
                     x-text="saving ? ($t('saving') || 'Saving...') : ($t('save_changes') || 'Save')">
                 </button>
                 <button x-show="isEdit" @click="deleteTool()"
-                    class="px-4 py-2 border border-red-500/30 text-red-500 font-mono uppercase text-xs hover:bg-red-500/10 transition-colors rounded-full"
+                    class="px-4 py-2 border border-red-500/30 text-red-500 text-sm rounded-lg hover:bg-red-500/10 transition-colors"
                     x-text="$t('remove') || 'Delete'">
                 </button>
             </div>
@@ -38,44 +38,41 @@ const botId = Astro.url.searchParams.get("botId") || "";
         <!-- Form -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Left: Basic Info -->
-            <div class="bg-brand-panel/30 border border-white/5 p-6 relative space-y-5">
-                <div class="cross-marker -top-[2px] -left-[2px]"></div>
-                <div class="cross-marker -top-[2px] -right-[2px]"></div>
-
+            <div class="bg-wa-bg-panel border border-wa-border rounded-xl p-6 relative space-y-5">
                 <!-- Name -->
                 <div>
-                    <label class="block text-xs font-mono text-gray-400 uppercase mb-2" x-text="$t('tool_name')">Name</label>
+                    <label class="block text-xs text-wa-text-secondary mb-2" x-text="$t('tool_name')">Name</label>
                     <input type="text" x-model="form.name"
-                        class="w-full bg-[#0f172a] border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none font-mono"
+                        class="w-full bg-wa-bg-deep border border-wa-border text-white text-sm p-3 rounded-lg focus:border-wa-green focus:outline-none font-mono"
                         placeholder="lookup_client" />
-                    <p class="text-[10px] text-gray-600 mt-1">snake_case, no spaces or special chars</p>
+                    <p class="text-[10px] text-wa-text-secondary mt-1">snake_case, no spaces or special chars</p>
                 </div>
 
                 <!-- Description -->
                 <div>
-                    <label class="block text-xs font-mono text-gray-400 uppercase mb-2" x-text="$t('tool_description')">Description</label>
+                    <label class="block text-xs text-wa-text-secondary mb-2" x-text="$t('tool_description')">Description</label>
                     <textarea x-model="form.description" rows="3"
-                        class="w-full bg-[#0f172a] border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none resize-y"
+                        class="w-full bg-wa-bg-deep border border-wa-border text-white text-sm p-3 rounded-lg focus:border-wa-green focus:outline-none resize-y"
                         placeholder="Look up a client by phone number or email..."></textarea>
                 </div>
 
                 <!-- Action Type -->
                 <div>
-                    <label class="block text-xs font-mono text-gray-400 uppercase mb-2" x-text="$t('tool_action_type')">Action Type</label>
+                    <label class="block text-xs text-wa-text-secondary mb-2" x-text="$t('tool_action_type')">Action Type</label>
                     <div class="flex gap-2">
                         <button type="button" @click="form.actionType = 'FLOW'"
-                            class="px-4 py-2 text-xs font-mono uppercase border transition-colors rounded-full"
-                            :class="form.actionType === 'FLOW' ? 'border-brand-purple text-brand-purple bg-brand-purple/10' : 'border-white/10 text-gray-500 hover:text-white'">
+                            class="px-4 py-2 text-sm border transition-colors rounded-lg"
+                            :class="form.actionType === 'FLOW' ? 'border-wa-green text-wa-green bg-wa-green/10' : 'border-wa-border text-wa-text-secondary hover:text-white'">
                             <span x-text="$t('tool_flow')">Flow</span>
                         </button>
                         <button type="button" @click="form.actionType = 'WEBHOOK'"
-                            class="px-4 py-2 text-xs font-mono uppercase border transition-colors rounded-full"
-                            :class="form.actionType === 'WEBHOOK' ? 'border-brand-purple text-brand-purple bg-brand-purple/10' : 'border-white/10 text-gray-500 hover:text-white'">
+                            class="px-4 py-2 text-sm border transition-colors rounded-lg"
+                            :class="form.actionType === 'WEBHOOK' ? 'border-wa-green text-wa-green bg-wa-green/10' : 'border-wa-border text-wa-text-secondary hover:text-white'">
                             <span x-text="$t('tool_webhook')">Webhook</span>
                         </button>
                         <button type="button" @click="form.actionType = 'BUILTIN'"
-                            class="px-4 py-2 text-xs font-mono uppercase border transition-colors rounded-full"
-                            :class="form.actionType === 'BUILTIN' ? 'border-brand-purple text-brand-purple bg-brand-purple/10' : 'border-white/10 text-gray-500 hover:text-white'">
+                            class="px-4 py-2 text-sm border transition-colors rounded-lg"
+                            :class="form.actionType === 'BUILTIN' ? 'border-wa-green text-wa-green bg-wa-green/10' : 'border-wa-border text-wa-text-secondary hover:text-white'">
                             <span x-text="$t('tool_builtin')">Built-in</span>
                         </button>
                     </div>
@@ -83,9 +80,9 @@ const botId = Astro.url.searchParams.get("botId") || "";
 
                 <!-- Status -->
                 <div>
-                    <label class="block text-xs font-mono text-gray-400 uppercase mb-2" x-text="$t('tool_status')">Status</label>
+                    <label class="block text-xs text-wa-text-secondary mb-2" x-text="$t('tool_status')">Status</label>
                     <select x-model="form.status"
-                        class="w-full bg-[#0f172a] border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none">
+                        class="w-full bg-wa-bg-deep border border-wa-border text-white text-sm p-3 rounded-lg focus:border-wa-green focus:outline-none">
                         <option value="ACTIVE">ACTIVE</option>
                         <option value="DISABLED">DISABLED</option>
                     </select>
@@ -95,33 +92,27 @@ const botId = Astro.url.searchParams.get("botId") || "";
             <!-- Right: Parameters & Config -->
             <div class="space-y-8">
                 <!-- Parameters JSON Schema -->
-                <div class="bg-brand-panel/30 border border-white/5 p-6 relative">
-                    <div class="cross-marker -top-[2px] -left-[2px]"></div>
-                    <div class="cross-marker -top-[2px] -right-[2px]"></div>
-
-                    <label class="block text-xs font-mono text-gray-400 uppercase mb-2" x-text="$t('tool_parameters')">Parameters</label>
+                <div class="bg-wa-bg-panel border border-wa-border rounded-xl p-6 relative">
+                    <label class="block text-xs text-wa-text-secondary mb-2" x-text="$t('tool_parameters')">Parameters</label>
                     <textarea x-model="form.parametersJson" rows="8"
-                        class="w-full bg-[#0f172a] border border-white/10 text-white text-xs p-3 focus:border-brand-purple focus:outline-none resize-y font-mono"
+                        class="w-full bg-wa-bg-deep border border-wa-border text-white text-xs p-3 rounded-lg focus:border-wa-green focus:outline-none resize-y font-mono"
                         placeholder='{"type": "object", "properties": {"query": {"type": "string", "description": "Search query"}}}'></textarea>
                     <p x-show="paramError" class="text-red-400 text-[10px] mt-1" x-text="paramError"></p>
                 </div>
 
                 <!-- Action Config -->
-                <div class="bg-brand-panel/30 border border-white/5 p-6 relative">
-                    <div class="cross-marker -top-[2px] -left-[2px]"></div>
-                    <div class="cross-marker -top-[2px] -right-[2px]"></div>
-
-                    <label class="block text-xs font-mono text-gray-400 uppercase mb-4" x-text="$t('tool_action_config')">Action Config</label>
+                <div class="bg-wa-bg-panel border border-wa-border rounded-xl p-6 relative">
+                    <label class="block text-xs text-wa-text-secondary mb-4" x-text="$t('tool_action_config')">Action Config</label>
 
                     <!-- FLOW config -->
                     <div x-show="form.actionType === 'FLOW'" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-mono text-gray-500 mb-1">Flow ID</label>
+                            <label class="block text-xs text-wa-text-secondary mb-1">Flow ID</label>
                             <select x-model="form.flowId"
-                                class="w-full bg-[#0f172a] border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none">
+                                class="w-full bg-wa-bg-deep border border-wa-border text-white text-sm p-3 rounded-lg focus:border-wa-green focus:outline-none">
                                 <option value="">Select a Flow...</option>
                                 <template x-for="f in availableFlows" :key="f.id">
-                                    <option :value="f.id" x-text="f.name" class="bg-[#0f172a]"></option>
+                                    <option :value="f.id" x-text="f.name" class="bg-wa-bg-deep"></option>
                                 </template>
                             </select>
                         </div>
@@ -130,15 +121,15 @@ const botId = Astro.url.searchParams.get("botId") || "";
                     <!-- WEBHOOK config -->
                     <div x-show="form.actionType === 'WEBHOOK'" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-mono text-gray-500 mb-1" x-text="$t('webhook_url')">URL</label>
+                            <label class="block text-xs text-wa-text-secondary mb-1" x-text="$t('webhook_url')">URL</label>
                             <input type="url" x-model="form.webhookUrl"
-                                class="w-full bg-[#0f172a] border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none"
+                                class="w-full bg-wa-bg-deep border border-wa-border text-white text-sm p-3 rounded-lg focus:border-wa-green focus:outline-none"
                                 placeholder="https://api.example.com/webhook" />
                         </div>
                         <div>
-                            <label class="block text-xs font-mono text-gray-500 mb-1" x-text="$t('webhook_method')">Method</label>
+                            <label class="block text-xs text-wa-text-secondary mb-1" x-text="$t('webhook_method')">Method</label>
                             <select x-model="form.webhookMethod"
-                                class="w-full bg-[#0f172a] border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none">
+                                class="w-full bg-wa-bg-deep border border-wa-border text-white text-sm p-3 rounded-lg focus:border-wa-green focus:outline-none">
                                 <option value="POST">POST</option>
                                 <option value="GET">GET</option>
                                 <option value="PUT">PUT</option>
@@ -149,9 +140,9 @@ const botId = Astro.url.searchParams.get("botId") || "";
                     <!-- BUILTIN config -->
                     <div x-show="form.actionType === 'BUILTIN'" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-mono text-gray-500 mb-1" x-text="$t('builtin_function')">Built-in</label>
+                            <label class="block text-xs text-wa-text-secondary mb-1" x-text="$t('builtin_function')">Built-in</label>
                             <select x-model="form.builtinName"
-                                class="w-full bg-[#0f172a] border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none">
+                                class="w-full bg-wa-bg-deep border border-wa-border text-white text-sm p-3 rounded-lg focus:border-wa-green focus:outline-none">
                                 <option value="lookup_client">lookup_client</option>
                                 <option value="register_client">register_client</option>
                                 <option value="get_current_time">get_current_time</option>
