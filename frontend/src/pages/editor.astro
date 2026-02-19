@@ -8,26 +8,26 @@ import MediaPicker from "../components/MediaPicker.astro";
     <div
         x-data="flowEditor"
         x-show="ready"
-        class="h-[calc(100vh-100px)] flex flex-col"
+        class="h-[calc(100vh-100px)] flex flex-col min-h-0"
         style="display: none;"
     >
         <!-- Header -->
         <header
-            class="flex justify-between items-center mb-6 border-b border-wa-border pb-4"
+            class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 border-b border-wa-border pb-4 shrink-0"
         >
-            <div class="flex-1">
+            <div class="flex-1 min-w-0 w-full sm:w-auto">
                 <div class="flex items-center gap-2 mb-1">
                     <span
-                        class="text-[10px] font-sans text-wa-green bg-wa-green/10 px-2 py-0.5 rounded-lg"
+                        class="text-[10px] font-sans text-wa-green bg-wa-green/10 px-2 py-0.5 rounded-lg shrink-0"
                         x-text="bot.platform || 'BOT'"></span>
                     <span
-                        class="text-[10px] font-sans text-wa-text-secondary"
+                        class="text-[10px] font-sans text-wa-text-secondary truncate"
                         x-text="bot.identifier || '...'"></span>
                 </div>
                 <input
                     type="text"
                     x-model="flow.name"
-                    class="bg-transparent text-2xl font-bold tracking-tight w-full focus:outline-none focus:border-b border-wa-green rounded-lg"
+                    class="bg-transparent text-xl sm:text-2xl font-bold tracking-tight w-full focus:outline-none focus:border-b border-wa-green rounded-lg"
                     :placeholder="$t('flow_name')"
                 />
                 <input
@@ -38,18 +38,18 @@ import MediaPicker from "../components/MediaPicker.astro";
                 />
             </div>
 
-            <div class="flex gap-4">
+            <div class="flex gap-2 sm:gap-4 shrink-0 w-full sm:w-auto">
                 <a
                     :href="'/bots/detail?id=' + (bot.id || new URLSearchParams(window.location.search).get('botId') || '')"
                     role="button"
-                    class="px-6 py-2 border border-wa-border text-wa-text-secondary font-sans text-xs hover:text-white hover:bg-wa-bg-hover transition-colors flex items-center rounded-lg"
+                    class="px-4 sm:px-6 py-2 border border-wa-border text-wa-text-secondary font-sans text-xs hover:text-white hover:bg-wa-bg-hover transition-colors flex items-center justify-center flex-1 sm:flex-initial rounded-lg"
                     x-text="$t('back')"
                 >
                 </a>
                 <button
                     @click="save()"
                     :disabled="saving"
-                    class="px-6 py-2 bg-wa-green text-white font-sans text-xs hover:bg-wa-green-hover transition-colors disabled:opacity-50 rounded-lg"
+                    class="px-4 sm:px-6 py-2 bg-wa-green text-white font-sans text-xs hover:bg-wa-green-hover transition-colors disabled:opacity-50 flex-1 sm:flex-initial rounded-lg"
                 >
                     <span x-text="saving ? $t('saving') : $t('save_flow')"
                     ></span>
@@ -58,13 +58,13 @@ import MediaPicker from "../components/MediaPicker.astro";
         </header>
 
         <div
-            class="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-3 gap-8"
+            class="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8 min-h-0"
         >
             <!-- LEFT PANEL: Triggers & Settings -->
-            <div class="col-span-1 overflow-y-auto pr-2">
+            <div class="col-span-1 overflow-y-auto pr-0 lg:pr-2 max-h-[40vh] lg:max-h-none">
                 <!-- Triggers -->
                 <div
-                    class="bg-wa-bg-panel border border-wa-border p-6 mb-6 relative group rounded-xl"
+                    class="bg-wa-bg-panel border border-wa-border p-4 sm:p-6 mb-6 relative group rounded-xl"
                 >
                     <div
                         class="text-xs text-wa-green mb-4 flex justify-between items-center"
@@ -84,7 +84,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                         >
                             Flow Limits & Rules
                         </h4>
-                        <div class="flex gap-4 mb-3">
+                        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-3">
                             <div class="flex-1">
                                 <label
                                     class="block text-[10px] text-wa-text-secondary font-sans mb-1"
@@ -162,7 +162,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                             <label class="block text-[10px] text-wa-text-secondary font-sans mb-2" title="If any of these flows have run in the session, this flow will NOT run.">
                                 MUTUALLY EXCLUSIVE WITH:
                             </label>
-                            <div class="max-h-32 overflow-y-auto space-y-1 pr-1 bg-wa-bg-deep/50 p-2 border border-wa-border rounded-lg">
+                            <div class="max-h-32 overflow-y-auto space-y-1 pr-1 bg-wa-bg-deep/50 p-2 sm:p-2 border border-wa-border rounded-lg">
                                 <template x-for="f in availableFlows" :key="f.id">
                                     <label class="flex items-center gap-2 cursor-pointer hover:bg-wa-bg-hover p-1 rounded">
                                         <input type="checkbox" :value="f.id" x-model="flow.excludesFlows" class="accent-wa-green">
@@ -185,11 +185,11 @@ import MediaPicker from "../components/MediaPicker.astro";
                                 class="bg-wa-bg-deep p-4 border border-wa-border space-y-3 rounded-lg"
                             >
                                 <!-- Row 1: Selects and Delete -->
-                                <div class="flex justify-between items-center gap-2">
-                                    <div class="flex gap-2 items-center flex-1">
+                                <div class="flex flex-wrap justify-between items-center gap-2">
+                                    <div class="flex gap-2 items-center flex-1 min-w-0">
                                         <select
                                             x-model="trigger.scope"
-                                            class="bg-wa-bg-hover text-[10px] font-mono text-wa-green px-2 py-1.5 border border-wa-border focus:outline-none focus:border-wa-green flex-1 rounded-lg"
+                                            class="bg-wa-bg-hover text-[10px] font-mono text-wa-green px-2 py-1.5 border border-wa-border focus:outline-none focus:border-wa-green flex-1 min-w-0 rounded-lg"
                                             title="Trigger Scope"
                                         >
                                             <option value="INCOMING">INCOMING</option>
@@ -198,7 +198,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                                         </select>
                                         <select
                                             x-model="trigger.matchType"
-                                            class="bg-wa-bg-hover text-xs font-mono text-white px-2 py-1.5 border border-wa-border focus:outline-none focus:border-wa-green flex-1 rounded-lg"
+                                            class="bg-wa-bg-hover text-xs font-mono text-white px-2 py-1.5 border border-wa-border focus:outline-none focus:border-wa-green flex-1 min-w-0 rounded-lg"
                                         >
                                             <template
                                                 x-for="opt in ['CONTAINS', 'EXACT', 'REGEX']"
@@ -222,7 +222,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                                     <textarea
                                         x-model="trigger.keyword"
                                         rows="1"
-                                        class="w-full bg-wa-bg-hover text-sm px-3 py-2 border border-wa-border focus:outline-none focus:border-wa-green resize-none overflow-hidden font-mono leading-relaxed rounded-lg"
+                                        class="w-full bg-wa-bg-hover text-sm px-3 py-2 border border-wa-border focus:outline-none focus:border-wa-green resize-none overflow-hidden font-mono leading-relaxed min-h-[40px] max-w-full rounded-lg"
                                         :placeholder="$t('keyword') || 'Enter keyword or regex...'"
                                         x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
                                         @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
@@ -243,13 +243,13 @@ import MediaPicker from "../components/MediaPicker.astro";
 
             <!-- RIGHT PANEL: Steps Builder -->
             <div class="col-span-1 lg:col-span-2 flex flex-col h-full min-h-0">
-                <div class="flex justify-between items-center mb-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 shrink-0">
                     <h3
                         class="text-xs text-wa-green font-sans"
                         x-text="$t('sequence_steps')"
                     >
                     </h3>
-                    <div class="flex gap-2">
+                    <div class="flex flex-wrap gap-2">
                         <button
                             @click="addStep('TEXT')"
                             class="px-3 py-1 bg-wa-bg-hover hover:bg-wa-bg-hover text-[10px] font-sans border border-wa-border rounded-lg"
@@ -273,13 +273,13 @@ import MediaPicker from "../components/MediaPicker.astro";
                 <div
                     class="flex-1 overflow-y-auto bg-wa-bg-panel/30 border border-wa-border relative rounded-xl"
                 >
-                    <div id="steps-container" class="p-6 space-y-4 pb-20">
+                    <div id="steps-container" class="p-3 sm:p-6 space-y-4 pb-20">
                         <template
                             x-for="(step, index) in flow.steps"
                             :key="step.tempId || step.id || index"
                         >
                             <div
-                                class="step-card bg-wa-bg-deep border border-wa-border rounded-lg p-4 relative group hover:border-wa-green/50 transition-colors"
+                                class="step-card bg-wa-bg-deep border border-wa-border rounded-lg p-3 sm:p-4 relative group hover:border-wa-green/50 transition-colors overflow-hidden"
                                 :data-id="index"
                             >
                                 <!-- Reorder Controls -->
@@ -301,16 +301,16 @@ import MediaPicker from "../components/MediaPicker.astro";
                                     >▼</button>
                                 </div>
 
-                                <div class="pl-10">
+                                <div class="pl-8 sm:pl-10">
                                     <div
-                                        class="flex justify-between text-xs font-sans text-wa-text-secondary mb-3 tracking-wide items-center"
+                                        class="flex flex-wrap justify-between text-xs font-sans text-wa-text-secondary mb-3 tracking-wide items-center gap-2"
                                     >
                                         <span
                                             x-text="step.type"
-                                            class="text-wa-green font-bold"
+                                            class="text-wa-green font-bold shrink-0"
                                         ></span>
                                         <div
-                                            class="flex gap-4 items-center flex-wrap"
+                                            class="flex gap-2 sm:gap-4 items-center flex-wrap"
                                         >
                                             <span
                                                 class="flex items-center gap-1 text-wa-text-secondary"
@@ -320,7 +320,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                 <input
                                                     type="number"
                                                     x-model="step.delayMs"
-                                                    class="w-16 bg-wa-bg-hover text-center px-2 py-1 border border-wa-border focus:outline-none focus:border-wa-green text-white rounded-lg"
+                                                    class="w-14 sm:w-16 bg-wa-bg-hover text-center px-1 sm:px-2 py-1 border border-wa-border focus:outline-none focus:border-wa-green text-white rounded-lg"
                                                     min="0"
                                                 /><span class="text-wa-text-secondary"
                                                     >ms</span
@@ -335,7 +335,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                 <input
                                                     type="number"
                                                     x-model="step.jitterPct"
-                                                    class="w-14 bg-wa-bg-hover text-center px-2 py-1 border border-wa-border focus:outline-none focus:border-wa-green text-white rounded-lg"
+                                                    class="w-12 sm:w-14 bg-wa-bg-hover text-center px-1 sm:px-2 py-1 border border-wa-border focus:outline-none focus:border-wa-green text-white rounded-lg"
                                                     min="0"
                                                     max="100"
                                                 /><span class="text-wa-text-secondary"
@@ -355,7 +355,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                                             <textarea
                                                 x-model="step.content"
                                                 rows="2"
-                                                class="w-full bg-wa-bg-deep/50 border border-wa-border p-2 text-sm focus:border-wa-green focus:outline-none resize-none overflow-hidden font-mono leading-relaxed min-h-[60px] rounded-lg"
+                                                class="w-full max-w-full bg-wa-bg-deep/50 border border-wa-border p-2 text-sm focus:border-wa-green focus:outline-none resize-none overflow-hidden font-mono leading-relaxed min-h-[60px] rounded-lg"
                                                 :placeholder="$t('message_content')"
                                                 x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
                                                 @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
@@ -366,16 +366,16 @@ import MediaPicker from "../components/MediaPicker.astro";
                                             x-if="['IMAGE', 'AUDIO', 'VIDEO', 'DOCUMENT'].includes(step.type)"
                                         >
                                             <div>
-                                                <div class="flex gap-2 mb-2">
+                                                <div class="flex flex-col sm:flex-row gap-2 mb-2">
                                                     <input
                                                         type="text"
                                                         x-model="step.mediaUrl"
-                                                        class="flex-1 bg-wa-bg-deep/50 border border-wa-border p-2 text-xs font-mono rounded-lg"
+                                                        class="flex-1 min-w-0 bg-wa-bg-deep/50 border border-wa-border p-2 text-xs font-mono rounded-lg"
                                                         :placeholder="$t('media_url_placeholder')"
                                                     />
                                                     <button
                                                         @click="selectMedia(index)"
-                                                        class="bg-wa-bg-hover px-3 text-xs hover:bg-wa-bg-hover rounded-lg"
+                                                        class="bg-wa-bg-hover px-3 py-2 sm:py-0 text-xs hover:bg-wa-bg-hover shrink-0 rounded-lg"
                                                         x-text="$t('select_media')"
                                                     ></button>
                                                 </div>
@@ -393,7 +393,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                     <textarea
                                                         x-model="step.content"
                                                         rows="1"
-                                                        class="w-full bg-wa-bg-deep/50 border border-wa-border p-2 text-xs mt-1 focus:border-wa-green focus:outline-none resize-none overflow-hidden font-mono leading-relaxed min-h-[38px] rounded-lg"
+                                                        class="w-full max-w-full bg-wa-bg-deep/50 border border-wa-border p-2 text-xs mt-1 focus:border-wa-green focus:outline-none resize-none overflow-hidden font-mono leading-relaxed min-h-[40px] rounded-lg"
                                                         :placeholder="$t('caption_placeholder')"
                                                         x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
                                                         @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
@@ -412,14 +412,14 @@ import MediaPicker from "../components/MediaPicker.astro";
 
                                                         <!-- Branches -->
                                                         <template x-for="(branch, bIndex) in step.metadata.branches" :key="bIndex">
-                                                            <div class="bg-wa-bg-deep/50 border border-wa-border p-3 relative group/branch rounded-lg">
-                                                                <div class="flex justify-between items-center mb-2">
-                                                                    <div class="flex gap-2 items-center">
-                                                                        <input type="time" x-model="branch.startTime" class="bg-wa-bg-hover text-white text-xs px-2 py-1 border border-wa-border focus:border-wa-green focus:outline-none rounded-lg font-mono">
-                                                                        <span class="text-wa-text-secondary text-xs">-</span>
-                                                                        <input type="time" x-model="branch.endTime" class="bg-wa-bg-hover text-white text-xs px-2 py-1 border border-wa-border focus:border-wa-green focus:outline-none rounded-lg font-mono">
+                                                            <div class="bg-wa-bg-deep/50 border border-wa-border p-2 sm:p-3 relative group/branch rounded-lg">
+                                                                <div class="flex flex-wrap justify-between items-center mb-2 gap-2">
+                                                                    <div class="flex gap-2 items-center min-w-0">
+                                                                        <input type="time" x-model="branch.startTime" class="bg-wa-bg-hover text-white text-xs px-1.5 sm:px-2 py-1 border border-wa-border focus:border-wa-green focus:outline-none rounded-lg font-mono min-w-0">
+                                                                        <span class="text-wa-text-secondary text-xs shrink-0">-</span>
+                                                                        <input type="time" x-model="branch.endTime" class="bg-wa-bg-hover text-white text-xs px-1.5 sm:px-2 py-1 border border-wa-border focus:border-wa-green focus:outline-none rounded-lg font-mono min-w-0">
                                                                     </div>
-                                                                    <button @click="step.metadata.branches.splice(bIndex, 1)" class="text-red-500 hover:text-white font-bold">&times;</button>
+                                                                    <button @click="step.metadata.branches.splice(bIndex, 1)" class="text-red-500 hover:text-white font-bold shrink-0">&times;</button>
                                                                 </div>
 
                                                                 <div class="flex gap-2 mb-2">
@@ -434,14 +434,14 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                                     <textarea
                                                                         x-model="branch.content"
                                                                         rows="2"
-                                                                        class="w-full bg-wa-bg-deep/50 border border-wa-border p-2 text-xs focus:border-wa-green focus:outline-none resize-none overflow-hidden min-h-[38px] font-mono rounded-lg"
+                                                                        class="w-full max-w-full bg-wa-bg-deep/50 border border-wa-border p-2 text-xs focus:border-wa-green focus:outline-none resize-none overflow-hidden min-h-[40px] font-mono rounded-lg"
                                                                         :placeholder="branch.type === 'TEXT' ? $t('message_content') : $t('caption_placeholder')"
                                                                         x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = ($el.scrollHeight + 2) + 'px' })"
                                                                         @input="$el.style.height = 'auto'; $el.style.height = ($el.scrollHeight + 2) + 'px'"></textarea>
 
-                                                                    <div x-show="branch.type !== 'TEXT'" class="flex gap-2">
-                                                                        <input type="text" x-model="branch.mediaUrl" class="flex-1 bg-wa-bg-deep/50 border border-wa-border p-2 text-xs font-mono rounded-lg" :placeholder="$t('media_url_placeholder')">
-                                                                        <button @click="selectMediaForBranch(index, bIndex)" class="bg-wa-bg-hover px-2 text-[10px] hover:bg-wa-bg-hover rounded-lg" x-text="$t('pick')"></button>
+                                                                    <div x-show="branch.type !== 'TEXT'" class="flex flex-col sm:flex-row gap-2">
+                                                                        <input type="text" x-model="branch.mediaUrl" class="flex-1 min-w-0 bg-wa-bg-deep/50 border border-wa-border p-2 text-xs font-mono rounded-lg" :placeholder="$t('media_url_placeholder')">
+                                                                        <button @click="selectMediaForBranch(index, bIndex)" class="bg-wa-bg-hover px-2 py-2 sm:py-0 text-[10px] hover:bg-wa-bg-hover shrink-0 rounded-lg" x-text="$t('pick')"></button>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -456,7 +456,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                         <!-- Fallback -->
                                                         <div class="mt-4 pt-4 border-t border-wa-border">
                                                             <div class="text-[10px] text-wa-text-secondary mb-2 font-sans" x-text="$t('fallback_label')"></div>
-                                                            <div class="bg-wa-bg-deep/50 p-3 border border-wa-border rounded-lg">
+                                                            <div class="bg-wa-bg-deep/50 p-2 sm:p-3 border border-wa-border rounded-lg">
                                                                 <div class="flex gap-2 mb-2">
                                                                     <select x-model="step.metadata.fallback.type" class="bg-wa-bg-hover text-[10px] text-gray-300 border border-wa-border px-2 py-1 w-full focus:outline-none font-mono rounded-lg">
                                                                         <option value="TEXT">TEXT</option>
@@ -467,13 +467,13 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                                 <textarea
                                                                     x-model="step.metadata.fallback.content"
                                                                     rows="2"
-                                                                    class="w-full bg-wa-bg-deep/50 border border-wa-border p-2 text-xs focus:border-wa-green focus:outline-none resize-none overflow-hidden min-h-[38px] font-mono rounded-lg"
+                                                                    class="w-full max-w-full bg-wa-bg-deep/50 border border-wa-border p-2 text-xs focus:border-wa-green focus:outline-none resize-none overflow-hidden min-h-[40px] font-mono rounded-lg"
                                                                     :placeholder="$t('message_content')"
                                                                     x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = ($el.scrollHeight + 2) + 'px' })"
                                                                     @input="$el.style.height = 'auto'; $el.style.height = ($el.scrollHeight + 2) + 'px'"></textarea>
-                                                                <div x-show="step.metadata.fallback.type !== 'TEXT'" class="flex gap-2 mt-2">
-                                                                    <input type="text" x-model="step.metadata.fallback.mediaUrl" class="flex-1 bg-wa-bg-deep/50 border border-wa-border p-2 text-xs font-mono rounded-lg" :placeholder="$t('media_url_placeholder')">
-                                                                    <button @click="selectMediaForFallback(index)" class="bg-wa-bg-hover px-2 text-[10px] hover:bg-wa-bg-hover rounded-lg" x-text="$t('pick')"></button>
+                                                                <div x-show="step.metadata.fallback.type !== 'TEXT'" class="flex flex-col sm:flex-row gap-2 mt-2">
+                                                                    <input type="text" x-model="step.metadata.fallback.mediaUrl" class="flex-1 min-w-0 bg-wa-bg-deep/50 border border-wa-border p-2 text-xs font-mono rounded-lg" :placeholder="$t('media_url_placeholder')">
+                                                                    <button @click="selectMediaForFallback(index)" class="bg-wa-bg-hover px-2 py-2 sm:py-0 text-[10px] hover:bg-wa-bg-hover shrink-0 rounded-lg" x-text="$t('pick')"></button>
                                                                 </div>
                                                             </div>
                                                         </div>
