@@ -6,7 +6,7 @@
     style="display: none;"
 >
     <div
-        class="bg-wa-bg-panel border border-wa-border rounded-xl w-full max-w-2xl h-[600px] flex flex-col shadow-2xl relative"
+        class="bg-wa-bg-panel border border-wa-border rounded-xl w-full max-w-2xl h-[80vh] md:h-[600px] mx-4 flex flex-col shadow-2xl relative"
     >
         <!-- Header -->
         <div
@@ -54,7 +54,7 @@
                     @dragleave.prevent="dragover = false"
                     @drop.prevent="handleDrop($event)"
                     :class="dragover ? 'border-wa-green bg-wa-green/10' : 'border-wa-border hover:border-wa-text-secondary'"
-                    class="border-2 border-dashed rounded-xl p-12 text-center transition-all cursor-pointer relative"
+                    class="border-2 border-dashed rounded-xl p-6 md:p-12 text-center transition-all cursor-pointer relative"
                 >
                     <input
                         type="file"

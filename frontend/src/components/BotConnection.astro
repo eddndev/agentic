@@ -88,7 +88,7 @@ const { botId } = Astro.props;
         });
     </script>
 
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
         <h3
             class="text-sm font-bold text-wa-text-secondary"
             x-text="$t('whatsapp_baileys')"
@@ -97,7 +97,7 @@ const { botId } = Astro.props;
 
         <div class="flex items-center gap-2">
             <span
-                class="px-2 py-0.5 text-[10px] border rounded-md"
+                class="px-2 py-0.5 text-[10px] border rounded-md whitespace-nowrap"
                 :class="{
                 'border-green-500/50 text-green-400 bg-green-500/10': status === 'CONNECTED',
                 'border-yellow-500/50 text-yellow-400 bg-yellow-500/10': status === 'SCAN_QR',
@@ -112,7 +112,7 @@ const { botId } = Astro.props;
         <div class="text-center py-4">
             <img
                 :src="qr"
-                class="w-48 h-48 mx-auto border-4 border-white rounded-xl shadow-2xl"
+                class="w-full max-w-[12rem] aspect-square mx-auto border-4 border-white rounded-xl shadow-2xl"
             />
             <p
                 class="mt-4 text-xs text-wa-text-secondary animate-pulse"

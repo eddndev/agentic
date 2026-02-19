@@ -99,7 +99,7 @@
 
     <!-- Table -->
     <div class="overflow-x-auto" x-show="!loading && clients.length > 0">
-        <table class="w-full text-left border-collapse">
+        <table class="w-full text-left border-collapse min-w-[600px]">
             <thead>
                 <tr class="text-xs text-wa-text-secondary border-b border-wa-border">
                     <th class="p-3">CURP</th>
@@ -155,7 +155,7 @@
     >
         <div class="absolute inset-0 bg-black/80" @click="closeDetail()"></div>
 
-        <div class="relative bg-wa-bg-panel border border-wa-border rounded-xl p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div class="relative bg-wa-bg-panel border border-wa-border rounded-xl p-4 sm:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
             <h2 class="text-xl font-bold tracking-tight mb-6 flex justify-between items-center">
                 <span>Detalle de Cliente</span>
                 <button @click="closeDetail()" class="text-wa-text-secondary hover:text-white">&times;</button>
@@ -164,7 +164,7 @@
             <template x-if="detailClient">
                 <div class="space-y-5">
                     <!-- Read-only info -->
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <span class="block text-[10px] text-wa-text-secondary mb-1">ID</span>
                             <span class="text-wa-text-secondary font-mono text-[11px] select-all" x-text="detailClient.id"></span>
