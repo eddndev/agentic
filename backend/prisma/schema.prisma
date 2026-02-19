@@ -35,6 +35,7 @@ model Bot {
   messageDelay Int        @default(0)
   clients      Client[]
   flows        Flow[]
+  labels       Label[]
   sessions     Session[]
   tools        Tool[]
   triggers     Trigger[]
@@ -52,6 +53,7 @@ model Session {
   updatedAt        DateTime          @updatedAt
   conversationLogs ConversationLog[]
   executions       Execution[]
+  labels           SessionLabel[]
   messages         Message[]
   bot              Bot               @relation(fields: [botId], references: [id], onDelete: Cascade)
   triggers         Trigger[]
@@ -207,6 +209,36 @@ model ConversationLog {
 
   @@index([sessionId])
   @@index([sessionId, createdAt])
+}
+
+model Label {
+  id           String         @id @default(uuid())
+  botId        String
+  waLabelId    String
+  name         String
+  color        Int
+  deleted      Boolean        @default(false)
+  predefinedId String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  bot          Bot            @relation(fields: [botId], references: [id], onDelete: Cascade)
+  sessions     SessionLabel[]
+
+  @@unique([botId, waLabelId])
+  @@index([botId])
+}
+
+model SessionLabel {
+  id         String   @id @default(uuid())
+  sessionId  String
+  labelId    String
+  assignedAt DateTime @default(now())
+  session    Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  label      Label    @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, labelId])
+  @@index([sessionId])
+  @@index([labelId])
 }
 
 enum Platform {

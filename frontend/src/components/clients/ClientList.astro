@@ -34,6 +34,7 @@
         this.detailClient = client;
         this.editData = {
             email: client.email,
+            phoneNumber: client.phoneNumber,
             curp: client.curp || '',
             status: client.status,
         };
@@ -170,12 +171,20 @@
                     <!-- Read-only info -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
+                            <span class="block text-[10px] uppercase text-gray-500 mb-1">ID</span>
+                            <span class="text-gray-400 font-mono text-[11px] select-all" x-text="detailClient.id"></span>
+                        </div>
+                        <div>
                             <span class="block text-[10px] uppercase text-gray-500 mb-1">Telefono</span>
                             <span class="text-white font-mono text-sm" x-text="detailClient.phoneNumber"></span>
                         </div>
                         <div>
                             <span class="block text-[10px] uppercase text-gray-500 mb-1">Registrado</span>
                             <span class="text-white font-mono text-sm" x-text="new Date(detailClient.createdAt).toLocaleString()"></span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] uppercase text-gray-500 mb-1">Actualizado</span>
+                            <span class="text-white font-mono text-sm" x-text="new Date(detailClient.updatedAt).toLocaleString()"></span>
                         </div>
                     </div>
 
@@ -186,6 +195,12 @@
                         <label class="block text-xs text-gray-400 font-mono uppercase mb-2">Email</label>
                         <input type="email" x-model="editData.email"
                             class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600" />
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-gray-400 font-mono uppercase mb-2">Telefono</label>
+                        <input type="text" x-model="editData.phoneNumber"
+                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600 font-mono" />
                     </div>
 
                     <div>

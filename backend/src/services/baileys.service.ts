@@ -138,6 +138,16 @@ export class BaileysService {
                     console.log(`[Baileys] Connection opened for Bot ${botId}`);
                     qrCodes.delete(botId);
                     reconnectAttempts.delete(botId); // Reset backoff on successful connection
+
+                    // Force label sync — labels live in 'regular_high' app state
+                    setTimeout(async () => {
+                        try {
+                            await (sock as any).resyncAppState(['regular_high'], false);
+                            console.log(`[Baileys] Label sync triggered for Bot ${botId}`);
+                        } catch (e: any) {
+                            console.warn(`[Baileys] Label sync failed for Bot ${botId}:`, e.message);
+                        }
+                    }, 5000);
                 }
             });
 
@@ -151,6 +161,106 @@ export class BaileysService {
 
                     // @ts-ignore
                     await this.handleIncomingMessage(botId, msg);
+                }
+            });
+
+            sock.ev.on('labels.edit', async (label: any) => {
+                try {
+                    await prisma.label.upsert({
+                        where: { botId_waLabelId: { botId, waLabelId: String(label.id) } },
+                        update: {
+                            name: label.name,
+                            color: label.color ?? 0,
+                            deleted: label.deleted ?? false,
+                            predefinedId: label.predefinedId ?? null,
+                        },
+                        create: {
+                            botId,
+                            waLabelId: String(label.id),
+                            name: label.name,
+                            color: label.color ?? 0,
+                            deleted: label.deleted ?? false,
+                            predefinedId: label.predefinedId ?? null,
+                        },
+                    });
+                    console.log(`[Baileys] Label synced: "${label.name}" (${label.id}) for Bot ${botId}`);
+                } catch (e) {
+                    console.error(`[Baileys] labels.edit error:`, e);
+                }
+            });
+
+            sock.ev.on('labels.association', async (event: any) => {
+                try {
+                    const association = event.association;
+                    console.log(`[Baileys] labels.association event:`, JSON.stringify(event));
+
+                    if (event.type !== 'add' && event.type !== 'remove') return;
+                    if (association.type !== 'label_jid') return;
+
+                    const rawChatId = association.chatId;
+                    const waLabelId = String(association.labelId);
+
+                    // Resolve chatId: if LID, convert to phone JID via Baileys mapping
+                    let resolvedJid = jidNormalizedUser(rawChatId);
+                    if (resolvedJid.endsWith('@lid')) {
+                        try {
+                            const pn = await (sock as any).signalRepository.lidMapping.getPNForLID(resolvedJid);
+                            if (pn) {
+                                resolvedJid = jidNormalizedUser(pn);
+                                console.log(`[Baileys] LID ${rawChatId} resolved to ${resolvedJid}`);
+                            }
+                        } catch (e: any) {
+                            console.warn(`[Baileys] LID resolution failed for ${rawChatId}:`, e.message);
+                        }
+                    }
+
+                    // Find session by resolved JID, fallback to raw chatId
+                    let session = await prisma.session.findUnique({
+                        where: { botId_identifier: { botId, identifier: resolvedJid } },
+                    });
+                    if (!session && resolvedJid !== rawChatId) {
+                        session = await prisma.session.findUnique({
+                            where: { botId_identifier: { botId, identifier: rawChatId } },
+                        });
+                    }
+                    // Auto-create session if it doesn't exist yet
+                    if (!session) {
+                        const identifier = resolvedJid.endsWith('@lid') ? rawChatId : resolvedJid;
+                        session = await prisma.session.create({
+                            data: {
+                                botId,
+                                platform: Platform.WHATSAPP,
+                                identifier,
+                                name: identifier.split('@')[0],
+                                status: SessionStatus.CONNECTED,
+                            },
+                        });
+                        console.log(`[Baileys] Auto-created session for ${identifier} (label association)`);
+                    }
+
+                    const label = await prisma.label.findUnique({
+                        where: { botId_waLabelId: { botId, waLabelId } },
+                    });
+                    if (!label) {
+                        console.warn(`[Baileys] labels.association: No label for waLabelId=${waLabelId}, skipping`);
+                        return;
+                    }
+
+                    if (event.type === 'add') {
+                        await prisma.sessionLabel.upsert({
+                            where: { sessionId_labelId: { sessionId: session.id, labelId: label.id } },
+                            update: {},
+                            create: { sessionId: session.id, labelId: label.id },
+                        });
+                        console.log(`[Baileys] Label "${label.name}" added to session ${resolvedJid}`);
+                    } else {
+                        await prisma.sessionLabel.deleteMany({
+                            where: { sessionId: session.id, labelId: label.id },
+                        });
+                        console.log(`[Baileys] Label "${label.name}" removed from session ${resolvedJid}`);
+                    }
+                } catch (e) {
+                    console.error(`[Baileys] labels.association error:`, e);
                 }
             });
 
@@ -411,6 +521,43 @@ export class BaileysService {
         } catch (e: any) {
             console.warn(`[Baileys] sendPresence(${presence}) failed:`, e.message);
         }
+    }
+
+    static async syncLabels(botId: string): Promise<void> {
+        const sock = sessions.get(botId);
+        if (!sock) throw new Error(`Bot ${botId} not connected`);
+        await (sock as any).resyncAppState(['regular_high'], false);
+    }
+
+    /**
+     * Resolve a phone JID to the LID that WhatsApp uses internally for app state patches.
+     * Falls back to the original JID if no mapping exists.
+     */
+    private static async resolveJidForAppState(sock: WASocket, phoneJid: string): Promise<string> {
+        try {
+            const lid = await (sock as any).signalRepository.lidMapping.getLIDForPN(phoneJid);
+            if (lid) {
+                console.log(`[Baileys] Resolved ${phoneJid} -> ${lid} for app state`);
+                return lid;
+            }
+        } catch {}
+        return phoneJid;
+    }
+
+    static async addChatLabel(botId: string, chatJid: string, waLabelId: string): Promise<void> {
+        const sock = sessions.get(botId);
+        if (!sock) throw new Error(`Bot ${botId} not connected`);
+        const jid = await this.resolveJidForAppState(sock, chatJid);
+        console.log(`[Baileys] addChatLabel: jid=${jid}, waLabelId=${waLabelId}`);
+        await (sock as any).addChatLabel(jid, waLabelId);
+    }
+
+    static async removeChatLabel(botId: string, chatJid: string, waLabelId: string): Promise<void> {
+        const sock = sessions.get(botId);
+        if (!sock) throw new Error(`Bot ${botId} not connected`);
+        const jid = await this.resolveJidForAppState(sock, chatJid);
+        console.log(`[Baileys] removeChatLabel: jid=${jid}, waLabelId=${waLabelId}`);
+        await (sock as any).removeChatLabel(jid, waLabelId);
     }
 
     /**

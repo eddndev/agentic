@@ -32,6 +32,9 @@ export const sessionController = new Elysia({ prefix: "/sessions" })
                     take: 1,
                     select: { content: true, createdAt: true, fromMe: true, type: true },
                 },
+                labels: {
+                    include: { label: true },
+                },
                 _count: { select: { messages: true } },
             },
         });
@@ -46,12 +49,133 @@ export const sessionController = new Elysia({ prefix: "/sessions" })
             updatedAt: s.updatedAt,
             messageCount: s._count.messages,
             lastMessage: s.messages[0] || null,
+            labels: s.labels.map((sl) => ({
+                id: sl.label.id,
+                name: sl.label.name,
+                color: sl.label.color,
+                waLabelId: sl.label.waLabelId,
+            })),
         }));
     }, {
         query: t.Object({
             botId: t.Optional(t.String()),
             search: t.Optional(t.String()),
         }),
+    })
+
+    // GET /sessions/labels — List all labels for a bot
+    .get("/labels", async ({ query, set }) => {
+        const { botId } = query;
+        if (!botId) {
+            set.status = 400;
+            return { error: "botId is required" };
+        }
+
+        const labels = await prisma.label.findMany({
+            where: { botId, deleted: false },
+            include: { _count: { select: { sessions: true } } },
+            orderBy: { name: "asc" },
+        });
+
+        return labels.map((l) => ({
+            id: l.id,
+            waLabelId: l.waLabelId,
+            name: l.name,
+            color: l.color,
+            predefinedId: l.predefinedId,
+            sessionCount: l._count.sessions,
+        }));
+    }, {
+        query: t.Object({
+            botId: t.Optional(t.String()),
+        }),
+    })
+
+    // POST /sessions/labels/sync — Force label sync from WhatsApp
+    .post("/labels/sync", async ({ body, set }) => {
+        const { botId } = body;
+        try {
+            await BaileysService.syncLabels(botId);
+            return { success: true };
+        } catch (e: any) {
+            set.status = 500;
+            return { error: e.message };
+        }
+    }, {
+        body: t.Object({ botId: t.String() }),
+    })
+
+    // POST /sessions/:id/labels — Assign label to session
+    .post("/:id/labels", async ({ params: { id }, body, set }) => {
+        const session = await prisma.session.findUnique({
+            where: { id },
+            include: { bot: true },
+        });
+
+        if (!session) {
+            set.status = 404;
+            return { error: "Session not found" };
+        }
+
+        const label = await prisma.label.findUnique({ where: { id: body.labelId } });
+        if (!label || label.botId !== session.botId) {
+            set.status = 404;
+            return { error: "Label not found" };
+        }
+
+        // Call Baileys to sync with WhatsApp
+        try {
+            await BaileysService.addChatLabel(session.botId, session.identifier, label.waLabelId);
+        } catch (e: any) {
+            console.warn(`[SessionController] addChatLabel WA sync failed:`, e.message);
+        }
+
+        // Persist in DB
+        const sessionLabel = await prisma.sessionLabel.upsert({
+            where: { sessionId_labelId: { sessionId: id, labelId: label.id } },
+            update: {},
+            create: { sessionId: id, labelId: label.id },
+        });
+
+        return { success: true, sessionLabel };
+    }, {
+        params: t.Object({ id: t.String() }),
+        body: t.Object({ labelId: t.String() }),
+    })
+
+    // DELETE /sessions/:id/labels/:labelId — Remove label from session
+    .delete("/:id/labels/:labelId", async ({ params: { id, labelId }, set }) => {
+        const session = await prisma.session.findUnique({
+            where: { id },
+            include: { bot: true },
+        });
+
+        if (!session) {
+            set.status = 404;
+            return { error: "Session not found" };
+        }
+
+        const label = await prisma.label.findUnique({ where: { id: labelId } });
+        if (!label || label.botId !== session.botId) {
+            set.status = 404;
+            return { error: "Label not found" };
+        }
+
+        // Call Baileys to sync with WhatsApp
+        try {
+            await BaileysService.removeChatLabel(session.botId, session.identifier, label.waLabelId);
+        } catch (e: any) {
+            console.warn(`[SessionController] removeChatLabel WA sync failed:`, e.message);
+        }
+
+        // Remove from DB
+        await prisma.sessionLabel.deleteMany({
+            where: { sessionId: id, labelId: label.id },
+        });
+
+        return { success: true };
+    }, {
+        params: t.Object({ id: t.String(), labelId: t.String() }),
     })
 
     // GET /sessions/:id/messages — Paginated messages

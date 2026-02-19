@@ -59,6 +59,15 @@ import Layout from "../../layouts/Layout.astro";
                                 </div>
                             </div>
                             <div x-show="s.lastMessage" class="mt-1 text-xs text-gray-500 truncate" x-text="s.lastMessage?.content || ''"></div>
+                            <div x-show="s.labels?.length" class="mt-1.5 flex flex-wrap gap-1">
+                                <template x-for="lbl in (s.labels || [])" :key="lbl.id">
+                                    <span
+                                        class="text-[9px] font-mono px-1.5 py-0.5 rounded-full text-white/90"
+                                        :style="`background:${labelColor(lbl.color)}`"
+                                        x-text="lbl.name"
+                                    ></span>
+                                </template>
+                            </div>
                         </button>
                     </template>
                 </div>
@@ -77,14 +86,54 @@ import Layout from "../../layouts/Layout.astro";
                 <template x-if="selectedSession">
                     <div class="flex flex-col h-full">
                         <!-- Chat header -->
-                        <div class="p-4 border-b border-white/5 flex items-center justify-between flex-shrink-0">
-                            <div>
-                                <div class="font-bold text-sm" x-text="selectedSession.name || selectedSession.identifier"></div>
-                                <div class="text-[10px] text-gray-500 font-mono" x-text="selectedSession.identifier"></div>
+                        <div class="p-4 border-b border-white/5 flex-shrink-0">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-bold text-sm" x-text="selectedSession.name || selectedSession.identifier"></div>
+                                    <div class="text-[10px] text-gray-500 font-mono" x-text="selectedSession.identifier"></div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full" :class="selectedSession.status === 'CONNECTED' ? 'bg-green-500' : 'bg-gray-600'"></span>
+                                    <span class="text-[10px] font-mono text-gray-500" x-text="selectedSession.status"></span>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full" :class="selectedSession.status === 'CONNECTED' ? 'bg-green-500' : 'bg-gray-600'"></span>
-                                <span class="text-[10px] font-mono text-gray-500" x-text="selectedSession.status"></span>
+                            <!-- Labels row -->
+                            <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                                <template x-for="lbl in (selectedSession.labels || [])" :key="lbl.id">
+                                    <button
+                                        @click="removeLabel(lbl.id)"
+                                        class="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-full text-white/90 hover:opacity-80 transition-opacity cursor-pointer"
+                                        :style="`background:${labelColor(lbl.color)}`"
+                                        :title="'Remove ' + lbl.name"
+                                    >
+                                        <span x-text="lbl.name"></span>
+                                        <svg class="w-3 h-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </template>
+                                <!-- Add label dropdown -->
+                                <div class="relative" x-data="{ open: false }">
+                                    <button
+                                        @click="open = !open"
+                                        x-show="availableLabels().length > 0"
+                                        class="text-[10px] font-mono px-2 py-0.5 border border-white/10 text-gray-400 rounded-full hover:border-brand-purple hover:text-brand-purple transition-colors"
+                                    >+ Label</button>
+                                    <div
+                                        x-show="open"
+                                        @click.outside="open = false"
+                                        class="absolute top-full left-0 mt-1 z-50 bg-[#0f172a] border border-white/10 rounded shadow-lg min-w-[160px] max-h-48 overflow-y-auto"
+                                        style="display: none;"
+                                    >
+                                        <template x-for="lbl in availableLabels()" :key="lbl.id">
+                                            <button
+                                                @click="assignLabel(lbl.id); open = false"
+                                                class="w-full text-left px-3 py-1.5 text-xs hover:bg-white/5 flex items-center gap-2"
+                                            >
+                                                <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" :style="`background:${labelColor(lbl.color)}`"></span>
+                                                <span x-text="lbl.name"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -295,6 +344,9 @@ import Layout from "../../layouts/Layout.astro";
             flows: [] as any[],
             tools: [] as any[],
 
+            // Labels
+            botLabels: [] as any[],
+
             // Polling
             pollInterval: null as ReturnType<typeof setInterval> | null,
             lastMessageCount: 0,
@@ -311,6 +363,7 @@ import Layout from "../../layouts/Layout.astro";
                 } catch {}
 
                 await this.loadSessions();
+                await this.loadLabels();
 
                 // Start polling
                 this.pollInterval = setInterval(() => this.poll(), 3000);
@@ -459,6 +512,61 @@ import Layout from "../../layouts/Layout.astro";
                 } catch (e: any) {
                     alert("Execute tool failed: " + (e.message || "Unknown error"));
                 }
+            },
+
+            async loadLabels() {
+                if (!this.botId) return;
+                try {
+                    this.botLabels = await ApiClient.get(`/sessions/labels?botId=${this.botId}`);
+                } catch (e) {
+                    console.error("Failed to load labels", e);
+                }
+            },
+
+            async assignLabel(labelId: string) {
+                if (!this.selectedSession) return;
+                try {
+                    await ApiClient.post(`/sessions/${this.selectedSession.id}/labels`, { labelId });
+                    const label = this.botLabels.find((l: any) => l.id === labelId);
+                    if (label) {
+                        if (!this.selectedSession.labels) this.selectedSession.labels = [];
+                        this.selectedSession.labels.push({ id: label.id, name: label.name, color: label.color, waLabelId: label.waLabelId });
+                        // Also update in the sessions list
+                        const s = this.sessions.find((s: any) => s.id === this.selectedSession.id);
+                        if (s) s.labels = [...this.selectedSession.labels];
+                    }
+                } catch (e: any) {
+                    alert("Assign label failed: " + (e.message || "Unknown error"));
+                }
+            },
+
+            async removeLabel(labelId: string) {
+                if (!this.selectedSession) return;
+                try {
+                    await ApiClient.delete(`/sessions/${this.selectedSession.id}/labels/${labelId}`);
+                    this.selectedSession.labels = (this.selectedSession.labels || []).filter((l: any) => l.id !== labelId);
+                    // Also update in the sessions list
+                    const s = this.sessions.find((s: any) => s.id === this.selectedSession.id);
+                    if (s) s.labels = [...this.selectedSession.labels];
+                } catch (e: any) {
+                    alert("Remove label failed: " + (e.message || "Unknown error"));
+                }
+            },
+
+            availableLabels() {
+                if (!this.selectedSession) return [];
+                const assignedIds = new Set((this.selectedSession.labels || []).map((l: any) => l.id));
+                return this.botLabels.filter((l: any) => !assignedIds.has(l.id));
+            },
+
+            labelColor(colorIndex: number): string {
+                const colors = [
+                    '#00a884', '#53bdeb', '#009de2', '#025bfe', '#7c3aed',
+                    '#ff2e74', '#ef4444', '#ff9a00', '#ffcb00', '#a4c639',
+                    '#00d166', '#00bfa5', '#02c6cf', '#7986cb', '#b39ddb',
+                    '#f48fb1', '#9e9e9e', '#78909c', '#8d6e63', '#a1887f',
+                ];
+                return colors[colorIndex % colors.length] || colors[0];
             },
 
             relativeTime(dateStr: string) {
