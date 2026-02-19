@@ -16,6 +16,7 @@ import * as https from 'node:https';
 import QRCode from 'qrcode';
 import { prisma } from './postgres.service';
 import { aiEngine } from '../core/ai';
+import { flowEngine } from '../core/flow';
 import { MessageAccumulator } from './accumulator.service';
 import { SessionStatus, Platform } from '@prisma/client';
 import pino from 'pino';
@@ -294,8 +295,11 @@ export class BaileysService {
 
             if (!message) return; // Should not happen unless catostrophic DB failure
 
-            // 4. Skip bot's own messages — already stored in DB, don't trigger AI
+            // 4. Outgoing messages: skip AI but evaluate flow triggers (OUTGOING/BOTH)
             if (message.fromMe) {
+                flowEngine.processIncomingMessage(session.id, message).catch(err => {
+                    console.error(`[Baileys] FlowEngine error (outgoing):`, err);
+                });
                 return;
             }
 
