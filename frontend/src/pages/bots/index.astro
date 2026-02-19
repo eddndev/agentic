@@ -6,19 +6,16 @@ import Layout from "../../layouts/Layout.astro";
 	<main class="space-y-8" x-data="botList">
 		<!-- Header -->
 		<header
-			class="flex justify-between items-center border-b border-white/10 pb-6 relative"
+			class="flex justify-between items-center border-b border-wa-border pb-6 relative"
 		>
-			<div class="cross-marker -bottom-[5px] -left-[5px]"></div>
-			<div class="cross-marker -bottom-[5px] -right-[5px]"></div>
-
 			<div>
 				<h1
-					class="text-3xl font-bold tracking-tighter uppercase relative z-10"
+					class="text-3xl font-bold tracking-tight relative z-10"
 					x-text="$t('bots')"
 				>
 					Bots
 				</h1>
-				<p class="text-xs text-gray-500 font-mono mt-1">
+				<p class="text-xs text-wa-text-secondary mt-1">
 					<span x-text="bots.length">0</span>
 					<span x-text="$t('active_bots')">registered</span>
 				</p>
@@ -26,7 +23,7 @@ import Layout from "../../layouts/Layout.astro";
 
 			<button
 				@click="$dispatch('open-create-bot')"
-				class="px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors flex items-center gap-2 rounded-full"
+				class="px-6 py-2 bg-wa-green text-white text-sm font-medium rounded-lg hover:bg-wa-green-hover transition-colors flex items-center gap-2"
 			>
 				<span>+</span>
 				<span x-text="$t('create_bot')">Create Bot</span>
@@ -37,7 +34,7 @@ import Layout from "../../layouts/Layout.astro";
 		<div
 			x-show="error"
 			x-cloak
-			class="p-6 border border-red-500/30 bg-red-500/10 text-red-400 text-sm font-mono"
+			class="p-6 border border-red-500/30 bg-red-500/10 text-red-400 text-sm rounded-xl"
 			x-text="error"
 			style="display: none;"
 		>
@@ -50,11 +47,11 @@ import Layout from "../../layouts/Layout.astro";
 		>
 			<template x-for="i in 3">
 				<div
-					class="bg-brand-panel/30 border border-white/5 p-6 relative animate-pulse h-40"
+					class="bg-wa-bg-panel border border-wa-border rounded-xl p-6 relative animate-pulse h-40"
 				>
-					<div class="w-16 h-4 bg-white/5 mb-4 rounded"></div>
-					<div class="w-3/4 h-6 bg-white/10 mb-2 rounded"></div>
-					<div class="w-1/2 h-4 bg-white/5 rounded"></div>
+					<div class="w-16 h-4 bg-wa-bg-hover mb-4 rounded"></div>
+					<div class="w-3/4 h-6 bg-wa-bg-hover mb-2 rounded"></div>
+					<div class="w-1/2 h-4 bg-wa-bg-hover rounded"></div>
 				</div>
 			</template>
 		</div>
@@ -69,20 +66,17 @@ import Layout from "../../layouts/Layout.astro";
 			<template x-for="bot in bots" :key="bot.id">
 				<a
 					:href="`/bots/detail?id=${bot.id}`"
-					class="block bg-brand-panel/30 border border-white/5 p-6 relative group hover:border-brand-purple/30 transition-all duration-300"
+					class="block bg-wa-bg-panel border border-wa-border rounded-xl p-6 relative group hover:border-wa-green/30 transition-all duration-300"
 				>
-					<div class="cross-marker -top-[2px] -left-[2px]"></div>
-					<div class="cross-marker -top-[2px] -right-[2px]"></div>
-
 					<!-- Platform Badge -->
 					<div class="flex justify-between items-start mb-4">
 						<span
-							class="text-[10px] font-mono text-brand-purple bg-brand-purple/10 px-2 py-0.5 uppercase"
+							class="text-[10px] text-wa-green bg-wa-green/10 px-2 py-0.5 rounded-md"
 							x-text="bot.platform"
 						>
 						</span>
 						<svg
-							class="w-4 h-4 text-gray-600 group-hover:text-brand-purple transition-colors"
+							class="w-4 h-4 text-wa-text-secondary group-hover:text-wa-green transition-colors"
 							fill="none"
 							viewBox="0 0 24 24"
 							stroke="currentColor"
@@ -97,19 +91,19 @@ import Layout from "../../layouts/Layout.astro";
 
 					<!-- Bot Info -->
 					<h3
-						class="text-lg font-bold uppercase tracking-tight mb-1 group-hover:text-brand-purple transition-colors"
+						class="text-lg font-bold tracking-tight mb-1 group-hover:text-wa-green transition-colors"
 						x-text="bot.name"
 					>
 					</h3>
 					<p
-						class="text-xs font-mono text-gray-500 truncate"
+						class="text-xs text-wa-text-secondary truncate"
 						x-text="bot.identifier"
 					>
 					</p>
 
 					<!-- Connection Status Indicator -->
 					<div
-						class="mt-4 pt-4 border-t border-white/5 flex items-center gap-2"
+						class="mt-4 pt-4 border-t border-wa-border flex items-center gap-2"
 						x-data="botStatus(bot.id)"
 					>
 						<span
@@ -117,8 +111,8 @@ import Layout from "../../layouts/Layout.astro";
 							:class="connected ? 'bg-green-500' : 'bg-gray-600'"
 						></span>
 						<span
-							class="text-[10px] font-mono uppercase"
-							:class="connected ? 'text-green-500' : 'text-gray-500'"
+							class="text-[10px]"
+							:class="connected ? 'text-green-500' : 'text-wa-text-secondary'"
 							x-text="connected ? $t('active') : $t('disconnected')"
 						>
 							Checking...
@@ -130,10 +124,10 @@ import Layout from "../../layouts/Layout.astro";
 			<!-- Empty State -->
 			<div
 				x-show="bots.length === 0"
-				class="col-span-full p-12 border border-dashed border-white/20 text-center text-gray-500 bg-brand-panel/20"
+				class="col-span-full p-12 border border-dashed border-wa-border rounded-xl text-center text-wa-text-secondary bg-wa-bg-panel/20"
 			>
 				<svg
-					class="w-12 h-12 mx-auto mb-4 text-gray-600"
+					class="w-12 h-12 mx-auto mb-4 text-wa-text-secondary"
 					fill="none"
 					viewBox="0 0 24 24"
 					stroke="currentColor"
@@ -146,14 +140,14 @@ import Layout from "../../layouts/Layout.astro";
 					></path>
 				</svg>
 				<p
-					class="text-sm uppercase tracking-widest mb-4"
+					class="text-sm mb-4"
 					x-text="$t('no_bots')"
 				>
 					No bots registered
 				</p>
 				<button
 					@click="$dispatch('open-create-bot')"
-					class="px-6 py-2 bg-brand-purple text-white hover:bg-brand-purple/80 transition-colors uppercase text-xs tracking-wider"
+					class="px-6 py-2 bg-wa-green text-white hover:bg-wa-green-hover transition-colors text-sm rounded-lg"
 				>
 					+ <span x-text="$t('create_bot')">Create First Bot</span>
 				</button>
@@ -172,22 +166,17 @@ import Layout from "../../layouts/Layout.astro";
 	>
 		<!-- Backdrop -->
 		<div
-			class="absolute inset-0 bg-black/70 backdrop-blur-sm"
+			class="absolute inset-0 bg-black/70"
 			@click="close()"
 		>
 		</div>
 
 		<!-- Modal -->
 		<div
-			class="relative bg-brand-dark border border-white/10 p-8 w-full max-w-md"
+			class="relative bg-wa-bg-panel border border-wa-border rounded-xl p-8 w-full max-w-md"
 		>
-			<div class="cross-marker -top-[2px] -left-[2px]"></div>
-			<div class="cross-marker -top-[2px] -right-[2px]"></div>
-			<div class="cross-marker -bottom-[2px] -left-[2px]"></div>
-			<div class="cross-marker -bottom-[2px] -right-[2px]"></div>
-
 			<h2
-				class="text-xl font-bold uppercase tracking-tight mb-6"
+				class="text-xl font-bold tracking-tight mb-6"
 				x-text="$t('create_bot')"
 			>
 				Create Bot
@@ -196,42 +185,41 @@ import Layout from "../../layouts/Layout.astro";
 			<form @submit.prevent="submit()" class="space-y-4">
 				<div>
 					<label
-						class="block text-xs text-gray-400 font-mono uppercase mb-2"
+						class="block text-xs text-wa-text-secondary mb-2"
 						x-text="$t('bot_name')"></label>
 					<input
 						type="text"
 						x-model="form.name"
 						required
-						class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white"
+						class="w-full bg-wa-bg-hover border border-wa-border rounded-lg p-3 text-sm focus:border-wa-green focus:outline-none text-white"
 						placeholder="My WhatsApp Bot"
 					/>
 				</div>
 
 				<div>
 					<label
-						class="block text-xs text-gray-400 font-mono uppercase mb-2"
+						class="block text-xs text-wa-text-secondary mb-2"
 						x-text="$t('bot_identifier')"></label>
 					<input
 						type="text"
 						x-model="form.identifier"
 						required
-						class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white"
+						class="w-full bg-wa-bg-hover border border-wa-border rounded-lg p-3 text-sm focus:border-wa-green focus:outline-none text-white"
 						placeholder="+1234567890"
 					/>
 				</div>
 
 				<div>
 					<label
-						class="block text-xs text-gray-400 font-mono uppercase mb-2"
+						class="block text-xs text-wa-text-secondary mb-2"
 						>Platform</label
 					>
 					<select
 						x-model="form.platform"
-						class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white"
+						class="w-full bg-wa-bg-hover border border-wa-border rounded-lg p-3 text-sm focus:border-wa-green focus:outline-none text-white"
 					>
 						<option value="WHATSAPP">WhatsApp</option>
 						<option value="TELEGRAM">Telegram</option>
-						<!-- <option value="INSTAGRAM">Instagram</option> -->
 					</select>
 				</div>
 
@@ -239,7 +227,7 @@ import Layout from "../../layouts/Layout.astro";
 					<button
 						type="button"
 						@click="close()"
-						class="flex-1 px-4 py-3 border border-white/10 text-gray-400 font-mono uppercase text-xs hover:bg-white/5"
+						class="flex-1 px-4 py-3 border border-wa-border text-wa-text-secondary text-sm rounded-lg hover:bg-wa-bg-hover"
 						x-text="$t('cancel')"
 					>
 						Cancel
@@ -247,7 +235,7 @@ import Layout from "../../layouts/Layout.astro";
 					<button
 						type="submit"
 						:disabled="loading"
-						class="flex-1 px-4 py-3 bg-brand-purple text-white font-mono uppercase text-xs hover:bg-brand-purple/80 disabled:opacity-50"
+						class="flex-1 px-4 py-3 bg-wa-green text-white text-sm rounded-lg hover:bg-wa-green-hover disabled:opacity-50"
 						x-text="loading ? $t('loading') : $t('create_bot')"
 					>
 						Create

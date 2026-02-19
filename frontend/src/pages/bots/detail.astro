@@ -14,16 +14,14 @@ import ClientModal from "../../components/clients/ClientModal.astro";
     >
         <!-- Header -->
         <header
-            class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-white/10 pb-6 relative gap-4"
+            class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-wa-border pb-6 relative gap-4"
         >
-            <div class="cross-marker -bottom-[5px] -left-[5px]"></div>
-            <div class="cross-marker -bottom-[5px] -right-[5px]"></div>
 
             <div class="flex-1">
                 <div class="flex items-center gap-3 mb-2">
                     <a
                         href="/bots"
-                        class="text-gray-500 hover:text-brand-purple transition-colors"
+                        class="text-wa-text-secondary hover:text-wa-green transition-colors"
                         title="Back to Bots"
                     >
                         <svg
@@ -40,25 +38,25 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                         </svg>
                     </a>
                     <span
-                        class="text-[10px] font-mono text-brand-purple bg-brand-purple/10 px-2 py-0.5 uppercase"
+                        class="text-[10px] font-sans text-wa-green bg-wa-green/10 px-2 py-0.5 rounded-md"
                         x-text="bot.platform"></span>
                 </div>
 
                 <h1
-                    class="text-3xl font-bold tracking-tighter uppercase"
+                    class="text-3xl font-bold tracking-tight"
                     x-text="bot.name"
                 >
                 </h1>
                 <p
-                    class="text-xs font-mono text-gray-500 mt-1"
+                    class="text-xs font-sans text-wa-text-secondary mt-1"
                     x-text="bot.identifier"
                 >
                 </p>
-                <p 
+                <p
                     x-show="bot.ipv6Address"
-                    class="text-[10px] font-mono text-brand-purple/70 mt-2 flex items-center gap-2"
+                    class="text-[10px] font-sans text-wa-green/70 mt-2 flex items-center gap-2"
                 >
-                    <span class="uppercase tracking-widest">IPv6:</span>
+                    <span class="tracking-normal">IPv6:</span>
                     <span x-text="bot.ipv6Address"></span>
                 </p>
             </div>
@@ -67,7 +65,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                 <div class="flex gap-3">
                     <a
                         :href="'/bots/monitor?botId=' + botId"
-                        class="px-4 py-2 border border-brand-purple/30 text-brand-purple font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/10 transition-colors flex items-center gap-2 rounded-full"
+                        class="px-4 py-2 border border-wa-green/30 text-wa-green font-sans text-xs tracking-normal hover:bg-wa-green/10 transition-colors flex items-center gap-2 rounded-lg"
                     >
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
@@ -76,14 +74,14 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                     </a>
                     <a
                         :href="'/editor?botId=' + botId"
-                        class="px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors flex items-center gap-2 rounded-full"
+                        class="px-6 py-2 bg-wa-green text-white font-sans text-xs tracking-normal hover:bg-wa-green-hover transition-colors flex items-center gap-2 rounded-lg"
                     >
                         <span>+</span>
                         <span x-text="$t('new_flow')">New Flow</span>
                     </a>
                     <button
                         @click="openImportModal()"
-                        class="px-4 py-2 border border-white/10 text-gray-400 font-mono uppercase text-xs hover:bg-white/5 transition-colors rounded-full flex items-center gap-2"
+                        class="px-4 py-2 border border-wa-border text-wa-text-secondary font-sans text-xs hover:bg-wa-bg-hover transition-colors rounded-lg flex items-center gap-2"
                         :title="$t('import_flow') || 'Import Flow'"
                     >
                         <svg
@@ -105,7 +103,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                 <div class="flex gap-3">
                     <button
                         @click="editBot()"
-                        class="px-4 py-2 border border-white/10 text-gray-400 font-mono uppercase text-xs hover:bg-white/5 transition-colors rounded-full"
+                        class="px-4 py-2 border border-wa-border text-wa-text-secondary font-sans text-xs hover:bg-wa-bg-hover transition-colors rounded-lg"
                         :title="$t('edit')"
                     >
                         <svg
@@ -124,7 +122,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                     </button>
                     <button
                         @click="deleteBot()"
-                        class="px-4 py-2 border border-red-500/30 text-red-500 font-mono uppercase text-xs hover:bg-red-500/10 transition-colors rounded-full"
+                        class="px-4 py-2 border border-red-500/30 text-red-500 font-sans text-xs hover:bg-red-500/10 transition-colors rounded-lg"
                         :title="$t('delete')"
                     >
                         <svg
@@ -146,39 +144,39 @@ import ClientModal from "../../components/clients/ClientModal.astro";
         </header>
 
         <!-- Tabs -->
-        <div class="flex gap-2 mb-8 bg-white/5 p-1 rounded-full w-fit flex-wrap">
+        <div class="flex gap-2 mb-8 bg-wa-bg-header p-1 rounded-xl w-fit flex-wrap">
             <button
                 @click="activeTab = 'flows'"
-                class="px-6 py-2 text-xs font-mono uppercase tracking-widest transition-all rounded-full"
-                :class="activeTab === 'flows' ? 'bg-brand-purple text-white shadow-lg' : 'text-gray-500 hover:text-white'"
+                class="px-6 py-2 font-sans text-sm transition-all rounded-lg"
+                :class="activeTab === 'flows' ? 'bg-wa-green text-white shadow-lg' : 'text-wa-text-secondary hover:text-white'"
             >
                 <span x-text="$t('flows')">Flows</span>
             </button>
             <button
                 @click="activeTab = 'clients'"
-                class="px-6 py-2 text-xs font-mono uppercase tracking-widest transition-all rounded-full"
-                :class="activeTab === 'clients' ? 'bg-brand-purple text-white shadow-lg' : 'text-gray-500 hover:text-white'"
+                class="px-6 py-2 font-sans text-sm transition-all rounded-lg"
+                :class="activeTab === 'clients' ? 'bg-wa-green text-white shadow-lg' : 'text-wa-text-secondary hover:text-white'"
             >
                 <span>Clientes</span>
             </button>
             <button
                 @click="activeTab = 'ai'"
-                class="px-6 py-2 text-xs font-mono uppercase tracking-widest transition-all rounded-full"
-                :class="activeTab === 'ai' ? 'bg-brand-purple text-white shadow-lg' : 'text-gray-500 hover:text-white'"
+                class="px-6 py-2 font-sans text-sm transition-all rounded-lg"
+                :class="activeTab === 'ai' ? 'bg-wa-green text-white shadow-lg' : 'text-wa-text-secondary hover:text-white'"
             >
                 <span x-text="$t('ai_config')">AI Config</span>
             </button>
             <button
                 @click="activeTab = 'tools'; loadTools()"
-                class="px-6 py-2 text-xs font-mono uppercase tracking-widest transition-all rounded-full"
-                :class="activeTab === 'tools' ? 'bg-brand-purple text-white shadow-lg' : 'text-gray-500 hover:text-white'"
+                class="px-6 py-2 font-sans text-sm transition-all rounded-lg"
+                :class="activeTab === 'tools' ? 'bg-wa-green text-white shadow-lg' : 'text-wa-text-secondary hover:text-white'"
             >
                 <span x-text="$t('tools')">Tools</span>
             </button>
             <button
                 @click="activeTab = 'logs'; loadLogs()"
-                class="px-6 py-2 text-xs font-mono uppercase tracking-widest transition-all rounded-full"
-                :class="activeTab === 'logs' ? 'bg-brand-purple text-white shadow-lg' : 'text-gray-500 hover:text-white'"
+                class="px-6 py-2 font-sans text-sm transition-all rounded-lg"
+                :class="activeTab === 'logs' ? 'bg-wa-green text-white shadow-lg' : 'text-wa-text-secondary hover:text-white'"
             >
                 <span x-text="$t('logs')">Logs</span>
             </button>
@@ -187,14 +185,12 @@ import ClientModal from "../../components/clients/ClientModal.astro";
         <!-- Clients Tab -->
         <div x-show="activeTab === 'clients'" style="display: none;">
             <div
-                class="bg-brand-panel/30 border border-white/5 p-6 relative min-h-[400px]"
+                class="bg-wa-bg-panel border border-wa-border p-6 relative min-h-[400px] rounded-xl"
             >
-                <div class="cross-marker -top-[2px] -left-[2px]"></div>
-                <div class="cross-marker -top-[2px] -right-[2px]"></div>
 
                 <div class="flex justify-between items-center mb-6">
                     <h3
-                        class="text-xs text-brand-purple uppercase tracking-widest"
+                        class="text-xs text-wa-green tracking-normal"
                     >
                         Listado de Clientes
                     </h3>
@@ -209,22 +205,20 @@ import ClientModal from "../../components/clients/ClientModal.astro";
 
         <!-- AI Config Tab -->
         <div x-show="activeTab === 'ai'" style="display: none;">
-            <div class="bg-brand-panel/30 border border-white/5 p-6 relative max-w-2xl">
-                <div class="cross-marker -top-[2px] -left-[2px]"></div>
-                <div class="cross-marker -top-[2px] -right-[2px]"></div>
+            <div class="bg-wa-bg-panel border border-wa-border p-6 relative max-w-2xl rounded-xl">
 
-                <h3 class="text-xs text-brand-purple uppercase tracking-widest mb-6" x-text="$t('ai_config')">AI Config</h3>
+                <h3 class="text-xs text-wa-green tracking-normal mb-6" x-text="$t('ai_config')">AI Config</h3>
 
                 <form @submit.prevent="saveAIConfig()" class="space-y-6">
                     <!-- AI Enabled Toggle -->
-                    <div class="flex items-center justify-between p-4 bg-[#0f172a] border border-white/10">
+                    <div class="flex items-center justify-between p-4 bg-wa-bg-deep border border-wa-border rounded-lg">
                         <div>
                             <label class="text-sm font-medium text-white" x-text="$t('ai_enabled')">AI Enabled</label>
-                            <p class="text-xs text-gray-500 mt-1" x-text="$t('ai_enabled_desc')"></p>
+                            <p class="text-xs text-wa-text-secondary mt-1" x-text="$t('ai_enabled_desc')"></p>
                         </div>
                         <button type="button" @click="aiConfig.aiEnabled = !aiConfig.aiEnabled"
                             class="relative w-12 h-6 rounded-full transition-colors"
-                            :class="aiConfig.aiEnabled ? 'bg-brand-purple' : 'bg-gray-700'">
+                            :class="aiConfig.aiEnabled ? 'bg-wa-green' : 'bg-gray-700'">
                             <span class="absolute w-5 h-5 bg-white rounded-full top-0.5 transition-all"
                                 :class="aiConfig.aiEnabled ? 'left-6' : 'left-0.5'"></span>
                         </button>
@@ -232,9 +226,9 @@ import ClientModal from "../../components/clients/ClientModal.astro";
 
                     <!-- Provider -->
                     <div>
-                        <label class="block text-xs font-mono text-gray-400 uppercase mb-2" x-text="$t('ai_provider')">Provider</label>
+                        <label class="block text-xs font-sans text-wa-text-secondary mb-2" x-text="$t('ai_provider')">Provider</label>
                         <select x-model="aiConfig.aiProvider"
-                            class="w-full bg-[#0f172a] border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none">
+                            class="w-full bg-wa-bg-deep border border-wa-border text-white text-sm p-3 focus:border-wa-green focus:outline-none rounded-lg">
                             <option value="GEMINI">Google Gemini</option>
                             <option value="OPENAI">OpenAI (Fallback)</option>
                         </select>
@@ -242,39 +236,39 @@ import ClientModal from "../../components/clients/ClientModal.astro";
 
                     <!-- Model -->
                     <div>
-                        <label class="block text-xs font-mono text-gray-400 uppercase mb-2" x-text="$t('ai_model')">Model</label>
+                        <label class="block text-xs font-sans text-wa-text-secondary mb-2" x-text="$t('ai_model')">Model</label>
                         <input type="text" x-model="aiConfig.aiModel"
-                            class="w-full bg-[#0f172a] border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none"
+                            class="w-full bg-wa-bg-deep border border-wa-border text-white text-sm p-3 focus:border-wa-green focus:outline-none rounded-lg"
                             placeholder="gpt-4o-mini" />
                     </div>
 
                     <!-- System Prompt -->
                     <div>
-                        <label class="block text-xs font-mono text-gray-400 uppercase mb-2" x-text="$t('system_prompt')">System Prompt</label>
+                        <label class="block text-xs font-sans text-wa-text-secondary mb-2" x-text="$t('system_prompt')">System Prompt</label>
                         <textarea x-model="aiConfig.systemPrompt" rows="6"
-                            class="w-full bg-[#0f172a] border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none resize-y"
+                            class="w-full bg-wa-bg-deep border border-wa-border text-white text-sm p-3 focus:border-wa-green focus:outline-none resize-y rounded-lg"
                             :placeholder="$t('system_prompt_placeholder')"></textarea>
                     </div>
 
                     <!-- Temperature -->
                     <div>
-                        <label class="block text-xs font-mono text-gray-400 uppercase mb-2">
+                        <label class="block text-xs font-sans text-wa-text-secondary mb-2">
                             <span x-text="$t('temperature')">Temperature</span>:
-                            <span x-text="aiConfig.temperature" class="text-brand-purple"></span>
+                            <span x-text="aiConfig.temperature" class="text-wa-green"></span>
                         </label>
                         <input type="range" x-model.number="aiConfig.temperature" min="0" max="2" step="0.1"
-                            class="w-full accent-brand-purple" />
+                            class="w-full accent-wa-green" />
                     </div>
 
                     <!-- Message Delay -->
                     <div>
-                        <label class="block text-xs font-mono text-gray-400 uppercase mb-2" x-text="$t('message_delay')">Message Delay</label>
+                        <label class="block text-xs font-sans text-wa-text-secondary mb-2" x-text="$t('message_delay')">Message Delay</label>
                         <div class="flex items-center gap-3">
                             <input type="number" x-model.number="aiConfig.messageDelay" min="0" max="60" step="1"
-                                class="w-24 bg-[#0f172a] border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none" />
-                            <span class="text-xs text-gray-400">s</span>
+                                class="w-24 bg-wa-bg-deep border border-wa-border text-white text-sm p-3 focus:border-wa-green focus:outline-none rounded-lg" />
+                            <span class="text-xs text-wa-text-secondary">s</span>
                         </div>
-                        <p class="text-[10px] text-gray-600 mt-1"
+                        <p class="text-[10px] text-wa-text-secondary mt-1"
                             x-text="aiConfig.messageDelay === 0
                                 ? ($t('message_delay_off') || 'Immediate processing (no accumulation)')
                                 : ($t('message_delay_desc') || 'Wait for more messages before processing')">
@@ -284,11 +278,11 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                     <!-- Actions -->
                     <div class="flex gap-3 pt-4">
                         <button type="submit" :disabled="savingAI"
-                            class="px-6 py-3 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors disabled:opacity-50 rounded-full"
+                            class="px-6 py-3 bg-wa-green text-white font-sans text-xs tracking-normal hover:bg-wa-green-hover transition-colors disabled:opacity-50 rounded-lg"
                             x-text="savingAI ? ($t('saving') || 'Saving...') : ($t('save_ai_config') || 'Save AI Config')">
                         </button>
                         <button type="button" @click="clearConversations()"
-                            class="px-4 py-3 border border-red-500/30 text-red-400 font-mono uppercase text-xs hover:bg-red-500/10 transition-colors rounded-full"
+                            class="px-4 py-3 border border-red-500/30 text-red-400 font-sans text-xs hover:bg-red-500/10 transition-colors rounded-lg"
                             x-text="$t('clear_conversations')">
                         </button>
                     </div>
@@ -298,14 +292,12 @@ import ClientModal from "../../components/clients/ClientModal.astro";
 
         <!-- Tools Tab -->
         <div x-show="activeTab === 'tools'" style="display: none;">
-            <div class="bg-brand-panel/30 border border-white/5 p-6 relative">
-                <div class="cross-marker -top-[2px] -left-[2px]"></div>
-                <div class="cross-marker -top-[2px] -right-[2px]"></div>
+            <div class="bg-wa-bg-panel border border-wa-border p-6 relative rounded-xl">
 
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xs text-brand-purple uppercase tracking-widest" x-text="$t('tools')">Tools</h3>
+                    <h3 class="text-xs text-wa-green tracking-normal" x-text="$t('tools')">Tools</h3>
                     <a :href="'/tool-editor?botId=' + botId"
-                        class="px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors rounded-full flex items-center gap-2">
+                        class="px-6 py-2 bg-wa-green text-white font-sans text-xs tracking-normal hover:bg-wa-green-hover transition-colors rounded-lg flex items-center gap-2">
                         <span>+</span>
                         <span x-text="$t('new_tool')">New Tool</span>
                     </a>
@@ -316,19 +308,19 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                     <div class="space-y-3">
                         <template x-for="tool in tools" :key="tool.id">
                             <a :href="'/tool-editor?id=' + tool.id"
-                                class="block p-4 bg-[#0f172a] border border-white/10 hover:border-brand-purple/30 transition-all group">
+                                class="block p-4 bg-wa-bg-deep border border-wa-border hover:border-wa-green/30 transition-all group rounded-lg">
                                 <div class="flex justify-between items-start">
                                     <div class="flex-1">
                                         <div class="flex items-center gap-2 mb-1">
-                                            <h4 class="font-bold font-mono group-hover:text-brand-purple transition-colors" x-text="tool.name"></h4>
-                                            <span class="text-[10px] font-mono px-2 py-0.5 uppercase"
-                                                :class="tool.status === 'ACTIVE' ? 'bg-green-500/10 text-green-400' : 'bg-gray-500/10 text-gray-500'"
+                                            <h4 class="font-bold font-sans group-hover:text-wa-green transition-colors" x-text="tool.name"></h4>
+                                            <span class="text-[10px] font-sans px-2 py-0.5 rounded-md"
+                                                :class="tool.status === 'ACTIVE' ? 'bg-green-500/10 text-green-400' : 'bg-gray-500/10 text-wa-text-secondary'"
                                                 x-text="tool.status"></span>
-                                            <span class="text-[10px] font-mono bg-brand-purple/10 text-brand-purple px-2 py-0.5 uppercase" x-text="tool.actionType"></span>
+                                            <span class="text-[10px] font-sans bg-wa-green/10 text-wa-green px-2 py-0.5 rounded-md" x-text="tool.actionType"></span>
                                         </div>
-                                        <p class="text-xs text-gray-500 line-clamp-2" x-text="tool.description"></p>
+                                        <p class="text-xs text-wa-text-secondary line-clamp-2" x-text="tool.description"></p>
                                     </div>
-                                    <svg class="w-4 h-4 text-gray-600 group-hover:text-brand-purple transition-colors flex-shrink-0 mt-1"
+                                    <svg class="w-4 h-4 text-wa-text-secondary group-hover:text-wa-green transition-colors flex-shrink-0 mt-1"
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                     </svg>
@@ -340,14 +332,14 @@ import ClientModal from "../../components/clients/ClientModal.astro";
 
                 <!-- Convert Flows Section -->
                 <template x-if="flows.length > 0">
-                    <div class="mt-8 pt-6 border-t border-white/10">
-                        <h4 class="text-xs text-gray-500 uppercase tracking-widest mb-4" x-text="$t('convert_to_tool')">Convert Flows to Tools</h4>
+                    <div class="mt-8 pt-6 border-t border-wa-border">
+                        <h4 class="text-xs text-wa-text-secondary tracking-normal mb-4" x-text="$t('convert_to_tool')">Convert Flows to Tools</h4>
                         <div class="space-y-2">
                             <template x-for="flow in flows" :key="'convert-' + flow.id">
-                                <div class="flex items-center justify-between p-3 bg-[#0f172a] border border-white/5">
-                                    <span class="text-sm text-gray-400" x-text="flow.name"></span>
+                                <div class="flex items-center justify-between p-3 bg-wa-bg-deep border border-wa-border rounded-lg">
+                                    <span class="text-sm text-wa-text-secondary" x-text="flow.name"></span>
                                     <button @click="convertFlowToTool(flow.id)"
-                                        class="px-3 py-1 text-[10px] font-mono uppercase border border-brand-purple/30 text-brand-purple hover:bg-brand-purple/10 transition-colors rounded-full"
+                                        class="px-3 py-1 text-[10px] font-sans border border-wa-green/30 text-wa-green hover:bg-wa-green/10 transition-colors rounded-lg"
                                         x-text="$t('convert_to_tool')">
                                     </button>
                                 </div>
@@ -358,10 +350,10 @@ import ClientModal from "../../components/clients/ClientModal.astro";
 
                 <!-- Empty State -->
                 <template x-if="tools.length === 0">
-                    <div class="text-center py-12 border border-dashed border-white/10 mt-4">
-                        <p class="text-xs font-mono text-gray-500 uppercase mb-4" x-text="$t('no_tools')">No tools configured</p>
+                    <div class="text-center py-12 border border-dashed border-wa-border mt-4 rounded-xl">
+                        <p class="text-xs font-sans text-wa-text-secondary mb-4" x-text="$t('no_tools')">No tools configured</p>
                         <a :href="'/tool-editor?botId=' + botId"
-                            class="inline-block px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors">
+                            class="inline-block px-6 py-2 bg-wa-green text-white font-sans text-xs tracking-normal hover:bg-wa-green-hover transition-colors rounded-lg">
                             + <span x-text="$t('new_tool')">New Tool</span>
                         </a>
                     </div>
@@ -377,14 +369,12 @@ import ClientModal from "../../components/clients/ClientModal.astro";
             <!-- Connection Panel -->
             <div class="lg:col-span-1">
                 <div
-                    class="bg-brand-panel/30 border border-white/5 p-1 relative"
+                    class="bg-wa-bg-panel border border-wa-border p-1 relative rounded-xl"
                 >
-                    <div class="cross-marker -top-[2px] -left-[2px]"></div>
-                    <div class="cross-marker -top-[2px] -right-[2px]"></div>
 
                     <div class="px-4 pt-4 mb-2">
                         <h3
-                            class="text-xs text-brand-purple uppercase tracking-widest"
+                            class="text-xs text-wa-green tracking-normal"
                             x-text="$t('connection')"
                         >
                         </h3>
@@ -398,20 +388,18 @@ import ClientModal from "../../components/clients/ClientModal.astro";
             <!-- Flows Panel -->
             <div class="lg:col-span-2">
                 <div
-                    class="bg-brand-panel/30 border border-white/5 p-6 relative"
+                    class="bg-wa-bg-panel border border-wa-border p-6 relative rounded-xl"
                 >
-                    <div class="cross-marker -top-[2px] -left-[2px]"></div>
-                    <div class="cross-marker -top-[2px] -right-[2px]"></div>
 
                     <div class="flex justify-between items-center mb-6">
                         <h3
-                            class="text-xs text-brand-purple uppercase tracking-widest"
+                            class="text-xs text-wa-green tracking-normal"
                             x-text="$t('flows')"
                         >
                             Flows
                         </h3>
                         <span
-                            class="text-xs font-mono text-gray-500"
+                            class="text-xs font-sans text-wa-text-secondary"
                             x-text="flows.length + ' total'"></span>
                     </div>
 
@@ -421,20 +409,20 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                             <template x-for="flow in flows" :key="flow.id">
                                 <a
                                     :href="'/editor?id=' + flow.id"
-                                    class="block p-4 bg-[#0f172a] border border-white/10 hover:border-brand-purple/30 transition-all group"
+                                    class="block p-4 bg-wa-bg-deep border border-wa-border hover:border-wa-green/30 transition-all group rounded-lg"
                                 >
                                     <div
                                         class="flex justify-between items-start"
                                     >
                                         <div class="flex-1">
                                             <h4
-                                                class="font-bold uppercase tracking-tight group-hover:text-brand-purple transition-colors"
+                                                class="font-bold tracking-tight group-hover:text-wa-green transition-colors"
                                                 x-text="flow.name"
                                             >
                                             </h4>
                                             <p
                                                 x-show="flow.description"
-                                                class="text-xs text-gray-500 mt-1"
+                                                class="text-xs text-wa-text-secondary mt-1"
                                                 x-text="flow.description"
                                             >
                                             </p>
@@ -446,19 +434,19 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                                                     :key="trigger.id"
                                                 >
                                                     <span
-                                                        class="text-[10px] font-mono bg-white/5 px-2 py-0.5 text-gray-400"
+                                                        class="text-[10px] font-sans bg-wa-bg-hover px-2 py-0.5 text-wa-text-secondary rounded-md"
                                                         x-text="trigger.matchType + ': ' + trigger.keyword"
                                                     ></span>
                                                 </template>
                                                 <span
                                                     x-show="flow.triggers.length > 3"
-                                                    class="text-[10px] font-mono text-gray-500"
+                                                    class="text-[10px] font-sans text-wa-text-secondary"
                                                     x-text="'+' + (flow.triggers.length - 3) + ' more'"
                                                 ></span>
                                             </div>
                                         </div>
                                         <svg
-                                            class="w-4 h-4 text-gray-600 group-hover:text-brand-purple transition-colors flex-shrink-0 mt-1"
+                                            class="w-4 h-4 text-wa-text-secondary group-hover:text-wa-green transition-colors flex-shrink-0 mt-1"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             stroke="currentColor"
@@ -478,10 +466,10 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                     <!-- Empty State -->
                     <template x-if="flows.length === 0">
                         <div
-                            class="text-center py-12 border border-dashed border-white/10"
+                            class="text-center py-12 border border-dashed border-wa-border rounded-xl"
                         >
                             <svg
-                                class="w-10 h-10 mx-auto mb-4 text-gray-600"
+                                class="w-10 h-10 mx-auto mb-4 text-wa-text-secondary"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -494,14 +482,14 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                                 ></path>
                             </svg>
                             <p
-                                class="text-xs font-mono text-gray-500 uppercase mb-4"
+                                class="text-xs font-sans text-wa-text-secondary mb-4"
                                 x-text="$t('no_flows')"
                             >
                                 No flows configured
                             </p>
                             <a
                                 :href="'/editor?botId=' + botId"
-                                class="inline-block px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors"
+                                class="inline-block px-6 py-2 bg-wa-green text-white font-sans text-xs tracking-normal hover:bg-wa-green-hover transition-colors rounded-lg"
                             >
                                 + <span x-text="$t('new_flow')"
                                     >Create Flow</span
@@ -515,21 +503,19 @@ import ClientModal from "../../components/clients/ClientModal.astro";
 
         <!-- Logs Tab -->
         <div x-show="activeTab === 'logs'" style="display: none;">
-            <div class="bg-brand-panel/30 border border-white/5 p-6 relative">
-                <div class="cross-marker -top-[2px] -left-[2px]"></div>
-                <div class="cross-marker -top-[2px] -right-[2px]"></div>
+            <div class="bg-wa-bg-panel border border-wa-border p-6 relative rounded-xl">
 
                 <!-- Filters -->
                 <div class="flex flex-wrap gap-4 mb-6 items-end">
                     <div>
                         <label
-                            class="block text-[10px] font-mono text-gray-500 uppercase mb-1"
+                            class="block text-[10px] font-sans text-wa-text-secondary mb-1"
                             x-text="$t('filter_status')">Status</label
                         >
                         <select
                             x-model="filters.status"
                             @change="logsPagination.offset = 0; loadLogs()"
-                            class="bg-[#0f172a] border border-white/10 text-white text-xs p-2 min-w-[120px] focus:border-brand-purple focus:outline-none"
+                            class="bg-wa-bg-deep border border-wa-border text-white text-xs p-2 min-w-[120px] focus:border-wa-green focus:outline-none rounded-lg"
                         >
                             <option value="ALL" x-text="$t('status_all')"
                                 >All</option
@@ -552,47 +538,47 @@ import ClientModal from "../../components/clients/ClientModal.astro";
 
                     <div class="flex-1 min-w-[200px]">
                         <label
-                            class="block text-[10px] font-mono text-gray-500 uppercase mb-1"
+                            class="block text-[10px] font-sans text-wa-text-secondary mb-1"
                             x-text="$t('filter_user')">User</label
                         >
                         <input
                             type="text"
                             x-model="filters.search"
                             @input.debounce="logsPagination.offset = 0; loadLogs()"
-                            class="w-full bg-[#0f172a] border border-white/10 text-white text-xs p-2 focus:border-brand-purple focus:outline-none placeholder-gray-700"
+                            class="w-full bg-wa-bg-deep border border-wa-border text-white text-xs p-2 focus:border-wa-green focus:outline-none placeholder-gray-700 rounded-lg"
                             :placeholder="$t('filter_user') + ' / Trigger...'"
                         />
                     </div>
 
                     <div>
                         <label
-                            class="block text-[10px] font-mono text-gray-500 uppercase mb-1"
+                            class="block text-[10px] font-sans text-wa-text-secondary mb-1"
                             x-text="$t('filter_date_from')">From</label
                         >
                         <input
                             type="date"
                             x-model="filters.startDate"
                             @change="logsPagination.offset = 0; loadLogs()"
-                            class="bg-[#0f172a] border border-white/10 text-white text-xs p-2 focus:border-brand-purple focus:outline-none"
+                            class="bg-wa-bg-deep border border-wa-border text-white text-xs p-2 focus:border-wa-green focus:outline-none rounded-lg"
                         />
                     </div>
 
                     <div>
                         <label
-                            class="block text-[10px] font-mono text-gray-500 uppercase mb-1"
+                            class="block text-[10px] font-sans text-wa-text-secondary mb-1"
                             x-text="$t('filter_date_to')">To</label
                         >
                         <input
                             type="date"
                             x-model="filters.endDate"
                             @change="logsPagination.offset = 0; loadLogs()"
-                            class="bg-[#0f172a] border border-white/10 text-white text-xs p-2 focus:border-brand-purple focus:outline-none"
+                            class="bg-wa-bg-deep border border-wa-border text-white text-xs p-2 focus:border-wa-green focus:outline-none rounded-lg"
                         />
                     </div>
 
                     <button
                         @click="loadLogs()"
-                        class="px-4 py-2 border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                        class="px-4 py-2 border border-wa-border text-wa-text-secondary hover:text-white hover:bg-wa-bg-hover transition-colors rounded-lg"
                         :title="$t('refresh')"
                     >
                         <span :class="{'animate-spin': loadingLogs}">⟳</span>
@@ -604,7 +590,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr
-                                class="text-[10px] uppercase font-mono text-gray-500 border-b border-white/10"
+                                class="text-[10px] font-sans text-wa-text-secondary border-b border-wa-border"
                             >
                                 <th class="p-3" x-text="$t('col_status')"
                                     >Status</th
@@ -628,7 +614,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                                 <tr
                                     ><td
                                         colspan="6"
-                                        class="p-8 text-center text-gray-500"
+                                        class="p-8 text-center text-wa-text-secondary"
                                         x-text="$t('loading')">Loading...</td
                                     ></tr
                                 >
@@ -637,7 +623,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                                 <tr
                                     ><td
                                         colspan="6"
-                                        class="p-8 text-center text-gray-500"
+                                        class="p-8 text-center text-wa-text-secondary"
                                         x-text="$t('no_logs')">No logs found</td
                                     ></tr
                                 >
@@ -645,7 +631,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
 
                             <template x-for="log in logs" :key="log.id">
                                 <tr
-                                    class="border-b border-white/5 hover:bg-white/5 transition-colors"
+                                    class="border-b border-wa-border hover:bg-wa-bg-hover transition-colors"
                                 >
                                     <td class="p-3">
                                         <span
@@ -663,7 +649,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                                         >
                                     </td>
                                     <td
-                                        class="p-3 text-gray-400"
+                                        class="p-3 text-wa-text-secondary"
                                         x-text="formatDate(log.startedAt)"></td>
                                     <td class="p-3">
                                         <div
@@ -672,18 +658,18 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                                         >
                                         </div>
                                         <div
-                                            class="text-[10px] text-gray-500"
+                                            class="text-[10px] text-wa-text-secondary"
                                             x-text="log.platformUserId"
                                         >
                                         </div>
                                     </td>
                                     <td
-                                        class="p-3 text-brand-purple"
+                                        class="p-3 text-wa-green"
                                         x-text="log.flow?.name || '-'"></td>
-                                    <td class="p-3 text-gray-400">
+                                    <td class="p-3 text-wa-text-secondary">
                                         <span
                                             x-show="log.trigger"
-                                            class="bg-white/5 px-1 py-0.5"
+                                            class="bg-wa-bg-hover px-1 py-0.5 rounded-md"
                                             x-text="log.trigger"></span>
                                         <span x-show="!log.trigger">-</span>
                                     </td>
@@ -706,7 +692,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                                         </template>
                                         <span
                                             x-show="!log.error"
-                                            class="text-gray-600">-</span
+                                            class="text-wa-text-secondary">-</span
                                         >
                                     </td>
                                 </tr>
@@ -717,9 +703,9 @@ import ClientModal from "../../components/clients/ClientModal.astro";
 
                 <!-- Pagination Controls -->
                 <div
-                    class="flex items-center justify-between mt-6 pt-4 border-t border-white/10"
+                    class="flex items-center justify-between mt-6 pt-4 border-t border-wa-border"
                 >
-                    <div class="text-xs font-mono text-gray-500">
+                    <div class="text-xs font-sans text-wa-text-secondary">
                         <span x-text="$t('showing') || 'Showing'"></span>
                         <span
                             x-text="Math.min(logsPagination.offset + 1, logsPagination.total)"
@@ -737,11 +723,11 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                         <button
                             @click="prevPage()"
                             :disabled="logsPagination.offset === 0"
-                            class="px-3 py-1 border border-white/10 text-gray-400 text-xs font-mono uppercase hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            class="px-3 py-1 border border-wa-border text-wa-text-secondary text-xs font-sans hover:bg-wa-bg-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded-lg"
                         >
                             ← <span x-text="$t('prev') || 'Prev'"></span>
                         </button>
-                        <span class="text-xs font-mono text-gray-500">
+                        <span class="text-xs font-sans text-wa-text-secondary">
                             <span x-text="$t('page') || 'Page'"></span>
                             <span
                                 x-text="Math.floor(logsPagination.offset / logsPagination.limit) + 1"
@@ -754,7 +740,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                         <button
                             @click="nextPage()"
                             :disabled="logsPagination.offset + logsPagination.limit >= logsPagination.total"
-                            class="px-3 py-1 border border-white/10 text-gray-400 text-xs font-mono uppercase hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            class="px-3 py-1 border border-wa-border text-wa-text-secondary text-xs font-sans hover:bg-wa-bg-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded-lg"
                         >
                             <span x-text="$t('next') || 'Next'"></span> →
                         </button>
@@ -769,7 +755,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
             class="flex items-center justify-center min-h-[60vh]"
         >
             <div
-                class="text-brand-purple animate-pulse text-xs font-mono uppercase"
+                class="text-wa-green animate-pulse text-xs font-sans"
                 x-text="$t('loading')"
             >
                 Loading...
@@ -785,13 +771,13 @@ import ClientModal from "../../components/clients/ClientModal.astro";
             <div class="text-center">
                 <h1 class="text-4xl font-bold text-red-500 mb-4">404</h1>
                 <p
-                    class="text-gray-500 font-mono uppercase mb-8"
+                    class="text-wa-text-secondary font-sans mb-8"
                     x-text="error"
                 >
                 </p>
                 <a
                     href="/bots"
-                    class="px-6 py-3 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors"
+                    class="px-6 py-3 bg-wa-green text-white font-sans text-xs tracking-normal hover:bg-wa-green-hover transition-colors rounded-lg"
                 >
                     ← Back to Bots
                 </a>
@@ -801,19 +787,15 @@ import ClientModal from "../../components/clients/ClientModal.astro";
         <!-- Import Flow Modal -->
         <div
             x-show="showImportModal"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
             style="display: none;"
         >
             <div
-                class="bg-[#0f172a] border border-white/10 p-8 max-w-md w-full relative"
+                class="bg-wa-bg-deep border border-wa-border p-8 max-w-md w-full relative rounded-xl"
                 @click.outside="showImportModal = false"
             >
-                <div class="cross-marker -top-[2px] -left-[2px]"></div>
-                <div class="cross-marker -top-[2px] -right-[2px]"></div>
-                <div class="cross-marker -bottom-[2px] -left-[2px]"></div>
-                <div class="cross-marker -bottom-[2px] -right-[2px]"></div>
 
-                <h2 class="text-xl font-bold uppercase mb-6 tracking-tight">
+                <h2 class="text-xl font-bold mb-6 tracking-tight">
                     Import Flow
                 </h2>
 
@@ -821,20 +803,20 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                     <!-- Step 1: Source Bot -->
                     <div>
                         <label
-                            class="block text-xs font-mono text-gray-400 mb-2 uppercase"
+                            class="block text-xs font-sans text-wa-text-secondary mb-2"
                             >Source Bot</label
                         >
                         <select
                             x-model="importData.sourceBotId"
                             @change="loadSourceFlows()"
-                            class="w-full bg-black/40 border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none"
+                            class="w-full bg-wa-bg-hover border border-wa-border text-white text-sm p-3 focus:border-wa-green focus:outline-none rounded-lg"
                         >
                             <option value="">Select a Bot...</option>
                             <template x-for="b in sourceBots" :key="b.id">
                                 <option
                                     :value="b.id"
                                     x-text="b.name + ' (' + b.identifier + ')'"
-                                    class="bg-[#0f172a]"></option>
+                                    class="bg-wa-bg-deep"></option>
                             </template>
                         </select>
                     </div>
@@ -842,19 +824,19 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                     <!-- Step 2: Source Flow -->
                     <div x-show="importData.sourceBotId">
                         <label
-                            class="block text-xs font-mono text-gray-400 mb-2 uppercase"
+                            class="block text-xs font-sans text-wa-text-secondary mb-2"
                             >Flow to Import</label
                         >
                         <select
                             x-model="importData.sourceFlowId"
-                            class="w-full bg-black/40 border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none"
+                            class="w-full bg-wa-bg-hover border border-wa-border text-white text-sm p-3 focus:border-wa-green focus:outline-none rounded-lg"
                         >
                             <option value="">Select a Flow...</option>
                             <template x-for="f in sourceFlows" :key="f.id">
                                 <option
                                     :value="f.id"
                                     x-text="f.name"
-                                    class="bg-[#0f172a]"></option>
+                                    class="bg-wa-bg-deep"></option>
                             </template>
                         </select>
                     </div>
@@ -862,14 +844,14 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                     <div class="pt-4 flex justify-end gap-3">
                         <button
                             @click="showImportModal = false"
-                            class="px-4 py-2 border border-white/10 text-gray-400 text-xs uppercase hover:bg-white/5 transition-colors"
+                            class="px-4 py-2 border border-wa-border text-wa-text-secondary text-xs hover:bg-wa-bg-hover transition-colors rounded-lg"
                         >
                             Cancel
                         </button>
                         <button
                             @click="importFlow()"
                             :disabled="!importData.sourceFlowId || loadingImport"
-                            class="px-6 py-2 bg-brand-purple text-white text-xs uppercase hover:bg-brand-purple/80 transition-colors disabled:opacity-50 flex items-center gap-2"
+                            class="px-6 py-2 bg-wa-green text-white text-xs hover:bg-wa-green-hover transition-colors disabled:opacity-50 flex items-center gap-2 rounded-lg"
                         >
                             <span
                                 x-show="loadingImport"
@@ -891,22 +873,18 @@ import ClientModal from "../../components/clients/ClientModal.astro";
         >
             <!-- Backdrop -->
             <div
-                class="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                class="absolute inset-0 bg-black/70"
                 @click="showEditModal = false"
             >
             </div>
 
             <!-- Modal -->
             <div
-                class="relative bg-brand-dark border border-white/10 p-8 w-full max-w-md"
+                class="relative bg-wa-bg-panel border border-wa-border p-8 w-full max-w-md rounded-xl"
             >
-                <div class="cross-marker -top-[2px] -left-[2px]"></div>
-                <div class="cross-marker -top-[2px] -right-[2px]"></div>
-                <div class="cross-marker -bottom-[2px] -left-[2px]"></div>
-                <div class="cross-marker -bottom-[2px] -right-[2px]"></div>
 
                 <h2
-                    class="text-xl font-bold uppercase tracking-tight mb-6"
+                    class="text-xl font-bold tracking-tight mb-6"
                     x-text="$t('edit_bot') || 'Edit Bot'"
                 >
                     Edit Bot
@@ -915,27 +893,27 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                 <form @submit.prevent="submitEditBot()" class="space-y-4">
                     <div>
                         <label
-                            class="block text-xs text-gray-400 font-mono uppercase mb-2"
+                            class="block text-xs text-wa-text-secondary font-sans mb-2"
                             x-text="$t('bot_name') || 'Name'"></label>
                         <input
                             type="text"
                             x-model="editForm.name"
                             required
-                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white"
+                            class="w-full bg-wa-bg-hover border border-wa-border p-3 text-sm focus:border-wa-green focus:outline-none text-white rounded-lg"
                             placeholder="My WhatsApp Bot"
                         />
                     </div>
 
                     <div>
                         <label
-                            class="block text-xs text-gray-400 font-mono uppercase mb-2"
+                            class="block text-xs text-wa-text-secondary font-sans mb-2"
                             x-text="$t('bot_identifier') || 'Identifier'"
                         ></label>
                         <input
                             type="text"
                             x-model="editForm.identifier"
                             required
-                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white"
+                            class="w-full bg-wa-bg-hover border border-wa-border p-3 text-sm focus:border-wa-green focus:outline-none text-white rounded-lg"
                             placeholder="+1234567890"
                         />
                     </div>
@@ -944,7 +922,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                         <button
                             type="button"
                             @click="showEditModal = false"
-                            class="flex-1 px-4 py-3 border border-white/10 text-gray-400 font-mono uppercase text-xs hover:bg-white/5"
+                            class="flex-1 px-4 py-3 border border-wa-border text-wa-text-secondary font-sans text-xs hover:bg-wa-bg-hover rounded-lg"
                             x-text="$t('cancel') || 'Cancel'"
                         >
                             Cancel
@@ -952,7 +930,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                         <button
                             type="submit"
                             :disabled="savingEdit"
-                            class="flex-1 px-4 py-3 bg-brand-purple text-white font-mono uppercase text-xs hover:bg-brand-purple/80 disabled:opacity-50"
+                            class="flex-1 px-4 py-3 bg-wa-green text-white font-sans text-xs hover:bg-wa-green-hover disabled:opacity-50 rounded-lg"
                             x-text="savingEdit ? ($t('loading') || 'Saving...') : ($t('save') || 'Save')"
                         >
                             Save
@@ -1117,18 +1095,18 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                         <div class="space-y-4">
                             <div class="flex items-center gap-3">
                                 <span class="w-3 h-3 rounded-full" :class="connected ? 'bg-green-500' : 'bg-gray-600'"></span>
-                                <span class="text-sm font-mono" :class="connected ? 'text-green-400' : 'text-gray-400'" x-text="connected ? $t('active') : $t('disconnected')"></span>
+                                <span class="text-sm font-sans" :class="connected ? 'text-green-400' : 'text-wa-text-secondary'" x-text="connected ? $t('active') : $t('disconnected')"></span>
                             </div>
                             <template x-if="qr && !connected">
-                                <div class="bg-white p-4 w-fit">
+                                <div class="bg-white p-4 w-fit rounded-lg">
                                     <img :src="qr" alt="QR Code" class="w-48 h-48" />
                                 </div>
                             </template>
                             <template x-if="!connected && !qr">
-                                <button @click="connect()" :disabled="loading" class="w-full px-4 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors disabled:opacity-50 rounded-full" x-text="loading ? $t('initializing') : $t('start_connection')"></button>
+                                <button @click="connect()" :disabled="loading" class="w-full px-4 py-2 bg-wa-green text-white font-sans text-xs tracking-normal hover:bg-wa-green-hover transition-colors disabled:opacity-50 rounded-lg" x-text="loading ? $t('initializing') : $t('start_connection')"></button>
                             </template>
                             <template x-if="connected">
-                                <button @click="disconnect()" :disabled="loading" class="w-full px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 font-mono uppercase text-xs tracking-widest hover:bg-red-500/30 transition-colors disabled:opacity-50 rounded-full" x-text="loading ? $t('disconnecting') : $t('disconnect')"></button>
+                                <button @click="disconnect()" :disabled="loading" class="w-full px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 font-sans text-xs tracking-normal hover:bg-red-500/30 transition-colors disabled:opacity-50 rounded-lg" x-text="loading ? $t('disconnecting') : $t('disconnect')"></button>
                             </template>
                         </div>
                     </div>
