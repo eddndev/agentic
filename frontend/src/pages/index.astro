@@ -6,28 +6,25 @@ import Layout from "../layouts/Layout.astro";
     <main class="space-y-8" x-data="dashboardStats">
         <!-- Header -->
         <header
-            class="flex justify-between items-center border-b border-white/10 pb-6 relative"
+            class="flex justify-between items-center border-b border-wa-border pb-6 relative"
         >
-            <div class="cross-marker -bottom-[5px] -left-[5px]"></div>
-            <div class="cross-marker -bottom-[5px] -right-[5px]"></div>
-
             <h1
-                class="text-3xl font-bold tracking-tighter uppercase relative z-10"
+                class="text-3xl font-bold tracking-tight relative z-10"
             >
                 Agentic <span
-                    class="text-brand-purple text-xs tracking-[0.3em] align-top ml-2"
+                    class="text-wa-green text-xs tracking-wide align-top ml-2"
                     >v1.0.0</span
                 >
             </h1>
 
             <div class="flex items-center gap-4">
                 <div
-                    class="px-3 py-1 border border-white/20 text-xs font-mono text-white/60"
+                    class="px-3 py-1 border border-wa-border text-xs text-wa-text-secondary rounded-lg"
                     :class="error ? 'text-red-400 border-red-500/30' : 'text-green-400 border-green-500/30'"
                 >
-                    SYSTEM: <span
-                        x-text="error ? 'OFFLINE' : (loading ? 'CONNECTING...' : 'ONLINE')"
-                        >CONNECTING...</span
+                    System: <span
+                        x-text="error ? 'Offline' : (loading ? 'Connecting...' : 'Online')"
+                        >Connecting...</span
                     >
                 </div>
             </div>
@@ -38,20 +35,17 @@ import Layout from "../layouts/Layout.astro";
             <!-- Active Bots -->
             <a
                 href="/bots"
-                class="p-6 bg-brand-panel/50 border border-white/5 backdrop-blur-sm relative group hover:border-brand-purple/30 transition-all"
+                class="p-6 bg-wa-bg-panel border border-wa-border rounded-xl relative group hover:border-wa-green/30 transition-all"
             >
-                <div class="cross-marker -top-[2px] -left-[2px]"></div>
-                <div class="cross-marker -top-[2px] -right-[2px]"></div>
-
                 <div class="flex justify-between items-start">
                     <div>
                         <h2
-                            class="text-xs text-brand-purple uppercase tracking-widest mb-4"
+                            class="text-xs text-wa-green font-medium mb-4"
                             x-text="$t('active_bots')"
                         >
                             Active Bots
                         </h2>
-                        <div class="text-4xl font-mono font-light">
+                        <div class="text-4xl font-light">
                             <span x-show="loading" class="animate-pulse"
                                 >...</span
                             >
@@ -61,7 +55,7 @@ import Layout from "../layouts/Layout.astro";
                         </div>
                     </div>
                     <svg
-                        class="w-5 h-5 text-gray-600 group-hover:text-brand-purple transition-colors"
+                        class="w-5 h-5 text-wa-text-secondary group-hover:text-wa-green transition-colors"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -77,15 +71,15 @@ import Layout from "../layouts/Layout.astro";
 
             <!-- Total Flows -->
             <div
-                class="p-6 bg-brand-panel/50 border border-white/5 backdrop-blur-sm relative"
+                class="p-6 bg-wa-bg-panel border border-wa-border rounded-xl relative"
             >
                 <h2
-                    class="text-xs text-brand-purple uppercase tracking-widest mb-4"
+                    class="text-xs text-wa-green font-medium mb-4"
                     x-text="$t('total_flows')"
                 >
                     Total Flows
                 </h2>
-                <div class="text-4xl font-mono font-light">
+                <div class="text-4xl font-light">
                     <span x-show="loading" class="animate-pulse">...</span>
                     <span x-show="!loading" x-text="stats.flowCount">0</span>
                 </div>
@@ -93,27 +87,27 @@ import Layout from "../layouts/Layout.astro";
 
             <!-- Executions (Placeholder) -->
             <div
-                class="p-6 bg-brand-panel/50 border border-white/5 backdrop-blur-sm relative"
+                class="p-6 bg-wa-bg-panel border border-wa-border rounded-xl relative"
             >
                 <h2
-                    class="text-xs text-brand-purple uppercase tracking-widest mb-4"
+                    class="text-xs text-wa-green font-medium mb-4"
                     x-text="$t('executions')"
                 >
                     Executions
                 </h2>
-                <div class="text-4xl font-mono font-light text-green-400">
+                <div class="text-4xl font-light text-green-400">
                     --
                 </div>
-                <p class="text-[10px] text-gray-500 font-mono mt-2">
+                <p class="text-[10px] text-wa-text-secondary mt-2">
                     Coming soon
                 </p>
             </div>
         </div>
 
         <!-- Quick Actions -->
-        <section class="border-t border-white/10 pt-8">
+        <section class="border-t border-wa-border pt-8">
             <h2
-                class="text-xs text-brand-purple uppercase tracking-widest mb-6"
+                class="text-xs text-wa-green font-medium mb-6"
             >
                 Quick Actions
             </h2>
@@ -121,13 +115,13 @@ import Layout from "../layouts/Layout.astro";
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <a
                     href="/bots"
-                    class="p-6 border border-white/10 hover:border-brand-purple/30 transition-all group flex items-center gap-4"
+                    class="p-6 border border-wa-border rounded-xl hover:border-wa-green/30 transition-all group flex items-center gap-4"
                 >
                     <div
-                        class="w-12 h-12 bg-brand-purple/10 flex items-center justify-center"
+                        class="w-12 h-12 bg-wa-green/10 rounded-lg flex items-center justify-center"
                     >
                         <svg
-                            class="w-6 h-6 text-brand-purple"
+                            class="w-6 h-6 text-wa-green"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -142,25 +136,25 @@ import Layout from "../layouts/Layout.astro";
                     </div>
                     <div>
                         <h3
-                            class="font-bold uppercase tracking-tight group-hover:text-brand-purple transition-colors"
+                            class="font-bold tracking-tight group-hover:text-wa-green transition-colors"
                             x-text="$t('manage_flows')"
                         >
                             Manage Bots & Flows
                         </h3>
-                        <p class="text-xs text-gray-500 font-mono mt-1">
+                        <p class="text-xs text-wa-text-secondary mt-1">
                             Configure your messaging bots
                         </p>
                     </div>
                 </a>
 
                 <div
-                    class="p-6 border border-dashed border-white/10 flex items-center gap-4 opacity-50"
+                    class="p-6 border border-dashed border-wa-border rounded-xl flex items-center gap-4 opacity-50"
                 >
                     <div
-                        class="w-12 h-12 bg-white/5 flex items-center justify-center"
+                        class="w-12 h-12 bg-wa-bg-hover rounded-lg flex items-center justify-center"
                     >
                         <svg
-                            class="w-6 h-6 text-gray-500"
+                            class="w-6 h-6 text-wa-text-secondary"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -175,11 +169,11 @@ import Layout from "../layouts/Layout.astro";
                     </div>
                     <div>
                         <h3
-                            class="font-bold uppercase tracking-tight text-gray-500"
+                            class="font-bold tracking-tight text-wa-text-secondary"
                         >
                             Analytics
                         </h3>
-                        <p class="text-xs text-gray-600 font-mono mt-1">
+                        <p class="text-xs text-wa-text-secondary mt-1">
                             Coming in v2.0
                         </p>
                     </div>
