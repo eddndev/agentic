@@ -10,6 +10,7 @@ export interface AIToolCall {
     id: string;
     name: string;
     arguments: Record<string, any>;
+    thoughtSignature?: string;
 }
 
 export interface AIToolDefinition {

@@ -80,6 +80,7 @@ export class GeminiProvider implements AIProvider {
                     id: `call_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
                     name: part.functionCall.name,
                     arguments: part.functionCall.args ?? {},
+                    ...(part.functionCall.thought_signature ? { thoughtSignature: part.functionCall.thought_signature } : {}),
                 });
             }
         }
@@ -201,6 +202,7 @@ export class GeminiProvider implements AIProvider {
                             functionCall: {
                                 name: tc.name,
                                 args: tc.arguments,
+                                ...(tc.thoughtSignature ? { thought_signature: tc.thoughtSignature } : {}),
                             },
                         });
                     }
