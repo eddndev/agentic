@@ -85,7 +85,7 @@
 >
     <!-- Empty State -->
     <template x-if="!loading && clients.length === 0">
-        <div class="text-center py-10 text-gray-500">
+        <div class="text-center py-10 text-wa-text-secondary">
             <p>No hay clientes registrados en este bot.</p>
         </div>
     </template>
@@ -93,7 +93,7 @@
     <!-- Loading -->
     <template x-if="loading">
         <div class="text-center py-10">
-            <span class="text-xs font-mono text-gray-500 uppercase animate-pulse">Cargando...</span>
+            <span class="text-xs text-wa-text-secondary animate-pulse">Cargando...</span>
         </div>
     </template>
 
@@ -101,7 +101,7 @@
     <div class="overflow-x-auto" x-show="!loading && clients.length > 0">
         <table class="w-full text-left border-collapse">
             <thead>
-                <tr class="text-xs uppercase text-gray-400 border-b border-white/10">
+                <tr class="text-xs text-wa-text-secondary border-b border-wa-border">
                     <th class="p-3">CURP</th>
                     <th class="p-3">Status</th>
                     <th class="p-3">Email</th>
@@ -110,31 +110,31 @@
                     <th class="p-3 text-right">Acciones</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-white/5">
+            <tbody class="divide-y divide-wa-border">
                 <template x-for="client in clients" :key="client.id">
-                    <tr class="hover:bg-white/5 transition-colors">
-                        <td class="p-3 text-gray-400 font-mono text-xs" x-text="client.curp || '-'"></td>
+                    <tr class="hover:bg-wa-bg-hover transition-colors">
+                        <td class="p-3 text-wa-text-secondary font-mono text-xs" x-text="client.curp || '-'"></td>
                         <td class="p-3">
                             <span
-                                class="px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wide"
+                                class="px-2 py-1 rounded-md text-[10px] font-bold"
                                 :class="statusColor(client.status)"
                                 x-text="client.status ? client.status.replace(/_/g, ' ') : 'PENDIENTE'"
                             ></span>
                         </td>
-                        <td class="p-3 text-gray-400" x-text="client.email"></td>
-                        <td class="p-3 text-gray-400" x-text="client.phoneNumber"></td>
-                        <td class="p-3 text-gray-500 text-xs" x-text="new Date(client.createdAt).toLocaleDateString()"></td>
+                        <td class="p-3 text-wa-text-secondary" x-text="client.email"></td>
+                        <td class="p-3 text-wa-text-secondary" x-text="client.phoneNumber"></td>
+                        <td class="p-3 text-wa-text-secondary text-xs" x-text="new Date(client.createdAt).toLocaleDateString()"></td>
                         <td class="p-3 text-right">
                             <div class="flex items-center justify-end gap-2">
                                 <button
                                     @click="openDetail(client)"
-                                    class="px-3 py-1 text-[10px] uppercase font-mono border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-colors rounded"
+                                    class="px-3 py-1 text-[10px] border border-wa-border text-wa-text-secondary hover:text-white hover:bg-wa-bg-hover transition-colors rounded-lg"
                                 >
                                     Detalle
                                 </button>
                                 <button
                                     @click="deleteClient(client)"
-                                    class="px-3 py-1 text-[10px] uppercase font-mono border border-red-500/30 text-red-500 hover:bg-red-500/10 transition-colors rounded"
+                                    class="px-3 py-1 text-[10px] border border-red-500/30 text-red-500 hover:bg-red-500/10 transition-colors rounded-lg"
                                 >
                                     Eliminar
                                 </button>
@@ -153,17 +153,12 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-4"
         style="display: none;"
     >
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="closeDetail()"></div>
+        <div class="absolute inset-0 bg-black/80" @click="closeDetail()"></div>
 
-        <div class="relative bg-brand-dark border border-white/10 p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div class="cross-marker -top-[2px] -left-[2px]"></div>
-            <div class="cross-marker -top-[2px] -right-[2px]"></div>
-            <div class="cross-marker -bottom-[2px] -left-[2px]"></div>
-            <div class="cross-marker -bottom-[2px] -right-[2px]"></div>
-
-            <h2 class="text-xl font-bold uppercase tracking-tight mb-6 flex justify-between items-center">
+        <div class="relative bg-wa-bg-panel border border-wa-border rounded-xl p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+            <h2 class="text-xl font-bold tracking-tight mb-6 flex justify-between items-center">
                 <span>Detalle de Cliente</span>
-                <button @click="closeDetail()" class="text-gray-500 hover:text-white">&times;</button>
+                <button @click="closeDetail()" class="text-wa-text-secondary hover:text-white">&times;</button>
             </h2>
 
             <template x-if="detailClient">
@@ -171,49 +166,49 @@
                     <!-- Read-only info -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <span class="block text-[10px] uppercase text-gray-500 mb-1">ID</span>
-                            <span class="text-gray-400 font-mono text-[11px] select-all" x-text="detailClient.id"></span>
+                            <span class="block text-[10px] text-wa-text-secondary mb-1">ID</span>
+                            <span class="text-wa-text-secondary font-mono text-[11px] select-all" x-text="detailClient.id"></span>
                         </div>
                         <div>
-                            <span class="block text-[10px] uppercase text-gray-500 mb-1">Telefono</span>
+                            <span class="block text-[10px] text-wa-text-secondary mb-1">Telefono</span>
                             <span class="text-white font-mono text-sm" x-text="detailClient.phoneNumber"></span>
                         </div>
                         <div>
-                            <span class="block text-[10px] uppercase text-gray-500 mb-1">Registrado</span>
-                            <span class="text-white font-mono text-sm" x-text="new Date(detailClient.createdAt).toLocaleString()"></span>
+                            <span class="block text-[10px] text-wa-text-secondary mb-1">Registrado</span>
+                            <span class="text-white text-sm" x-text="new Date(detailClient.createdAt).toLocaleString()"></span>
                         </div>
                         <div>
-                            <span class="block text-[10px] uppercase text-gray-500 mb-1">Actualizado</span>
-                            <span class="text-white font-mono text-sm" x-text="new Date(detailClient.updatedAt).toLocaleString()"></span>
+                            <span class="block text-[10px] text-wa-text-secondary mb-1">Actualizado</span>
+                            <span class="text-white text-sm" x-text="new Date(detailClient.updatedAt).toLocaleString()"></span>
                         </div>
                     </div>
 
-                    <hr class="border-white/5" />
+                    <hr class="border-wa-border" />
 
                     <!-- Editable fields -->
                     <div>
-                        <label class="block text-xs text-gray-400 font-mono uppercase mb-2">Email</label>
+                        <label class="block text-xs text-wa-text-secondary mb-2">Email</label>
                         <input type="email" x-model="editData.email"
-                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600" />
+                            class="w-full bg-wa-bg-hover border border-wa-border rounded-lg p-3 text-sm focus:border-wa-green focus:outline-none text-white placeholder-wa-text-secondary" />
                     </div>
 
                     <div>
-                        <label class="block text-xs text-gray-400 font-mono uppercase mb-2">Telefono</label>
+                        <label class="block text-xs text-wa-text-secondary mb-2">Telefono</label>
                         <input type="text" x-model="editData.phoneNumber"
-                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600 font-mono" />
+                            class="w-full bg-wa-bg-hover border border-wa-border rounded-lg p-3 text-sm focus:border-wa-green focus:outline-none text-white placeholder-wa-text-secondary font-mono" />
                     </div>
 
                     <div>
-                        <label class="block text-xs text-gray-400 font-mono uppercase mb-2">CURP</label>
+                        <label class="block text-xs text-wa-text-secondary mb-2">CURP</label>
                         <input type="text" x-model="editData.curp" maxlength="18"
-                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600 font-mono uppercase"
+                            class="w-full bg-wa-bg-hover border border-wa-border rounded-lg p-3 text-sm focus:border-wa-green focus:outline-none text-white placeholder-wa-text-secondary font-mono uppercase"
                             placeholder="CURP (18 caracteres)" />
                     </div>
 
                     <div>
-                        <label class="block text-xs text-gray-400 font-mono uppercase mb-2">Estatus</label>
+                        <label class="block text-xs text-wa-text-secondary mb-2">Estatus</label>
                         <select x-model="editData.status"
-                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white">
+                            class="w-full bg-wa-bg-hover border border-wa-border rounded-lg p-3 text-sm focus:border-wa-green focus:outline-none text-white">
                             <option value="REGISTRO_PENDIENTE">Registro Pendiente</option>
                             <option value="PAGO_GOBIERNO_PENDIENTE">Pago Gobierno Pendiente</option>
                             <option value="PAGO_GOBIERNO_REALIZADO">Pago Gobierno Realizado</option>
@@ -224,13 +219,13 @@
                     </div>
 
                     <!-- Actions -->
-                    <div class="flex gap-4 pt-6 mt-2 border-t border-white/5">
+                    <div class="flex gap-4 pt-6 mt-2 border-t border-wa-border">
                         <button type="button" @click="closeDetail()"
-                            class="flex-1 px-4 py-3 border border-white/10 text-gray-400 font-mono uppercase text-xs hover:bg-white/5 transition-colors">
+                            class="flex-1 px-4 py-3 border border-wa-border text-wa-text-secondary text-sm rounded-lg hover:bg-wa-bg-hover transition-colors">
                             Cancelar
                         </button>
                         <button type="button" @click="saveEdit()" :disabled="saving"
-                            class="flex-1 px-4 py-3 bg-brand-purple text-white font-mono uppercase text-xs hover:bg-brand-purple/80 disabled:opacity-50 transition-colors"
+                            class="flex-1 px-4 py-3 bg-wa-green text-white text-sm rounded-lg hover:bg-wa-green-hover disabled:opacity-50 transition-colors"
                             x-text="saving ? 'Guardando...' : 'Guardar Cambios'">
                         </button>
                     </div>

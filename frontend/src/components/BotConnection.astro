@@ -8,7 +8,7 @@ const { botId } = Astro.props;
 
 <div
     x-data={`botConnection('${botId}')`}
-    class="connection-panel p-4 bg-gray-900/50 border border-white/10 backdrop-blur-md"
+    class="connection-panel p-4 bg-wa-bg-panel border border-wa-border rounded-xl"
 >
     <script>
         import { ApiClient } from "../lib/api";
@@ -90,14 +90,14 @@ const { botId } = Astro.props;
 
     <div class="flex items-center justify-between mb-4">
         <h3
-            class="text-sm font-bold text-gray-400 uppercase tracking-widest"
+            class="text-sm font-bold text-wa-text-secondary"
             x-text="$t('whatsapp_baileys')"
         >
         </h3>
 
         <div class="flex items-center gap-2">
             <span
-                class="px-2 py-0.5 text-[10px] font-mono border"
+                class="px-2 py-0.5 text-[10px] border rounded-md"
                 :class="{
                 'border-green-500/50 text-green-400 bg-green-500/10': status === 'CONNECTED',
                 'border-yellow-500/50 text-yellow-400 bg-yellow-500/10': status === 'SCAN_QR',
@@ -112,10 +112,10 @@ const { botId } = Astro.props;
         <div class="text-center py-4">
             <img
                 :src="qr"
-                class="w-48 h-48 mx-auto border-4 border-white shadow-2xl"
+                class="w-48 h-48 mx-auto border-4 border-white rounded-xl shadow-2xl"
             />
             <p
-                class="mt-4 text-xs text-gray-400 font-mono animate-pulse"
+                class="mt-4 text-xs text-wa-text-secondary animate-pulse"
                 x-text="$t('scan_whatsapp')"
             >
             </p>
@@ -127,7 +127,7 @@ const { botId } = Astro.props;
         <button
             @click="connect()"
             :disabled="loading"
-            class="w-full py-2 px-4 bg-brand-purple hover:bg-brand-purple/80 text-white font-mono text-xs uppercase tracking-wider transition-colors disabled:opacity-50"
+            class="w-full py-2 px-4 bg-wa-green hover:bg-wa-green-hover text-white text-sm rounded-lg transition-colors disabled:opacity-50"
         >
             <span x-show="!loading" x-text="$t('start_connection')"></span>
             <span x-show="loading" x-text="$t('initializing')"></span>
@@ -138,7 +138,7 @@ const { botId } = Astro.props;
     <template x-if="status === 'CONNECTED'">
         <div class="text-center py-8">
             <div
-                class="w-16 h-16 bg-green-500/20 text-green-400 flex items-center justify-center mx-auto mb-2 border border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.3)]"
+                class="w-16 h-16 bg-green-500/20 text-green-400 rounded-xl flex items-center justify-center mx-auto mb-2 border border-green-500/50"
             >
                 <svg
                     class="w-8 h-8"
@@ -153,7 +153,7 @@ const { botId } = Astro.props;
                 >
             </div>
             <p
-                class="text-xs text-green-400 font-mono uppercase tracking-widest"
+                class="text-xs text-green-400"
             >
                 System Online
             </p>

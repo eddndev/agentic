@@ -44,7 +44,7 @@
     <!-- Trigger Button -->
     <button
         @click="open()"
-        class="px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors flex items-center gap-2 rounded-full"
+        class="px-6 py-2 bg-wa-green text-white text-sm font-medium rounded-lg hover:bg-wa-green-hover transition-colors flex items-center gap-2"
     >
         <span>+</span>
         <span>Nuevo Cliente</span>
@@ -57,48 +57,43 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-4"
         style="display: none;"
     >
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="show = false"></div>
+        <div class="absolute inset-0 bg-black/80" @click="show = false"></div>
 
-        <div class="relative bg-brand-dark border border-white/10 p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div class="cross-marker -top-[2px] -left-[2px]"></div>
-            <div class="cross-marker -top-[2px] -right-[2px]"></div>
-            <div class="cross-marker -bottom-[2px] -left-[2px]"></div>
-            <div class="cross-marker -bottom-[2px] -right-[2px]"></div>
-
-            <h2 class="text-xl font-bold uppercase tracking-tight mb-6 flex justify-between items-center">
+        <div class="relative bg-wa-bg-panel border border-wa-border rounded-xl p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+            <h2 class="text-xl font-bold tracking-tight mb-6 flex justify-between items-center">
                 <span>Nuevo Cliente</span>
-                <button @click="show = false" class="text-gray-500 hover:text-white">&times;</button>
+                <button @click="show = false" class="text-wa-text-secondary hover:text-white">&times;</button>
             </h2>
 
             <div class="space-y-5">
                 <!-- CURP -->
                 <div>
-                    <label class="block text-xs text-gray-400 font-mono uppercase mb-2">CURP</label>
+                    <label class="block text-xs text-wa-text-secondary mb-2">CURP</label>
                     <input type="text" x-model="formData.curp" maxlength="18"
-                        class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600 font-mono uppercase"
+                        class="w-full bg-wa-bg-hover border border-wa-border rounded-lg p-3 text-sm focus:border-wa-green focus:outline-none text-white placeholder-wa-text-secondary font-mono uppercase"
                         placeholder="CURP (18 caracteres)" />
                 </div>
 
                 <!-- Email + Phone -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs text-gray-400 font-mono uppercase mb-2">Email</label>
+                        <label class="block text-xs text-wa-text-secondary mb-2">Email</label>
                         <input type="email" x-model="formData.email"
-                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600" />
+                            class="w-full bg-wa-bg-hover border border-wa-border rounded-lg p-3 text-sm focus:border-wa-green focus:outline-none text-white placeholder-wa-text-secondary" />
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-400 font-mono uppercase mb-2">Teléfono</label>
+                        <label class="block text-xs text-wa-text-secondary mb-2">Telefono</label>
                         <input type="text" x-model="formData.phoneNumber"
-                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600"
+                            class="w-full bg-wa-bg-hover border border-wa-border rounded-lg p-3 text-sm focus:border-wa-green focus:outline-none text-white placeholder-wa-text-secondary"
                             placeholder="521..." />
                     </div>
                 </div>
 
                 <!-- Status -->
                 <div>
-                    <label class="block text-xs text-gray-400 font-mono uppercase mb-2">Estatus</label>
+                    <label class="block text-xs text-wa-text-secondary mb-2">Estatus</label>
                     <select x-model="formData.status"
-                        class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white">
+                        class="w-full bg-wa-bg-hover border border-wa-border rounded-lg p-3 text-sm focus:border-wa-green focus:outline-none text-white">
                         <option value="REGISTRO_PENDIENTE">Registro Pendiente</option>
                         <option value="PAGO_GOBIERNO_PENDIENTE">Pago Gobierno Pendiente</option>
                         <option value="PAGO_GOBIERNO_REALIZADO">Pago Gobierno Realizado</option>
@@ -110,13 +105,13 @@
             </div>
 
             <!-- Actions -->
-            <div class="flex gap-4 pt-6 mt-6 border-t border-white/5">
+            <div class="flex gap-4 pt-6 mt-6 border-t border-wa-border">
                 <button type="button" @click="show = false"
-                    class="flex-1 px-4 py-3 border border-white/10 text-gray-400 font-mono uppercase text-xs hover:bg-white/5 transition-colors">
+                    class="flex-1 px-4 py-3 border border-wa-border text-wa-text-secondary text-sm rounded-lg hover:bg-wa-bg-hover transition-colors">
                     Cancelar
                 </button>
                 <button type="button" @click="submit()" :disabled="loading"
-                    class="flex-1 px-4 py-3 bg-brand-purple text-white font-mono uppercase text-xs hover:bg-brand-purple/80 disabled:opacity-50 transition-colors"
+                    class="flex-1 px-4 py-3 bg-wa-green text-white text-sm rounded-lg hover:bg-wa-green-hover disabled:opacity-50 transition-colors"
                     x-text="loading ? 'Guardando...' : 'Guardar'">
                 </button>
             </div>

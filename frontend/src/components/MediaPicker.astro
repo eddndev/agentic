@@ -2,46 +2,40 @@
     x-data="mediaPicker"
     x-show="open"
     @keydown.escape.window="close()"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
     style="display: none;"
 >
     <div
-        class="bg-[#0f172a] border border-white/10 w-full max-w-2xl h-[600px] flex flex-col shadow-2xl relative"
+        class="bg-wa-bg-panel border border-wa-border rounded-xl w-full max-w-2xl h-[600px] flex flex-col shadow-2xl relative"
     >
-        <!-- Cross Markers -->
-        <div class="cross-marker -top-[5px] -left-[5px]"></div>
-        <div class="cross-marker -top-[5px] -right-[5px]"></div>
-        <div class="cross-marker -bottom-[5px] -left-[5px]"></div>
-        <div class="cross-marker -bottom-[5px] -right-[5px]"></div>
-
         <!-- Header -->
         <div
-            class="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-[#1e293b]/50"
+            class="px-6 py-4 border-b border-wa-border flex justify-between items-center bg-wa-bg-header rounded-t-xl"
         >
             <h3
-                class="text-sm font-bold uppercase tracking-widest text-brand-purple"
+                class="text-sm font-bold text-wa-green"
             >
                 Select Media
             </h3>
-            <button @click="close()" class="text-gray-400 hover:text-white"
+            <button @click="close()" class="text-wa-text-secondary hover:text-white"
                 >&times;</button
             >
         </div>
 
         <!-- Tabs -->
         <div
-            class="flex border-b border-white/10 text-xs uppercase tracking-wider"
+            class="flex border-b border-wa-border text-sm"
         >
             <button
                 @click="tab = 'upload'"
-                :class="tab === 'upload' ? 'bg-brand-purple/20 text-brand-purple border-b-2 border-brand-purple' : 'text-gray-400 hover:bg-white/5'"
+                :class="tab === 'upload' ? 'bg-wa-green/10 text-wa-green border-b-2 border-wa-green' : 'text-wa-text-secondary hover:bg-wa-bg-hover'"
                 class="flex-1 py-3 text-center transition-colors"
             >
                 Upload New
             </button>
             <button
                 @click="fetchFiles(); tab = 'gallery'"
-                :class="tab === 'gallery' ? 'bg-brand-purple/20 text-brand-purple border-b-2 border-brand-purple' : 'text-gray-400 hover:bg-white/5'"
+                :class="tab === 'gallery' ? 'bg-wa-green/10 text-wa-green border-b-2 border-wa-green' : 'text-wa-text-secondary hover:bg-wa-bg-hover'"
                 class="flex-1 py-3 text-center transition-colors"
             >
                 Gallery
@@ -49,7 +43,7 @@
         </div>
 
         <!-- Content -->
-        <div class="flex-1 overflow-y-auto p-6 bg-[url('/grid.svg')]">
+        <div class="flex-1 overflow-y-auto p-6">
             <!-- UPLOAD TAB -->
             <div
                 x-show="tab === 'upload'"
@@ -59,8 +53,8 @@
                     @dragover.prevent="dragover = true"
                     @dragleave.prevent="dragover = false"
                     @drop.prevent="handleDrop($event)"
-                    :class="dragover ? 'border-brand-purple bg-brand-purple/10' : 'border-white/20 hover:border-white/40'"
-                    class="border-2 border-dashed p-12 text-center transition-all cursor-pointer relative"
+                    :class="dragover ? 'border-wa-green bg-wa-green/10' : 'border-wa-border hover:border-wa-text-secondary'"
+                    class="border-2 border-dashed rounded-xl p-12 text-center transition-all cursor-pointer relative"
                 >
                     <input
                         type="file"
@@ -70,7 +64,7 @@
 
                     <div x-show="!uploading">
                         <svg
-                            class="w-12 h-12 mx-auto text-gray-500 mb-4"
+                            class="w-12 h-12 mx-auto text-wa-text-secondary mb-4"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -82,12 +76,12 @@
                                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                             ></path>
                         </svg>
-                        <p class="text-sm text-gray-300 font-mono">
+                        <p class="text-sm text-wa-text-primary">
                             Drag & Drop or Click to Upload
                         </p>
                     </div>
 
-                    <div x-show="uploading" class="text-brand-purple">
+                    <div x-show="uploading" class="text-wa-green">
                         <svg
                             class="animate-spin w-8 h-8 mx-auto mb-2"
                             viewBox="0 0 24 24"
@@ -103,7 +97,7 @@
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                             ></path></svg
                         >
-                        <p class="text-xs font-mono uppercase">Uploading...</p>
+                        <p class="text-xs">Uploading...</p>
                     </div>
                 </div>
             </div>
@@ -112,14 +106,14 @@
             <div x-show="tab === 'gallery'">
                 <div x-show="loading" class="text-center py-12">
                     <span
-                        class="text-brand-purple animate-pulse text-xs font-mono uppercase"
+                        class="text-wa-green animate-pulse text-xs"
                         >Loading Files...</span
                     >
                 </div>
 
                 <div
                     x-show="!loading && files.length === 0"
-                    class="text-center py-12 text-gray-500 text-xs font-mono uppercase"
+                    class="text-center py-12 text-wa-text-secondary text-xs"
                 >
                     No files found. Upload one first.
                 </div>
@@ -128,7 +122,7 @@
                     <template x-for="file in files" :key="file.name">
                         <div
                             @click="select(file.url)"
-                            class="group relative aspect-square border border-white/10 bg-[#0f172a] hover:border-brand-purple cursor-pointer transition-colors overflow-hidden"
+                            class="group relative aspect-square border border-wa-border rounded-lg bg-wa-bg-deep hover:border-wa-green cursor-pointer transition-colors overflow-hidden"
                         >
                             <!-- Preview (Image) -->
                             <template x-if="isImage(file.name)">
@@ -141,7 +135,7 @@
                             <!-- Preview (Generic) -->
                             <template x-if="!isImage(file.name)">
                                 <div
-                                    class="w-full h-full flex items-center justify-center text-gray-600 group-hover:text-white"
+                                    class="w-full h-full flex items-center justify-center text-wa-text-secondary group-hover:text-white"
                                 >
                                     <span
                                         class="text-xs font-mono break-all px-2"
@@ -177,8 +171,8 @@
                 window.addEventListener("open-media-picker", (e: any) => {
                     this.open = true;
                     this.callback = e.detail?.callback;
-                    this.tab = "upload"; // Reset to upload or gallery?
-                    this.fetchFiles(); // Pre-load gallery
+                    this.tab = "upload";
+                    this.fetchFiles();
                 });
             },
 
@@ -240,7 +234,6 @@
                     }).then((r) => r.json());
 
                     if (res.status === "success") {
-                        // Switch to gallery and select? Or just select immediately?
                         this.select(res.url);
                     }
                 } catch (e) {
@@ -251,7 +244,6 @@
             },
 
             select(url: string) {
-                // Always return full URL for backend processing
                 const fullUrl = this.getApiUrl(url);
                 if (this.callback) this.callback(fullUrl);
                 this.close();
