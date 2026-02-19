@@ -50,8 +50,8 @@ export const ClientController = {
     create: async ({ body }: Context) => {
         const data = body as any;
 
-        if (!data.email || !data.phoneNumber || !data.name || !data.botId) {
-            return new Response("Missing required fields: email, phoneNumber, name, botId", { status: 400 });
+        if (!data.email || !data.phoneNumber || !data.botId) {
+            return new Response("Missing required fields: email, phoneNumber, botId", { status: 400 });
         }
 
         try {
@@ -64,7 +64,6 @@ export const ClientController = {
                 data: {
                     email: data.email,
                     phoneNumber: data.phoneNumber,
-                    name: data.name,
                     curp: data.curp || null,
                     status: data.status || undefined,
                     botId: data.botId,

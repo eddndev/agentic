@@ -163,7 +163,7 @@ export class ToolExecutor {
                         ].filter(c => Object.values(c).some(v => v !== undefined)),
                     },
                     select: {
-                        id: true, name: true, email: true, phoneNumber: true,
+                        id: true, email: true, phoneNumber: true,
                         curp: true, status: true, createdAt: true,
                     },
                 });
@@ -197,18 +197,16 @@ export class ToolExecutor {
                         curp: args.curp.toUpperCase(),
                     },
                     update: {
-                        name: args.name || undefined,
                         email: args.email,
                         phoneNumber: cleanPhone,
                     },
                     create: {
                         botId,
-                        name: args.name || "Pendiente",
                         curp: args.curp.toUpperCase(),
                         email: args.email,
                         phoneNumber: cleanPhone,
                     },
-                    select: { id: true, name: true, email: true, curp: true, phoneNumber: true, status: true },
+                    select: { id: true, email: true, curp: true, phoneNumber: true, status: true },
                 });
                 return { success: true, data: client };
             }
@@ -245,7 +243,7 @@ export class ToolExecutor {
                             email: args.email,
                             ...(args.curp ? { curp: args.curp.toUpperCase() } : {}),
                         },
-                        select: { id: true, name: true, email: true, curp: true, status: true },
+                        select: { id: true, email: true, curp: true, status: true },
                     });
                     return { success: true, data: { ...updated, message: "Credenciales guardadas correctamente." } };
                 } else {
@@ -254,13 +252,12 @@ export class ToolExecutor {
                     const created = await prisma.client.create({
                         data: {
                             botId,
-                            name: args.name || "Pendiente",
                             email: args.email,
                             phoneNumber: phoneFromSession,
                             encryptedPassword: encrypted,
                             curp: args.curp?.toUpperCase() || null,
                         },
-                        select: { id: true, name: true, email: true, curp: true, status: true },
+                        select: { id: true, email: true, curp: true, status: true },
                     });
                     return { success: true, data: { ...created, message: "Cliente registrado con credenciales." } };
                 }

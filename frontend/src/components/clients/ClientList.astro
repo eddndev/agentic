@@ -5,6 +5,9 @@
     x-data={`{
     clients: [],
     loading: true,
+    detailClient: null,
+    editData: {},
+    saving: false,
 
     get botId() {
         return new URLSearchParams(window.location.search).get('id') || '';
@@ -25,6 +28,45 @@
 
     init() {
         this.fetchClients();
+    },
+
+    openDetail(client) {
+        this.detailClient = client;
+        this.editData = {
+            email: client.email,
+            curp: client.curp || '',
+            status: client.status,
+        };
+    },
+
+    closeDetail() {
+        this.detailClient = null;
+    },
+
+    async saveEdit() {
+        if (!this.detailClient) return;
+        this.saving = true;
+        try {
+            await ApiClient.put('/clients/' + this.detailClient.id, this.editData);
+            await this.fetchClients();
+            this.closeDetail();
+        } catch (e) {
+            console.error(e);
+            alert('Error: ' + e.message);
+        } finally {
+            this.saving = false;
+        }
+    },
+
+    async deleteClient(client) {
+        if (!confirm('Eliminar cliente ' + client.email + '?')) return;
+        try {
+            await ApiClient.delete('/clients/' + client.id);
+            await this.fetchClients();
+        } catch (e) {
+            console.error(e);
+            alert('Error: ' + e.message);
+        }
     },
 
     statusColor(status) {
@@ -59,18 +101,17 @@
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="text-xs uppercase text-gray-400 border-b border-white/10">
-                    <th class="p-3">Nombre</th>
                     <th class="p-3">CURP</th>
                     <th class="p-3">Status</th>
                     <th class="p-3">Email</th>
-                    <th class="p-3">Teléfono</th>
+                    <th class="p-3">Telefono</th>
                     <th class="p-3">Registro</th>
+                    <th class="p-3 text-right">Acciones</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-white/5">
                 <template x-for="client in clients" :key="client.id">
                     <tr class="hover:bg-white/5 transition-colors">
-                        <td class="p-3 font-medium text-white" x-text="client.name"></td>
                         <td class="p-3 text-gray-400 font-mono text-xs" x-text="client.curp || '-'"></td>
                         <td class="p-3">
                             <span
@@ -82,10 +123,105 @@
                         <td class="p-3 text-gray-400" x-text="client.email"></td>
                         <td class="p-3 text-gray-400" x-text="client.phoneNumber"></td>
                         <td class="p-3 text-gray-500 text-xs" x-text="new Date(client.createdAt).toLocaleDateString()"></td>
+                        <td class="p-3 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <button
+                                    @click="openDetail(client)"
+                                    class="px-3 py-1 text-[10px] uppercase font-mono border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-colors rounded"
+                                >
+                                    Detalle
+                                </button>
+                                <button
+                                    @click="deleteClient(client)"
+                                    class="px-3 py-1 text-[10px] uppercase font-mono border border-red-500/30 text-red-500 hover:bg-red-500/10 transition-colors rounded"
+                                >
+                                    Eliminar
+                                </button>
+                            </div>
+                        </td>
                     </tr>
                 </template>
             </tbody>
         </table>
+    </div>
+
+    <!-- Detail/Edit Modal -->
+    <div
+        x-show="detailClient"
+        x-transition.opacity
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        style="display: none;"
+    >
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="closeDetail()"></div>
+
+        <div class="relative bg-brand-dark border border-white/10 p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="cross-marker -top-[2px] -left-[2px]"></div>
+            <div class="cross-marker -top-[2px] -right-[2px]"></div>
+            <div class="cross-marker -bottom-[2px] -left-[2px]"></div>
+            <div class="cross-marker -bottom-[2px] -right-[2px]"></div>
+
+            <h2 class="text-xl font-bold uppercase tracking-tight mb-6 flex justify-between items-center">
+                <span>Detalle de Cliente</span>
+                <button @click="closeDetail()" class="text-gray-500 hover:text-white">&times;</button>
+            </h2>
+
+            <template x-if="detailClient">
+                <div class="space-y-5">
+                    <!-- Read-only info -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <span class="block text-[10px] uppercase text-gray-500 mb-1">Telefono</span>
+                            <span class="text-white font-mono text-sm" x-text="detailClient.phoneNumber"></span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] uppercase text-gray-500 mb-1">Registrado</span>
+                            <span class="text-white font-mono text-sm" x-text="new Date(detailClient.createdAt).toLocaleString()"></span>
+                        </div>
+                    </div>
+
+                    <hr class="border-white/5" />
+
+                    <!-- Editable fields -->
+                    <div>
+                        <label class="block text-xs text-gray-400 font-mono uppercase mb-2">Email</label>
+                        <input type="email" x-model="editData.email"
+                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600" />
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-gray-400 font-mono uppercase mb-2">CURP</label>
+                        <input type="text" x-model="editData.curp" maxlength="18"
+                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600 font-mono uppercase"
+                            placeholder="CURP (18 caracteres)" />
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-gray-400 font-mono uppercase mb-2">Estatus</label>
+                        <select x-model="editData.status"
+                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white">
+                            <option value="REGISTRO_PENDIENTE">Registro Pendiente</option>
+                            <option value="PAGO_GOBIERNO_PENDIENTE">Pago Gobierno Pendiente</option>
+                            <option value="PAGO_GOBIERNO_REALIZADO">Pago Gobierno Realizado</option>
+                            <option value="EXAMEN_EN_PROCESO">Examen en Proceso</option>
+                            <option value="LICENCIA_LISTA">Licencia Lista</option>
+                            <option value="COMPLETADO">Completado</option>
+                        </select>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-4 pt-6 mt-2 border-t border-white/5">
+                        <button type="button" @click="closeDetail()"
+                            class="flex-1 px-4 py-3 border border-white/10 text-gray-400 font-mono uppercase text-xs hover:bg-white/5 transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="button" @click="saveEdit()" :disabled="saving"
+                            class="flex-1 px-4 py-3 bg-brand-purple text-white font-mono uppercase text-xs hover:bg-brand-purple/80 disabled:opacity-50 transition-colors"
+                            x-text="saving ? 'Guardando...' : 'Guardar Cambios'">
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </div>
     </div>
 </div>
 

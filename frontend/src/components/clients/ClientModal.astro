@@ -5,7 +5,6 @@
     x-data={`{
     show: false,
     formData: {
-        name: '',
         email: '',
         phoneNumber: '',
         curp: '',
@@ -33,7 +32,6 @@
 
     open() {
         this.formData = {
-            name: '',
             email: '',
             phoneNumber: '',
             curp: '',
@@ -73,14 +71,6 @@
             </h2>
 
             <div class="space-y-5">
-                <!-- Name -->
-                <div>
-                    <label class="block text-xs text-gray-400 font-mono uppercase mb-2">Nombre Completo</label>
-                    <input type="text" x-model="formData.name"
-                        class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600"
-                        placeholder="Nombre completo" />
-                </div>
-
                 <!-- CURP -->
                 <div>
                     <label class="block text-xs text-gray-400 font-mono uppercase mb-2">CURP</label>
