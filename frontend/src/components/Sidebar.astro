@@ -62,7 +62,7 @@ const menuItems = [
         </div>
         <span
             class="ml-4 font-bold tracking-tight text-white whitespace-nowrap overflow-hidden transition-all duration-300"
-            :class="$store.sidebar.expanded ? 'opacity-100 max-w-[200px]' : 'opacity-0 max-w-0 md:opacity-0 md:max-w-0 mobile:opacity-100 mobile:max-w-[200px]'"
+            :class="($store.sidebar.expanded || $store.sidebar.mobileOpen) ? 'opacity-100 max-w-[200px]' : 'opacity-0 max-w-0'"
             >Agentic</span
         >
     </div>
@@ -92,7 +92,7 @@ const menuItems = [
 
                 <span
                     class="ml-4 font-sans text-sm whitespace-nowrap overflow-hidden transition-all duration-300"
-                    :class="$store.sidebar.expanded ? 'opacity-100 max-w-[200px]' : 'opacity-0 max-w-0'"
+                    :class="($store.sidebar.expanded || $store.sidebar.mobileOpen) ? 'opacity-100 max-w-[200px]' : 'opacity-0 max-w-0'"
                     x-text="$t(item.id)"></span>
 
                 <!-- Tooltip for collapsed state -->
@@ -120,7 +120,7 @@ const menuItems = [
         <!-- Language Toggle -->
         <div
             class="flex bg-wa-bg-hover p-1 rounded-lg overflow-hidden transition-all duration-300"
-            :class="$store.sidebar.expanded ? 'opacity-100' : 'opacity-0 h-0 p-0 overflow-hidden'"
+            :class="($store.sidebar.expanded || $store.sidebar.mobileOpen) ? 'opacity-100' : 'opacity-0 h-0 p-0 overflow-hidden'"
         >
             <button
                 @click="$store.i18n.setLocale('en')"
@@ -139,7 +139,7 @@ const menuItems = [
         <!-- Version -->
         <div
             class="text-[9px] font-sans text-wa-text-secondary text-center transition-all duration-300"
-            :class="$store.sidebar.expanded ? 'opacity-100' : 'opacity-0 scale-0 h-0'"
+            :class="($store.sidebar.expanded || $store.sidebar.mobileOpen) ? 'opacity-100' : 'opacity-0 scale-0 h-0'"
         >
             v1.0.2-beta
         </div>
@@ -162,7 +162,7 @@ const menuItems = [
 
                 <div
                     class="overflow-hidden transition-all duration-300"
-                    :class="$store.sidebar.expanded ? 'w-auto opacity-100' : 'w-0 opacity-0'"
+                    :class="($store.sidebar.expanded || $store.sidebar.mobileOpen) ? 'w-auto opacity-100' : 'w-0 opacity-0'"
                 >
                     <div
                         class="text-xs font-bold text-white whitespace-nowrap"
@@ -179,7 +179,7 @@ const menuItems = [
                 <!-- Logout Icon (Visible on hover or when collapsed) -->
                 <div
                     class="absolute right-2 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                    x-show="$store.sidebar.expanded"
+                    x-show="$store.sidebar.expanded || $store.sidebar.mobileOpen"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
