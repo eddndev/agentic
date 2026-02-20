@@ -1,0 +1,25 @@
+[Unit]
+Description=Agentic Backend (Node.js)
+After=network.target postgresql.service redis.service
+Wants=agentic-core.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/agentic/backend
+EnvironmentFile=/var/www/agentic/backend/.env
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=agentic-backend
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/www/agentic/backend
+
+[Install]
+WantedBy=multi-user.target

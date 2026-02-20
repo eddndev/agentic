@@ -15,15 +15,16 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
+          command_timeout: 15m
           script: |
             set -e
 
-            # Ensure Bun is in path (Standard location for bun install script)
+            # Ensure Bun and Cargo are in path
             export BUN_INSTALL="$HOME/.bun"
-            export PATH="$BUN_INSTALL/bin:$PATH"
+            export PATH="$BUN_INSTALL/bin:$HOME/.cargo/bin:$PATH"
 
             echo "Starting Deployment..."
-            
+
             cd /var/www/agentic
 
             echo "Pulling latest code..."
@@ -37,16 +38,31 @@ jobs:
             bunx prisma generate
             bun run prisma/seed.ts
             bun run build
-            
+
+            echo "Building Rust Core..."
+            cd ../core
+            cargo build --release
+
             echo "Building Frontend..."
             cd ../frontend
             bun install
-            # Ensure PUBLIC_API_URL is set if needed for the build
             export PUBLIC_API_URL="https://api-agentic.angelviajero.com.mx"
             bun run build
-            
-            echo "Restarting PM2..."
+
+            echo "Installing systemd services..."
             cd ..
-            pm2 startOrReload ecosystem.config.cjs
+            sudo cp deploy/agentic-backend.service /etc/systemd/system/
+            sudo cp deploy/agentic-core.service /etc/systemd/system/
+            sudo systemctl daemon-reload
+            sudo systemctl enable agentic-core agentic-backend
+
+            echo "Restarting services..."
+            sudo systemctl restart agentic-core
+            sudo systemctl restart agentic-backend
+
+            echo "Verifying services..."
+            sleep 2
+            sudo systemctl is-active agentic-core
+            sudo systemctl is-active agentic-backend
 
             echo "Deployment Complete!"
