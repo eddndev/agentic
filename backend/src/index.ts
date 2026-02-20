@@ -1,24 +1,12 @@
 import { Elysia } from "elysia";
 import { node } from "@elysiajs/node";
-import { Worker } from "bullmq";
-import { Redis } from "ioredis";
 
 // --- Configuration ---
-const REDIS_URL = process.env['REDIS_URL'] || "redis://localhost:6379";
 const PORT = process.env.PORT || 8080;
 
-// --- Services ---
-// Redis Connection
-const redis = new Redis(REDIS_URL, {
-    maxRetriesPerRequest: null // Required for BullMQ
-});
-
-redis.on("error", (err) => console.error("Redis Client Error", err));
-redis.on("connect", () => console.log("Redis Connected"));
-
-// --- Workers ---
-import { startAgenticWorker } from "./workers/message.worker";
-const worker = startAgenticWorker();
+// --- Outgoing Stream Consumer (reads from Rust core's outgoing queue) ---
+import { startOutgoingConsumer } from "./services/outgoing-stream.consumer";
+startOutgoingConsumer();
 
 // --- Global Error Handlers (Prevent Crash) ---
 process.on('uncaughtException', (err) => {
@@ -84,7 +72,6 @@ const app = new Elysia({ adapter: node() })
     .get("/info", () => ({
         service: "Agentic",
         version: "1.0.0",
-        redis: redis.status
     }))
     .listen({
         port: Number(PORT),
