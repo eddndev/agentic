@@ -16,8 +16,8 @@ import * as https from 'node:https';
 import QRCode from 'qrcode';
 import { prisma } from './postgres.service';
 import { aiEngine } from '../core/ai';
-import { flowEngine } from '../core/flow';
 import { MessageAccumulator } from './accumulator.service';
+import { publishNewMessage } from './stream.service';
 import { SessionStatus, Platform } from '@prisma/client';
 import pino from 'pino';
 
@@ -407,13 +407,34 @@ export class BaileysService {
 
             // 4. Outgoing messages: skip AI but evaluate flow triggers (OUTGOING/BOTH)
             if (message.fromMe) {
-                flowEngine.processIncomingMessage(session.id, message).catch(err => {
-                    console.error(`[Baileys] FlowEngine error (outgoing):`, err);
+                publishNewMessage({
+                    botId: bot.id,
+                    sessionId: session.id,
+                    identifier: from,
+                    platform: "WHATSAPP",
+                    fromMe: true,
+                    sender: from,
+                    content: message.content,
+                }).catch(err => {
+                    console.error(`[Baileys] Stream publish error (outgoing):`, err);
                 });
                 return;
             }
 
-            // 5. Process with AI Engine (with optional message accumulation)
+            // 5. Publish to stream for INCOMING trigger evaluation (Rust core handles matching)
+            publishNewMessage({
+                botId: bot.id,
+                sessionId: session.id,
+                identifier: from,
+                platform: "WHATSAPP",
+                fromMe: false,
+                sender: from,
+                content: message.content,
+            }).catch(err => {
+                console.error(`[Baileys] Stream publish error (incoming):`, err);
+            });
+
+            // 6. Process with AI Engine (with optional message accumulation)
             if (bot.messageDelay > 0) {
                 MessageAccumulator.accumulate(
                     session.id,
