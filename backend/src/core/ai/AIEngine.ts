@@ -3,7 +3,6 @@ import { redis } from "../../services/redis.service";
 import { getAIProvider } from "../../services/ai";
 import { ConversationService } from "../../services/conversation.service";
 import { BaileysService } from "../../services/baileys.service";
-import { flowEngine } from "../flow";
 import { ToolExecutor } from "./ToolExecutor";
 import { TranscriptionService, VisionService, PDFService } from "../../services/media";
 import type { AIMessage, AIToolDefinition, AIProvider, AICompletionRequest, AICompletionResponse } from "../../services/ai";
@@ -44,11 +43,9 @@ export class AIEngine {
             return;
         }
 
-        // 2. Backward compatibility: delegate to FlowEngine if AI not enabled
+        // 2. If AI not enabled, skip — trigger evaluation is handled by the
+        //    Rust core via Redis Streams (published in baileys.service.ts)
         if (!session.bot.aiEnabled) {
-            for (const msg of messages) {
-                await flowEngine.processIncomingMessage(sessionId, msg);
-            }
             return;
         }
 
