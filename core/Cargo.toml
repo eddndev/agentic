@@ -3,6 +3,14 @@ name = "core"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "agentic_core"
+path = "src/lib.rs"
+
+[[bin]]
+name = "core"
+path = "src/main.rs"
+
 [dependencies]
 tokio = { version = "1.40", features = ["full"] }
 redis = { version = "0.27", features = ["tokio-comp"] }

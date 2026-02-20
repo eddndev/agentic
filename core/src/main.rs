@@ -1,23 +1,12 @@
-pub mod flow_engine;
-pub mod matcher;
-pub mod models;
-pub mod processors;
-
 use std::sync::Arc;
 
+use agentic_core::{flow_engine, models, processors, AppState};
 use anyhow::{Context, Result};
-use redis::aio::MultiplexedConnection;
 use redis::streams::{StreamReadOptions, StreamReadReply};
 use redis::AsyncCommands;
 use sqlx::postgres::PgPoolOptions;
-use sqlx::PgPool;
 use std::env;
 use tracing::{error, info};
-
-pub struct AppState {
-    pub pool: PgPool,
-    pub redis: MultiplexedConnection,
-}
 
 #[tokio::main]
 async fn main() -> Result<()> {

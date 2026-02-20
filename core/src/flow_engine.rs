@@ -2,7 +2,7 @@ use std::pin::Pin;
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use chrono::Utc;
+use chrono::{NaiveDateTime, Utc};
 use rand::Rng;
 use redis::AsyncCommands;
 use sqlx::Row;
@@ -48,7 +48,7 @@ pub async fn process_incoming_message(
         FROM "Trigger" t
         JOIN "Flow" f ON t."flowId" = f.id
         WHERE t."isActive" = true
-          AND t.scope = ANY($1)
+          AND t.scope::TEXT = ANY($1)
           AND (
             t."sessionId" = $2
             OR (t."botId" = $3 AND t."sessionId" IS NULL)
@@ -117,8 +117,9 @@ pub async fn process_incoming_message(
             .await?;
 
             if let Some(row) = last_execution {
-                let started_at: chrono::DateTime<Utc> = row.get("startedAt");
+                let started_at: NaiveDateTime = row.get("startedAt");
                 let elapsed = Utc::now()
+                    .naive_utc()
                     .signed_duration_since(started_at)
                     .num_milliseconds();
                 if elapsed < cooldown_ms as i64 {

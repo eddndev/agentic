@@ -72,9 +72,9 @@ pub async fn execute_step(
     };
 
     info!(
-        step_type = step.r#type,
+        step_type = step.r#type.as_str(),
         identifier = session.identifier,
-        platform = session.platform,
+        platform = session.platform.as_str(),
         "Executing step"
     );
 
@@ -82,7 +82,9 @@ pub async fn execute_step(
         ConditionalTimeMetadata, MediaPayload, OutgoingMessage, OutgoingPayload,
     };
 
-    if session.platform == "WHATSAPP" {
+    use crate::models::db::{Platform, StepType};
+
+    if session.platform == Platform::WHATSAPP {
         let mut outgoing_payload = OutgoingPayload {
             text: None,
             image: None,
@@ -91,11 +93,11 @@ pub async fn execute_step(
             ptt: None,
         };
 
-        match step.r#type.as_str() {
-            "TEXT" => {
+        match step.r#type {
+            StepType::TEXT => {
                 outgoing_payload.text = step.content.clone();
             }
-            "IMAGE" => {
+            StepType::IMAGE => {
                 if let Some(media_url) = &step.media_url {
                     outgoing_payload.image = Some(MediaPayload {
                         url: media_url.clone(),
@@ -105,21 +107,21 @@ pub async fn execute_step(
                     error!(step_id = step.id, "IMAGE step has no mediaUrl, skipping");
                 }
             }
-            "AUDIO" | "PTT" => {
+            StepType::AUDIO | StepType::PTT => {
                 if let Some(media_url) = &step.media_url {
                     outgoing_payload.audio = Some(MediaPayload {
                         url: media_url.clone(),
                     });
-                    outgoing_payload.ptt = Some(step.r#type.as_str() == "PTT");
+                    outgoing_payload.ptt = Some(step.r#type == StepType::PTT);
                 } else {
                     error!(
-                        step_type = step.r#type,
+                        step_type = step.r#type.as_str(),
                         step_id = step.id,
                         "Step has no mediaUrl, skipping"
                     );
                 }
             }
-            "CONDITIONAL_TIME" => {
+            StepType::CONDITIONAL_TIME => {
                 if let Some(meta_val) = &step.metadata {
                     if let Ok(metadata) =
                         serde_json::from_value::<ConditionalTimeMetadata>(meta_val.clone())
@@ -219,7 +221,7 @@ pub async fn execute_step(
             }
             _ => {
                 warn!(
-                    step_type = step.r#type,
+                    step_type = step.r#type.as_str(),
                     "Unsupported step type for WhatsApp"
                 );
             }
@@ -271,9 +273,9 @@ pub async fn execute_step(
         }
     } else {
         info!(
-            platform = session.platform,
+            platform = session.platform.as_str(),
             identifier = session.identifier,
-            step_type = step.r#type,
+            step_type = step.r#type.as_str(),
             "Non-WhatsApp platform (not yet supported)"
         );
     }
