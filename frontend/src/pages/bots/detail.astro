@@ -174,6 +174,13 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                 <span x-text="$t('tools')">Tools</span>
             </button>
             <button
+                @click="activeTab = 'automations'; loadAutomations()"
+                class="px-3 sm:px-6 py-2 font-sans text-xs sm:text-sm transition-all rounded-lg"
+                :class="activeTab === 'automations' ? 'bg-wa-green text-white shadow-lg' : 'text-wa-text-secondary hover:text-white'"
+            >
+                <span x-text="$t('automations')">Automations</span>
+            </button>
+            <button
                 @click="activeTab = 'logs'; loadLogs()"
                 class="px-3 sm:px-6 py-2 font-sans text-xs sm:text-sm transition-all rounded-lg"
                 :class="activeTab === 'logs' ? 'bg-wa-green text-white shadow-lg' : 'text-wa-text-secondary hover:text-white'"
@@ -273,6 +280,50 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                                 ? ($t('message_delay_off') || 'Immediate processing (no accumulation)')
                                 : ($t('message_delay_desc') || 'Wait for more messages before processing')">
                         </p>
+                    </div>
+
+                    <!-- Filters Section -->
+                    <div class="border-t border-wa-border pt-6 mt-6">
+                        <h4 class="text-xs text-wa-green tracking-normal mb-4">Filtros</h4>
+
+                        <!-- Exclude Groups Toggle -->
+                        <div class="flex items-center justify-between gap-4 p-4 bg-wa-bg-deep border border-wa-border rounded-lg mb-4">
+                            <div class="min-w-0">
+                                <label class="text-sm font-medium text-white" x-text="$t('exclude_groups')">Exclude Groups</label>
+                                <p class="text-xs text-wa-text-secondary mt-1" x-text="$t('exclude_groups_desc')"></p>
+                            </div>
+                            <button type="button" @click="aiConfig.excludeGroups = !aiConfig.excludeGroups"
+                                class="relative w-12 h-6 rounded-full transition-colors flex-shrink-0"
+                                :class="aiConfig.excludeGroups ? 'bg-wa-green' : 'bg-gray-700'">
+                                <span class="absolute w-5 h-5 bg-white rounded-full top-0.5 transition-all"
+                                    :class="aiConfig.excludeGroups ? 'left-6' : 'left-0.5'"></span>
+                            </button>
+                        </div>
+
+                        <!-- Ignored Labels -->
+                        <div class="p-4 bg-wa-bg-deep border border-wa-border rounded-lg">
+                            <label class="block text-sm font-medium text-white mb-1" x-text="$t('ignored_labels')">Ignored Labels</label>
+                            <p class="text-xs text-wa-text-secondary mb-3" x-text="$t('ignored_labels_desc')"></p>
+
+                            <!-- Selected labels as chips -->
+                            <div class="flex flex-wrap gap-2 mb-3" x-show="aiConfig.ignoredLabels.length > 0">
+                                <template x-for="(label, idx) in aiConfig.ignoredLabels" :key="idx">
+                                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-wa-green/20 text-wa-green text-xs rounded-md">
+                                        <span x-text="label"></span>
+                                        <button type="button" @click="aiConfig.ignoredLabels.splice(idx, 1)" class="hover:text-red-400">&times;</button>
+                                    </span>
+                                </template>
+                            </div>
+
+                            <!-- Add label from bot's labels -->
+                            <select @change="if ($event.target.value && !aiConfig.ignoredLabels.includes($event.target.value)) { aiConfig.ignoredLabels.push($event.target.value); } $event.target.value = '';"
+                                class="w-full bg-wa-bg-hover border border-wa-border text-white text-sm p-2 focus:border-wa-green focus:outline-none rounded-lg">
+                                <option value="">+ Add label...</option>
+                                <template x-for="lbl in botLabels" :key="lbl.id">
+                                    <option :value="lbl.name" x-text="lbl.name" :disabled="aiConfig.ignoredLabels.includes(lbl.name)"></option>
+                                </template>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Actions -->
@@ -498,6 +549,146 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                         </div>
                     </template>
                 </div>
+            </div>
+        </div>
+
+        <!-- Automations Tab -->
+        <div x-show="activeTab === 'automations'" style="display: none;">
+            <div class="bg-wa-bg-panel border border-wa-border p-4 sm:p-6 relative rounded-xl">
+
+                <div class="flex justify-between items-center mb-6 gap-3 flex-wrap">
+                    <h3 class="text-xs text-wa-green tracking-normal" x-text="$t('automations')">Automations</h3>
+                    <button @click="showCreateAutomation = true"
+                        class="px-6 py-2 bg-wa-green text-white font-sans text-xs tracking-normal hover:bg-wa-green-hover transition-colors rounded-lg flex items-center gap-2">
+                        <span>+</span>
+                        <span x-text="$t('create_automation')">Create Automation</span>
+                    </button>
+                </div>
+
+                <!-- Automation List -->
+                <template x-if="automations.length > 0">
+                    <div class="space-y-3">
+                        <template x-for="auto in automations" :key="auto.id">
+                            <div class="p-4 bg-wa-bg-deep border border-wa-border rounded-lg">
+                                <div class="flex justify-between items-start gap-3">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                            <h4 class="font-bold font-sans text-white" x-text="auto.name"></h4>
+                                            <span class="text-[10px] font-sans px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400" x-text="auto.event"></span>
+                                            <span class="text-[10px] font-sans px-2 py-0.5 rounded-md bg-wa-green/10 text-wa-green" x-text="auto.labelName"></span>
+                                        </div>
+                                        <p class="text-xs text-wa-text-secondary mb-2" x-text="auto.description || ''"></p>
+                                        <div class="flex items-center gap-4 text-[10px] text-wa-text-secondary">
+                                            <span x-text="'Timeout: ' + formatTimeout(auto.timeoutMs)"></span>
+                                            <span class="truncate max-w-xs" x-text="'Prompt: ' + auto.prompt.substring(0, 60) + (auto.prompt.length > 60 ? '...' : '')"></span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                        <!-- Toggle -->
+                                        <button @click="toggleAutomation(auto.id, !auto.enabled)"
+                                            class="relative w-10 h-5 rounded-full transition-colors"
+                                            :class="auto.enabled ? 'bg-wa-green' : 'bg-gray-700'">
+                                            <span class="absolute w-4 h-4 bg-white rounded-full top-0.5 transition-all"
+                                                :class="auto.enabled ? 'left-5' : 'left-0.5'"></span>
+                                        </button>
+                                        <!-- Delete -->
+                                        <button @click="deleteAutomation(auto.id)"
+                                            class="p-1 text-wa-text-secondary hover:text-red-400 transition-colors">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Empty State -->
+                <template x-if="automations.length === 0">
+                    <div class="text-center py-12 border border-dashed border-wa-border mt-4 rounded-xl">
+                        <p class="text-xs font-sans text-wa-text-secondary mb-4" x-text="$t('no_automations')">No automations configured</p>
+                        <button @click="showCreateAutomation = true"
+                            class="inline-block px-6 py-2 bg-wa-green text-white font-sans text-xs tracking-normal hover:bg-wa-green-hover transition-colors rounded-lg">
+                            + <span x-text="$t('create_automation')">Create Automation</span>
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Create Automation Modal -->
+        <div x-show="showCreateAutomation"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+            style="display: none;">
+            <div class="bg-wa-bg-deep border border-wa-border p-6 sm:p-8 max-w-md w-full relative rounded-xl"
+                @click.outside="showCreateAutomation = false">
+
+                <h2 class="text-xl font-bold mb-6 tracking-tight" x-text="$t('create_automation')">Create Automation</h2>
+
+                <form @submit.prevent="createAutomation()" class="space-y-4">
+                    <!-- Name -->
+                    <div>
+                        <label class="block text-xs font-sans text-wa-text-secondary mb-2" x-text="$t('automation_name')">Name</label>
+                        <input type="text" x-model="automationForm.name" required
+                            class="w-full bg-wa-bg-hover border border-wa-border text-white text-sm p-3 focus:border-wa-green focus:outline-none rounded-lg"
+                            placeholder="Follow-up reminder" />
+                    </div>
+
+                    <!-- Event -->
+                    <div>
+                        <label class="block text-xs font-sans text-wa-text-secondary mb-2" x-text="$t('automation_event')">Event</label>
+                        <select x-model="automationForm.event"
+                            class="w-full bg-wa-bg-hover border border-wa-border text-white text-sm p-3 focus:border-wa-green focus:outline-none rounded-lg">
+                            <option value="INACTIVITY" x-text="$t('inactivity')">Inactivity</option>
+                        </select>
+                    </div>
+
+                    <!-- Label -->
+                    <div>
+                        <label class="block text-xs font-sans text-wa-text-secondary mb-2" x-text="$t('automation_label')">Label</label>
+                        <select x-model="automationForm.labelName" required
+                            class="w-full bg-wa-bg-hover border border-wa-border text-white text-sm p-3 focus:border-wa-green focus:outline-none rounded-lg">
+                            <option value="">Select label...</option>
+                            <template x-for="lbl in botLabels" :key="lbl.id">
+                                <option :value="lbl.name" x-text="lbl.name"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <!-- Timeout -->
+                    <div>
+                        <label class="block text-xs font-sans text-wa-text-secondary mb-2" x-text="$t('automation_timeout')">Timeout</label>
+                        <div class="flex gap-2">
+                            <input type="number" x-model.number="automationForm.timeoutValue" min="1" required
+                                class="flex-1 bg-wa-bg-hover border border-wa-border text-white text-sm p-3 focus:border-wa-green focus:outline-none rounded-lg" />
+                            <select x-model="automationForm.timeoutUnit"
+                                class="bg-wa-bg-hover border border-wa-border text-white text-sm p-3 focus:border-wa-green focus:outline-none rounded-lg">
+                                <option value="minutes" x-text="$t('minutes')">minutes</option>
+                                <option value="hours" x-text="$t('hours')">hours</option>
+                                <option value="days" x-text="$t('days')">days</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Prompt -->
+                    <div>
+                        <label class="block text-xs font-sans text-wa-text-secondary mb-2" x-text="$t('automation_prompt')">Prompt</label>
+                        <textarea x-model="automationForm.prompt" rows="3" required
+                            class="w-full bg-wa-bg-hover border border-wa-border text-white text-sm p-3 focus:border-wa-green focus:outline-none resize-y rounded-lg"
+                            placeholder="Dale seguimiento al cliente..."></textarea>
+                    </div>
+
+                    <div class="pt-4 flex justify-end gap-3">
+                        <button type="button" @click="showCreateAutomation = false"
+                            class="px-4 py-2 border border-wa-border text-wa-text-secondary text-xs hover:bg-wa-bg-hover transition-colors rounded-lg"
+                            x-text="$t('cancel')">Cancel</button>
+                        <button type="submit"
+                            class="px-6 py-2 bg-wa-green text-white text-xs hover:bg-wa-green-hover transition-colors rounded-lg"
+                            x-text="$t('create_automation')">Create</button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -1023,14 +1214,29 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                 systemPrompt: "",
                 temperature: 0.7,
                 messageDelay: 0,
+                excludeGroups: false,
+                ignoredLabels: [] as string[],
             },
             savingAI: false,
+            botLabels: [] as any[],
+
+            // Automations State
+            automations: [] as any[],
+            showCreateAutomation: false,
+            automationForm: {
+                name: "",
+                event: "INACTIVITY" as string,
+                labelName: "",
+                timeoutValue: 3,
+                timeoutUnit: "days" as string,
+                prompt: "",
+            },
 
             // Tools State
             tools: [] as any[],
 
             // Logs State
-            activeTab: "flows", // 'flows' | 'clients' | 'ai' | 'tools' | 'logs'
+            activeTab: "flows", // 'flows' | 'clients' | 'ai' | 'tools' | 'automations' | 'logs'
             logs: [] as Execution[],
             loadingLogs: false,
             logsPagination: { total: 0, limit: 50, offset: 0 },
@@ -1067,7 +1273,16 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                         systemPrompt: this.bot.systemPrompt || "",
                         temperature: this.bot.temperature ?? 0.7,
                         messageDelay: this.bot.messageDelay ?? 0,
+                        excludeGroups: this.bot.excludeGroups || false,
+                        ignoredLabels: this.bot.ignoredLabels || [],
                     };
+
+                    // Load bot labels for selectors
+                    try {
+                        this.botLabels = await ApiClient.get(`/sessions/labels?botId=${this.botId}`);
+                    } catch (e) {
+                        console.error("Failed to load labels", e);
+                    }
 
                     // Generate connection component HTML (will be hydrated by Alpine)
                     this.connectionHtml = this.generateConnectionHtml();
@@ -1272,6 +1487,8 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                         systemPrompt: this.aiConfig.systemPrompt || null,
                         temperature: this.aiConfig.temperature,
                         messageDelay: this.aiConfig.messageDelay,
+                        excludeGroups: this.aiConfig.excludeGroups,
+                        ignoredLabels: this.aiConfig.ignoredLabels,
                     });
                     this.bot = updated;
                     alert("AI config saved!");
@@ -1310,6 +1527,71 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                 } catch (e: any) {
                     alert("Failed: " + (e.message || "Unknown error"));
                 }
+            },
+
+            // Automations
+            async loadAutomations() {
+                try {
+                    this.automations = await ApiClient.get(`/bots/${this.botId}/automations`);
+                } catch (e) {
+                    console.error("Failed to load automations", e);
+                }
+            },
+
+            async createAutomation() {
+                const timeoutMs = this.automationForm.timeoutUnit === "days"
+                    ? this.automationForm.timeoutValue * 24 * 60 * 60 * 1000
+                    : this.automationForm.timeoutUnit === "hours"
+                    ? this.automationForm.timeoutValue * 60 * 60 * 1000
+                    : this.automationForm.timeoutValue * 60 * 1000;
+
+                try {
+                    await ApiClient.post(`/bots/${this.botId}/automations`, {
+                        name: this.automationForm.name,
+                        event: this.automationForm.event,
+                        labelName: this.automationForm.labelName,
+                        timeoutMs,
+                        prompt: this.automationForm.prompt,
+                    });
+                    this.showCreateAutomation = false;
+                    this.automationForm = { name: "", event: "INACTIVITY", labelName: "", timeoutValue: 3, timeoutUnit: "days", prompt: "" };
+                    await this.loadAutomations();
+                } catch (e: any) {
+                    alert("Failed: " + (e.message || "Unknown error"));
+                }
+            },
+
+            async toggleAutomation(autoId: string, enabled: boolean) {
+                try {
+                    await ApiClient.put(`/bots/${this.botId}/automations/${autoId}`, { enabled });
+                    await this.loadAutomations();
+                } catch (e: any) {
+                    alert("Failed: " + (e.message || "Unknown error"));
+                }
+            },
+
+            async deleteAutomation(autoId: string) {
+                // @ts-ignore
+                if (!confirm(this.$t('delete_confirm') || 'Are you sure?')) return;
+                try {
+                    await ApiClient.delete(`/bots/${this.botId}/automations/${autoId}`);
+                    await this.loadAutomations();
+                } catch (e: any) {
+                    alert("Failed: " + (e.message || "Unknown error"));
+                }
+            },
+
+            formatTimeout(ms: number): string {
+                const minutes = ms / (60 * 1000);
+                if (minutes >= 1440 && minutes % 1440 === 0) {
+                    const days = minutes / 1440;
+                    return `${days} ${days === 1 ? 'day' : 'days'}`;
+                }
+                if (minutes >= 60 && minutes % 60 === 0) {
+                    const hours = minutes / 60;
+                    return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+                }
+                return `${minutes} min`;
             },
         }));
 

@@ -153,5 +153,24 @@ export default {
     no_messages: "No messages yet",
     type_message: "Type a message...",
     execute: "Execute",
-    confirm: "Confirm"
+    confirm: "Confirm",
+
+    // Automations & Filters
+    automations: "Automations",
+    create_automation: "Create Automation",
+    automation_name: "Name",
+    automation_event: "Event",
+    automation_label: "Label",
+    automation_timeout: "Timeout",
+    automation_prompt: "Prompt",
+    no_automations: "No automations configured",
+    exclude_groups: "Exclude Groups",
+    exclude_groups_desc: "Ignore messages from group chats",
+    ignored_labels: "Ignored Labels",
+    ignored_labels_desc: "Sessions with these labels will not be processed by AI",
+    inactivity: "Inactivity",
+    minutes: "minutes",
+    hours: "hours",
+    days: "days",
+    delete_confirm: "Are you sure you want to delete this?",
 };

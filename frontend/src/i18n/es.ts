@@ -153,5 +153,24 @@ export default {
     no_messages: "Sin mensajes aún",
     type_message: "Escribe un mensaje...",
     execute: "Ejecutar",
-    confirm: "Confirmar"
+    confirm: "Confirmar",
+
+    // Automatizaciones y Filtros
+    automations: "Automatizaciones",
+    create_automation: "Crear Automatización",
+    automation_name: "Nombre",
+    automation_event: "Evento",
+    automation_label: "Etiqueta",
+    automation_timeout: "Tiempo de espera",
+    automation_prompt: "Prompt",
+    no_automations: "Sin automatizaciones configuradas",
+    exclude_groups: "Excluir Grupos",
+    exclude_groups_desc: "Ignorar mensajes de chats grupales",
+    ignored_labels: "Etiquetas Ignoradas",
+    ignored_labels_desc: "Las sesiones con estas etiquetas no serán procesadas por IA",
+    inactivity: "Inactividad",
+    minutes: "minutos",
+    hours: "horas",
+    days: "días",
+    delete_confirm: "¿Estás seguro de que deseas eliminar esto?",
 };
