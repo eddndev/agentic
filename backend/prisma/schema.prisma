@@ -35,10 +35,13 @@ model Bot {
   messageDelay Int        @default(0)
   clients      Client[]
   flows        Flow[]
+  excludeGroups  Boolean  @default(false)
+  ignoredLabels  String[] @default([])
   labels       Label[]
   sessions     Session[]
   tools        Tool[]
   triggers     Trigger[]
+  automations  Automation[]
 }
 
 model Session {
@@ -292,4 +295,25 @@ enum ClientStatus {
   EXAMEN_EN_PROCESO
   LICENCIA_LISTA
   COMPLETADO
+}
+
+model Automation {
+  id          String          @id @default(uuid())
+  botId       String
+  name        String
+  description String?
+  enabled     Boolean         @default(true)
+  event       AutomationEvent
+  labelName   String
+  timeoutMs   Int
+  prompt      String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  bot         Bot             @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  @@index([botId])
+}
+
+enum AutomationEvent {
+  INACTIVITY
 }
