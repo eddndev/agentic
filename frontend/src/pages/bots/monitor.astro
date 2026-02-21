@@ -342,6 +342,7 @@ import Layout from "../../layouts/Layout.astro";
 <script>
     declare const Alpine: any;
     import { ApiClient } from "../../lib/api";
+    import { BotEventSource } from "../../lib/events";
 
     document.addEventListener("alpine:init", () => {
         Alpine.data("botMonitor", () => ({
@@ -370,7 +371,8 @@ import Layout from "../../layouts/Layout.astro";
             // Labels
             botLabels: [] as any[],
 
-            // Polling
+            // SSE + fallback polling
+            sseClient: null as BotEventSource | null,
             pollInterval: null as ReturnType<typeof setInterval> | null,
             lastMessageCount: 0,
 
@@ -388,11 +390,44 @@ import Layout from "../../layouts/Layout.astro";
                 await this.loadSessions();
                 await this.loadLabels();
 
-                // Start polling
-                this.pollInterval = setInterval(() => this.poll(), 3000);
+                // SSE for real-time updates
+                this.sseClient = new BotEventSource(this.botId);
+                this.sseClient
+                    .on('message:received', (data: any) => {
+                        if (this.selectedSession && data.sessionId === this.selectedSession.id) {
+                            this.messages.push(data.message);
+                            this.$nextTick(() => this.scrollToBottom());
+                        }
+                        // Update session list lastMessage
+                        const s = this.sessions.find((s: any) => s.id === data.sessionId);
+                        if (s) {
+                            s.lastMessage = data.message;
+                            s.messageCount = (s.messageCount || 0) + 1;
+                        }
+                    })
+                    .on('message:sent', (data: any) => {
+                        if (this.selectedSession && data.sessionId === this.selectedSession.id) {
+                            this.messages.push({
+                                id: `sent_${Date.now()}`,
+                                content: data.content,
+                                fromMe: true,
+                                type: 'TEXT',
+                                createdAt: new Date().toISOString(),
+                            });
+                            this.$nextTick(() => this.scrollToBottom());
+                        }
+                    })
+                    .on('session:created', (data: any) => {
+                        this.sessions.unshift(data.session);
+                    });
+                this.sseClient.connect();
+
+                // Slow fallback poll (60s)
+                this.pollInterval = setInterval(() => this.poll(), 60000);
             },
 
             destroy() {
+                if (this.sseClient) this.sseClient.close();
                 if (this.pollInterval) clearInterval(this.pollInterval);
             },
 

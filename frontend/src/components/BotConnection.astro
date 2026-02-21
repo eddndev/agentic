@@ -12,6 +12,7 @@ const { botId } = Astro.props;
 >
     <script>
         import { ApiClient } from "../lib/api";
+        import { BotEventSource } from "../lib/events";
         // @ts-ignore
         declare const Alpine: any;
 
@@ -21,19 +22,31 @@ const { botId } = Astro.props;
                 status: "DISCONNECTED",
                 qr: null,
                 loading: false,
-                pollInterval: null,
+                sseClient: null as BotEventSource | null,
 
                 async init() {
                     this.checkStatus();
-                    // @ts-ignore
-                    this.pollInterval = setInterval(
-                        () => this.checkStatus(),
-                        2000,
-                    );
+
+                    // SSE for real-time QR/status updates
+                    this.sseClient = new BotEventSource(this.botId);
+                    this.sseClient
+                        .on('bot:qr', (data: any) => {
+                            this.status = 'SCAN_QR';
+                            this.qr = data.qr;
+                        })
+                        .on('bot:connected', () => {
+                            this.status = 'CONNECTED';
+                            this.qr = null;
+                        })
+                        .on('bot:disconnected', () => {
+                            this.status = 'DISCONNECTED';
+                            this.qr = null;
+                        });
+                    this.sseClient.connect();
                 },
 
                 destroy() {
-                    if (this.pollInterval) clearInterval(this.pollInterval);
+                    if (this.sseClient) this.sseClient.close();
                 },
 
                 async checkStatus() {
@@ -47,7 +60,6 @@ const { botId } = Astro.props;
                             this.qr = null;
                         } else if (res.hasQr) {
                             this.status = "SCAN_QR";
-                            // Fetch QR
                             const qrRes = await ApiClient.get(
                                 `/bots/${this.botId}/qr`,
                             );
@@ -65,7 +77,7 @@ const { botId } = Astro.props;
                     this.loading = true;
                     try {
                         await ApiClient.post(`/bots/${this.botId}/connect`, {});
-                        setTimeout(() => this.checkStatus(), 1000);
+                        await this.checkStatus();
                     } catch (e) {
                         // @ts-ignore
                         alert(this.$t("error"));

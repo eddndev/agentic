@@ -945,6 +945,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
 <script>
     declare const Alpine: any;
     import { ApiClient } from "../../lib/api";
+    import { BotEventSource } from "../../lib/events";
 
     // TypeScript interfaces
     interface Bot {
@@ -1321,18 +1322,31 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                 connected: false,
                 loading: false,
                 qr: null as string | null,
-                pollInterval: null as ReturnType<typeof setInterval> | null,
+                sseClient: null as BotEventSource | null,
 
                 init() {
                     this.checkStatus();
-                    this.pollInterval = setInterval(
-                        () => this.checkStatus(),
-                        3000,
-                    );
+
+                    // SSE for real-time QR/status updates
+                    this.sseClient = new BotEventSource(botId!);
+                    this.sseClient
+                        .on('bot:qr', (data: any) => {
+                            this.qr = data.qr;
+                            this.connected = false;
+                        })
+                        .on('bot:connected', () => {
+                            this.connected = true;
+                            this.qr = null;
+                        })
+                        .on('bot:disconnected', () => {
+                            this.connected = false;
+                            this.qr = null;
+                        });
+                    this.sseClient.connect();
                 },
 
                 destroy() {
-                    if (this.pollInterval) clearInterval(this.pollInterval);
+                    if (this.sseClient) this.sseClient.close();
                 },
 
                 async checkStatus() {
@@ -1358,7 +1372,6 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                     this.loading = true;
                     try {
                         await ApiClient.post(`/bots/${botId}/connect`, {});
-                        // Start polling for QR
                         await this.checkStatus();
                     } catch (e: unknown) {
                         const error = e as Error;
