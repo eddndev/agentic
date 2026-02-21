@@ -31,6 +31,72 @@ process.on('unhandledRejection', (reason, promise) => {
     // Do NOT exit.
 });
 
+// --- Graceful Shutdown ---
+import { MessageAccumulator } from "./services/accumulator.service";
+import { aiEngine } from "./core/ai";
+import { queueService } from "./services/queue.service";
+
+let isShuttingDown = false;
+
+async function gracefulShutdown(signal: string) {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+    console.log(`[Shutdown] Received ${signal}, starting graceful shutdown...`);
+
+    // 1. Stop accepting new WhatsApp messages + cancel reconnect timers
+    try {
+        console.log("[Shutdown] Shutting down Baileys sessions...");
+        await BaileysService.shutdownAll();
+        console.log("[Shutdown] Baileys sessions closed.");
+    } catch (e) {
+        console.error("[Shutdown] Error shutting down Baileys:", e);
+    }
+
+    // 2. Flush pending message accumulator buffers
+    if (MessageAccumulator.pendingCount > 0) {
+        console.log(`[Shutdown] Flushing ${MessageAccumulator.pendingCount} pending accumulator buffer(s)...`);
+        MessageAccumulator.flushAll((sid, msgs) => {
+            aiEngine.processMessages(sid, msgs).catch(err => {
+                console.error(`[Shutdown] Failed to process flushed messages for ${sid}:`, err);
+            });
+        });
+    }
+
+    // 3. Close BullMQ worker + queue (stop accepting new jobs, finish current)
+    try {
+        console.log("[Shutdown] Closing BullMQ worker...");
+        await worker.close();
+        await queueService.close();
+        console.log("[Shutdown] BullMQ worker + queue closed.");
+    } catch (e) {
+        console.error("[Shutdown] Error closing BullMQ:", e);
+    }
+
+    // 4. Disconnect Redis
+    try {
+        console.log("[Shutdown] Disconnecting Redis...");
+        await redis.quit();
+        console.log("[Shutdown] Redis disconnected.");
+    } catch (e) {
+        console.error("[Shutdown] Error disconnecting Redis:", e);
+    }
+
+    // 5. Disconnect Prisma
+    try {
+        console.log("[Shutdown] Disconnecting Prisma...");
+        await prisma.$disconnect();
+        console.log("[Shutdown] Prisma disconnected.");
+    } catch (e) {
+        console.error("[Shutdown] Error disconnecting Prisma:", e);
+    }
+
+    console.log("[Shutdown] Graceful shutdown complete.");
+    process.exit(0);
+}
+
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+
 // --- Baileys Init ---
 import { prisma } from "./services/postgres.service";
 import { BaileysService } from "./services/baileys.service";
@@ -57,6 +123,7 @@ import { authController } from "./api/auth.controller";
 import { clientRoutes } from "./api/client.routes";
 import { toolController } from "./api/tool.controller";
 import { sessionController } from "./api/session.controller";
+import { eventsController } from "./api/events.controller";
 import { cors } from "@elysiajs/cors";
 
 const app = new Elysia({ adapter: node() })
@@ -79,6 +146,7 @@ const app = new Elysia({ adapter: node() })
     .use(clientRoutes)
     .use(toolController)
     .use(sessionController)
+    .use(eventsController)
     .get("/", () => "Agentic Orchestrator Active")
     .get("/health", () => ({ status: "ok", timestamp: new Date().toISOString() }))
     .get("/info", () => ({
