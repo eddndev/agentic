@@ -23,7 +23,7 @@ class QueueService {
         return this.queue.add("execute_step", { executionId, stepId }, { delay: delayMs });
     }
 
-    async scheduleAutomationCheck(intervalMs = 30 * 60 * 1000) {
+    async scheduleAutomationCheck(intervalMs = Number(process.env['AUTOMATION_CHECK_INTERVAL_MS']) || 30 * 60 * 1000) {
         return this.queue.add("check_automations", {}, {
             repeat: { every: intervalMs },
             removeOnComplete: true,

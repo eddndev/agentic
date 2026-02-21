@@ -57,7 +57,7 @@ export class GeminiProvider implements AIProvider {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
-            signal: AbortSignal.timeout(60_000),
+            signal: AbortSignal.timeout(120_000),
         });
 
         if (!res.ok) {

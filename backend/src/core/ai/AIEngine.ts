@@ -202,15 +202,16 @@ export class AIEngine {
 
                 // Execute each tool call
                 const toolMessages: AIMessage[] = [];
+                let anyToolExecuted = false;
                 for (const toolCall of response.toolCalls) {
-                    console.log(`[AIEngine] Executing tool: ${toolCall.name}(${JSON.stringify(toolCall.arguments)})`);
 
                     // Prevent reply_to_message loops: skip if same message_id already replied
                     if (toolCall.name === "reply_to_message" && toolCall.arguments.message_id) {
                         if (repliedMessageIds.has(toolCall.arguments.message_id)) {
+                            console.log(`[AIEngine] Skipping duplicate reply_to_message for ${toolCall.arguments.message_id}`);
                             toolMessages.push({
                                 role: "tool",
-                                content: "Ya respondiste a este mensaje. No lo repitas.",
+                                content: "Ya respondiste a este mensaje. No lo repitas. No llames más herramientas, responde con texto vacío.",
                                 toolCallId: toolCall.id,
                                 name: toolCall.name,
                             });
@@ -219,6 +220,8 @@ export class AIEngine {
                         repliedMessageIds.add(toolCall.arguments.message_id);
                     }
 
+                    console.log(`[AIEngine] Executing tool: ${toolCall.name}(${JSON.stringify(toolCall.arguments)})`);
+
                     const result = await ToolExecutor.execute(
                         bot.id,
                         session,
@@ -226,6 +229,7 @@ export class AIEngine {
                         messages[messages.length - 1]
                     );
 
+                    anyToolExecuted = true;
                     executedTools.add(toolCall.name);
 
                     const resultStr = typeof result.data === "string"
@@ -238,8 +242,13 @@ export class AIEngine {
                         toolCallId: toolCall.id,
                         name: toolCall.name,
                     });
+                }
 
-                    // Tool logging now handled by ConversationService.addMessages (dual-write)
+                // If all tool calls were deduped (none actually executed), break the loop
+                if (!anyToolExecuted) {
+                    console.log(`[AIEngine] All tool calls deduped, breaking tool loop`);
+                    await ConversationService.addMessages(sessionId, toolMessages);
+                    break;
                 }
 
                 await ConversationService.addMessages(sessionId, toolMessages);
