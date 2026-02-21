@@ -115,7 +115,8 @@ export class AIEngine {
                 }
 
                 if (partContent) {
-                    contentParts.push(partContent);
+                    const prefix = msg.externalId ? `[msg:${msg.externalId}] ` : "";
+                    contentParts.push(`${prefix}${partContent}`);
                 }
             }
 

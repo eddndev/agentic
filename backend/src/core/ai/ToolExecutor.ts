@@ -419,6 +419,36 @@ export class ToolExecutor {
                 return { success: true, data: result };
             }
 
+            case "reply_to_message": {
+                const messageId = args.message_id;
+                const replyText = args.text;
+                if (!messageId || !replyText) {
+                    return { success: false, data: "Faltan parámetros: message_id y text son obligatorios." };
+                }
+
+                const originalMsg = await prisma.message.findUnique({
+                    where: { externalId: messageId },
+                    include: { session: true },
+                });
+                if (!originalMsg) {
+                    return { success: false, data: `Mensaje '${messageId}' no encontrado.` };
+                }
+                if (originalMsg.session.botId !== botId) {
+                    return { success: false, data: "El mensaje no pertenece a este bot." };
+                }
+
+                await BaileysService.sendMessage(botId, session.identifier, {
+                    text: replyText,
+                    contextInfo: {
+                        stanzaId: messageId,
+                        participant: originalMsg.sender,
+                        quotedMessage: { conversation: originalMsg.content || "" },
+                    },
+                });
+
+                return { success: true, data: `Respuesta enviada citando mensaje '${messageId}'.` };
+            }
+
             case "send_followup_message": {
                 const targetSessionId = args.session_id;
                 const messageText = args.message;

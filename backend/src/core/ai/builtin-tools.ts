@@ -104,6 +104,18 @@ export const BUILTIN_TOOLS: AIToolDefinition[] = [
         },
     },
     {
+        name: "reply_to_message",
+        description: "Responde citando un mensaje específico del usuario (quote-reply de WhatsApp). Usa el message_id proporcionado en el formato [msg:ID].",
+        parameters: {
+            type: "object",
+            properties: {
+                message_id: { type: "string", description: "ID del mensaje a citar (el valor después de [msg:] en el contexto)" },
+                text: { type: "string", description: "Texto de la respuesta" },
+            },
+            required: ["message_id", "text"],
+        },
+    },
+    {
         name: "send_followup_message",
         description: "Envía un mensaje de seguimiento a otra sesión/chat del bot.",
         parameters: {
