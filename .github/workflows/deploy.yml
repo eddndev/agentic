@@ -42,7 +42,7 @@ jobs:
             cd ../frontend
             bun install
             # Ensure PUBLIC_API_URL is set if needed for the build
-            export PUBLIC_API_URL="https://api-agentic.angelviajero.com.mx"
+            export PUBLIC_API_URL="https://agentic-api.w-gateway.cc"
             bun run build
             
             echo "Restarting PM2..."

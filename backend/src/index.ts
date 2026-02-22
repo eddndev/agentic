@@ -137,7 +137,7 @@ import { cors } from "@elysiajs/cors";
 const app = new Elysia({ adapter: node() })
     .use(cors({
         origin: [
-            'https://app.angelviajero.com.mx', 
+            'https://agentic.w-gateway.cc',
             'http://localhost:4321',
             'http://localhost:5173'
         ],
