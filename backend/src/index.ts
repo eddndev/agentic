@@ -136,11 +136,7 @@ import { cors } from "@elysiajs/cors";
 
 const app = new Elysia({ adapter: node() })
     .use(cors({
-        origin: [
-            'https://agentic.w-gateway.cc',
-            'http://localhost:4321',
-            'http://localhost:5173'
-        ],
+        origin: true,
         allowedHeaders: ['Content-Type', 'Authorization'],
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
     }))
