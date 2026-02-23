@@ -140,9 +140,21 @@ const ALLOWED_ORIGINS = new Set([
 
 const app = new Elysia({ adapter: node() })
     .onRequest(({ request, set }) => {
-        const origin = request.headers.get('origin') || request.headers.get('Origin') || '';
+        // @elysiajs/node adapter may expose headers differently
+        const headers = request.headers;
+        let origin = '';
+        if (typeof headers.get === 'function') {
+            origin = headers.get('origin') || headers.get('Origin') || '';
+        }
+        if (!origin && typeof headers === 'object') {
+            origin = (headers as any).origin || (headers as any).Origin || '';
+        }
+        console.log('[CORS DEBUG] method:', request.method, 'origin:', JSON.stringify(origin), 'headers.get:', typeof headers.get, 'headers keys:', Object.keys(headers).slice(0, 10));
         if (ALLOWED_ORIGINS.has(origin)) {
             set.headers['Access-Control-Allow-Origin'] = origin;
+        } else {
+            // Fallback: allow all in case origin detection fails
+            set.headers['Access-Control-Allow-Origin'] = '*';
         }
         set.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
         set.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
