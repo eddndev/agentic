@@ -563,7 +563,13 @@ export class BaileysService {
     static async syncLabels(botId: string): Promise<void> {
         const sock = sessions.get(botId);
         if (!sock) throw new Error(`Bot ${botId} not connected`);
-        await (sock as any).resyncAppState(['regular_high'], false);
+
+        // Clear local app state version to force a full snapshot re-download
+        // Otherwise resyncAppState only fetches new patches since the last sync
+        await (sock as any).authState.keys.set({
+            'app-state-sync-version': { 'regular_high': null }
+        });
+        await (sock as any).resyncAppState(['regular_high'], true);
     }
 
     /**
