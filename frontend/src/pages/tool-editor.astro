@@ -44,7 +44,7 @@ const botId = Astro.url.searchParams.get("botId") || "";
                     <label class="block text-xs text-wa-text-secondary mb-2" x-text="$t('tool_name')">Name</label>
                     <input type="text" x-model="form.name"
                         class="w-full bg-wa-bg-deep border border-wa-border text-white text-sm p-3 rounded-lg focus:border-wa-green focus:outline-none font-mono"
-                        placeholder="lookup_client" />
+                        placeholder="my_tool_name" />
                     <p class="text-[10px] text-wa-text-secondary mt-1">snake_case, no spaces or special chars</p>
                 </div>
 
@@ -143,10 +143,14 @@ const botId = Astro.url.searchParams.get("botId") || "";
                             <label class="block text-xs text-wa-text-secondary mb-1" x-text="$t('builtin_function')">Built-in</label>
                             <select x-model="form.builtinName"
                                 class="w-full bg-wa-bg-deep border border-wa-border text-white text-sm p-3 rounded-lg focus:border-wa-green focus:outline-none">
-                                <option value="lookup_client">lookup_client</option>
-                                <option value="register_client">register_client</option>
                                 <option value="get_current_time">get_current_time</option>
                                 <option value="clear_conversation">clear_conversation</option>
+                                <option value="get_labels">get_labels</option>
+                                <option value="assign_label">assign_label</option>
+                                <option value="remove_label">remove_label</option>
+                                <option value="get_sessions_by_label">get_sessions_by_label</option>
+                                <option value="reply_to_message">reply_to_message</option>
+                                <option value="send_followup_message">send_followup_message</option>
                             </select>
                         </div>
                     </div>
@@ -179,7 +183,7 @@ const botId = Astro.url.searchParams.get("botId") || "";
                 flowId: "",
                 webhookUrl: "",
                 webhookMethod: "POST",
-                builtinName: "lookup_client",
+                builtinName: "get_current_time",
             },
 
             async init() {
