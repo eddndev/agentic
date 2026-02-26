@@ -100,8 +100,11 @@ export default {
     col_user: "User",
     col_flow: "Flow",
     col_trigger: "Trigger",
+    col_bot: "Bot",
     col_error: "Error",
     no_logs: "No logs found",
+    global_logs: "Global Logs",
+    all_bots: "All Bots",
 
     // AI & Tools
     ai_config: "AI Config",

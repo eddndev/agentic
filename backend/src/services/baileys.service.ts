@@ -151,11 +151,11 @@ export class BaileysService {
                     reconnectAttempts.delete(botId); // Reset backoff on successful connection
                     eventBus.emitBotEvent({ type: 'bot:connected', botId, user: sock.user });
 
-                    // Force label sync — labels live in 'regular_high' app state
+                    // Force full label sync — reuse syncLabels() which clears cache + version file
                     setTimeout(async () => {
                         try {
-                            await (sock as any).resyncAppState(['regular_high'], false);
-                            console.log(`[Baileys] Label sync triggered for Bot ${botId}`);
+                            await BaileysService.syncLabels(botId);
+                            console.log(`[Baileys] Full label sync completed for Bot ${botId}`);
                         } catch (e: any) {
                             console.warn(`[Baileys] Label sync failed for Bot ${botId}:`, e.message);
                         }

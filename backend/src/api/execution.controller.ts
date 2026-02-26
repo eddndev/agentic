@@ -24,15 +24,12 @@ export const executionController = new Elysia({ prefix: "/executions" })
             offset?: string;
         };
 
-        if (!botId) {
-            set.status = 400;
-            return { error: "botId is required" };
-        }
-
         // Filter executions via the flow relationship (Execution -> Flow -> Bot)
-        const where: any = {
-            flow: { botId }
-        };
+        const where: any = {};
+
+        if (botId) {
+            where.flow = { botId };
+        }
 
         if (status && status !== 'ALL') {
             where.status = status;
@@ -65,7 +62,7 @@ export const executionController = new Elysia({ prefix: "/executions" })
                     orderBy: { startedAt: 'desc' },
                     include: {
                         flow: {
-                            select: { name: true }
+                            select: { name: true, bot: { select: { id: true, name: true } } }
                         },
                         session: {
                             select: { name: true }

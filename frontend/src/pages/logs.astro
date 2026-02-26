@@ -1,0 +1,280 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Global Logs">
+    <div x-data="globalLogs" x-init="init()">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-xl font-bold text-white" x-text="$t('global_logs')">Global Logs</h1>
+        </div>
+
+        <div class="bg-wa-bg-panel border border-wa-border p-4 sm:p-6 relative rounded-xl">
+
+            <!-- Filters -->
+            <div class="flex flex-wrap gap-4 mb-6 items-end">
+                <!-- Bot Filter -->
+                <div>
+                    <label
+                        class="block text-[10px] font-sans text-wa-text-secondary mb-1"
+                        x-text="$t('col_bot')">Bot</label
+                    >
+                    <select
+                        x-model="filters.botId"
+                        @change="logsPagination.offset = 0; loadLogs()"
+                        class="bg-wa-bg-deep border border-wa-border text-white text-xs p-2 min-w-[150px] focus:border-wa-green focus:outline-none rounded-lg"
+                    >
+                        <option value="" x-text="$t('all_bots')">All Bots</option>
+                        <template x-for="bot in bots" :key="bot.id">
+                            <option :value="bot.id" x-text="bot.name"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div>
+                    <label
+                        class="block text-[10px] font-sans text-wa-text-secondary mb-1"
+                        x-text="$t('filter_status')">Status</label
+                    >
+                    <select
+                        x-model="filters.status"
+                        @change="logsPagination.offset = 0; loadLogs()"
+                        class="bg-wa-bg-deep border border-wa-border text-white text-xs p-2 min-w-[120px] focus:border-wa-green focus:outline-none rounded-lg"
+                    >
+                        <option value="ALL" x-text="$t('status_all')">All</option>
+                        <option value="RUNNING" x-text="$t('status_running') || 'Running'">Running</option>
+                        <option value="COMPLETED" x-text="$t('status_completed')">Completed</option>
+                        <option value="FAILED" x-text="$t('status_failed')">Failed</option>
+                    </select>
+                </div>
+
+                <!-- Search -->
+                <div class="flex-1 min-w-[200px]">
+                    <label
+                        class="block text-[10px] font-sans text-wa-text-secondary mb-1"
+                        x-text="$t('filter_user')">User</label
+                    >
+                    <input
+                        type="text"
+                        x-model="filters.search"
+                        @input.debounce="logsPagination.offset = 0; loadLogs()"
+                        class="w-full bg-wa-bg-deep border border-wa-border text-white text-xs p-2 focus:border-wa-green focus:outline-none placeholder-gray-700 rounded-lg"
+                        :placeholder="$t('filter_user') + ' / Trigger...'"
+                    />
+                </div>
+
+                <!-- Date From -->
+                <div>
+                    <label
+                        class="block text-[10px] font-sans text-wa-text-secondary mb-1"
+                        x-text="$t('filter_date_from')">From</label
+                    >
+                    <input
+                        type="date"
+                        x-model="filters.startDate"
+                        @change="logsPagination.offset = 0; loadLogs()"
+                        class="bg-wa-bg-deep border border-wa-border text-white text-xs p-2 focus:border-wa-green focus:outline-none rounded-lg"
+                    />
+                </div>
+
+                <!-- Date To -->
+                <div>
+                    <label
+                        class="block text-[10px] font-sans text-wa-text-secondary mb-1"
+                        x-text="$t('filter_date_to')">To</label
+                    >
+                    <input
+                        type="date"
+                        x-model="filters.endDate"
+                        @change="logsPagination.offset = 0; loadLogs()"
+                        class="bg-wa-bg-deep border border-wa-border text-white text-xs p-2 focus:border-wa-green focus:outline-none rounded-lg"
+                    />
+                </div>
+
+                <!-- Refresh -->
+                <button
+                    @click="loadLogs()"
+                    class="px-4 py-2 border border-wa-border text-wa-text-secondary hover:text-white hover:bg-wa-bg-hover transition-colors rounded-lg"
+                    :title="$t('refresh')"
+                >
+                    <span :class="{'animate-spin': loadingLogs}">⟳</span>
+                </button>
+            </div>
+
+            <!-- Logs Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[700px]">
+                    <thead>
+                        <tr class="text-[10px] font-sans text-wa-text-secondary border-b border-wa-border">
+                            <th class="p-3 whitespace-nowrap" x-text="$t('col_status')">Status</th>
+                            <th class="p-3 whitespace-nowrap" x-text="$t('col_date')">Date</th>
+                            <th class="p-3 whitespace-nowrap" x-text="$t('col_bot')">Bot</th>
+                            <th class="p-3 whitespace-nowrap" x-text="$t('col_user')">User</th>
+                            <th class="p-3 whitespace-nowrap" x-text="$t('col_flow')">Flow</th>
+                            <th class="p-3 whitespace-nowrap" x-text="$t('col_trigger')">Trigger</th>
+                            <th class="p-3 whitespace-nowrap" x-text="$t('col_error')">Error</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-xs font-mono">
+                        <template x-if="loadingLogs">
+                            <tr><td colspan="7" class="p-8 text-center text-wa-text-secondary" x-text="$t('loading')">Loading...</td></tr>
+                        </template>
+                        <template x-if="!loadingLogs && logs.length === 0">
+                            <tr><td colspan="7" class="p-8 text-center text-wa-text-secondary" x-text="$t('no_logs')">No logs found</td></tr>
+                        </template>
+
+                        <template x-for="log in logs" :key="log.id">
+                            <tr class="border-b border-wa-border hover:bg-wa-bg-hover transition-colors">
+                                <td class="p-3">
+                                    <span x-show="log.status === 'COMPLETED'" class="text-green-500">✔</span>
+                                    <span x-show="log.status === 'FAILED'" class="text-red-500">✖</span>
+                                    <span x-show="log.status === 'RUNNING'" class="text-blue-500 animate-pulse">●</span>
+                                </td>
+                                <td class="p-3 text-wa-text-secondary" x-text="formatDate(log.startedAt)"></td>
+                                <td class="p-3">
+                                    <a
+                                        :href="'/bots/' + log.flow?.bot?.id"
+                                        class="text-wa-green hover:underline"
+                                        x-text="log.flow?.bot?.name || '-'"
+                                    ></a>
+                                </td>
+                                <td class="p-3">
+                                    <div class="text-white font-medium" x-text="log.session?.name || 'Unknown'"></div>
+                                    <div class="text-[10px] text-wa-text-secondary" x-text="log.platformUserId"></div>
+                                </td>
+                                <td class="p-3 text-wa-green" x-text="log.flow?.name || '-'"></td>
+                                <td class="p-3 text-wa-text-secondary">
+                                    <span x-show="log.trigger" class="bg-wa-bg-hover px-1 py-0.5 rounded-md" x-text="log.trigger"></span>
+                                    <span x-show="!log.trigger">-</span>
+                                </td>
+                                <td class="p-3">
+                                    <template x-if="log.error">
+                                        <div class="group relative inline-block cursor-help">
+                                            <span class="text-red-400 truncate max-w-[150px] block" x-text="log.error"></span>
+                                            <div class="absolute bottom-full left-0 mb-1 w-64 p-2 bg-black border border-red-500/30 text-red-200 text-[10px] rounded hidden group-hover:block z-50 shadow-xl">
+                                                <span x-text="log.error"></span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <span x-show="!log.error" class="text-wa-text-secondary">-</span>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div class="flex items-center justify-between mt-6 pt-4 border-t border-wa-border flex-wrap gap-4">
+                <div class="text-xs font-sans text-wa-text-secondary">
+                    <span x-text="$t('showing') || 'Showing'"></span>
+                    <span x-text="Math.min(logsPagination.offset + 1, logsPagination.total)"></span>
+                    -
+                    <span x-text="Math.min(logsPagination.offset + logsPagination.limit, logsPagination.total)"></span>
+                    <span x-text="$t('of') || 'of'"></span>
+                    <span x-text="logsPagination.total" class="text-white"></span>
+                    <span x-text="$t('records') || 'records'"></span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button
+                        @click="prevPage()"
+                        :disabled="logsPagination.offset === 0"
+                        class="px-3 py-1 border border-wa-border text-wa-text-secondary text-xs font-sans hover:bg-wa-bg-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded-lg"
+                    >
+                        ← <span x-text="$t('prev') || 'Prev'"></span>
+                    </button>
+                    <span class="text-xs font-sans text-wa-text-secondary">
+                        <span x-text="$t('page') || 'Page'"></span>
+                        <span x-text="Math.floor(logsPagination.offset / logsPagination.limit) + 1" class="text-white"></span>
+                        /
+                        <span x-text="Math.ceil(logsPagination.total / logsPagination.limit) || 1"></span>
+                    </span>
+                    <button
+                        @click="nextPage()"
+                        :disabled="logsPagination.offset + logsPagination.limit >= logsPagination.total"
+                        class="px-3 py-1 border border-wa-border text-wa-text-secondary text-xs font-sans hover:bg-wa-bg-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded-lg"
+                    >
+                        <span x-text="$t('next') || 'Next'"></span> →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import Alpine from "alpinejs";
+    import { ApiClient } from "../lib/api";
+
+    document.addEventListener("alpine:init", () => {
+        Alpine.data("globalLogs", () => ({
+            bots: [] as { id: string; name: string }[],
+            logs: [] as any[],
+            loadingLogs: false,
+            logsPagination: { total: 0, limit: 50, offset: 0 },
+            filters: {
+                botId: "",
+                status: "ALL",
+                search: "",
+                startDate: "",
+                endDate: "",
+            },
+
+            async init() {
+                await this.loadBots();
+                await this.loadLogs();
+            },
+
+            async loadBots() {
+                try {
+                    const res = await ApiClient.get("/bots");
+                    this.bots = res.map((b: any) => ({ id: b.id, name: b.name }));
+                } catch (e) {
+                    console.error("Failed to load bots", e);
+                }
+            },
+
+            async loadLogs() {
+                this.loadingLogs = true;
+                try {
+                    const params = new URLSearchParams();
+                    if (this.filters.botId) params.append("botId", this.filters.botId);
+                    params.append("limit", String(this.logsPagination.limit));
+                    params.append("offset", String(this.logsPagination.offset));
+                    if (this.filters.status !== "ALL") params.append("status", this.filters.status);
+                    if (this.filters.search) params.append("search", this.filters.search);
+                    if (this.filters.startDate) params.append("startDate", this.filters.startDate);
+                    if (this.filters.endDate) params.append("endDate", this.filters.endDate);
+
+                    const res = await ApiClient.get(`/executions?${params.toString()}`);
+                    this.logs = res.data;
+                    this.logsPagination = { ...this.logsPagination, total: res.pagination.total };
+                } catch (e) {
+                    console.error("Failed to load logs", e);
+                } finally {
+                    this.loadingLogs = false;
+                }
+            },
+
+            prevPage() {
+                if (this.logsPagination.offset > 0) {
+                    this.logsPagination.offset = Math.max(0, this.logsPagination.offset - this.logsPagination.limit);
+                    this.loadLogs();
+                }
+            },
+
+            nextPage() {
+                if (this.logsPagination.offset + this.logsPagination.limit < this.logsPagination.total) {
+                    this.logsPagination.offset += this.logsPagination.limit;
+                    this.loadLogs();
+                }
+            },
+
+            formatDate(dateStr: string) {
+                if (!dateStr) return "-";
+                return new Date(dateStr).toLocaleString();
+            },
+        }));
+    });
+</script>
