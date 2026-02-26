@@ -304,7 +304,7 @@ model Automation {
   description String?
   enabled     Boolean         @default(true)
   event       AutomationEvent
-  labelName   String
+  labelName   String?
   timeoutMs   Int
   prompt      String
   createdAt   DateTime        @default(now())

@@ -16,15 +16,19 @@ export class AutomationProcessor {
             if (!automation.bot.aiEnabled) continue;
 
             try {
-                await this.processAutomation(automation);
+                if (automation.labelName) {
+                    await this.processWithLabel(automation);
+                } else {
+                    await this.processWithoutLabel(automation);
+                }
             } catch (err) {
                 console.error(`[Automation] Error processing automation "${automation.name}":`, err);
             }
         }
     }
 
-    private static async processAutomation(automation: any): Promise<void> {
-        // 1. Find sessions with the required label
+    /** Sessions that HAVE the specified label and are inactive */
+    private static async processWithLabel(automation: any): Promise<void> {
         const sessionLabels = await prisma.sessionLabel.findMany({
             where: {
                 label: {
@@ -47,37 +51,61 @@ export class AutomationProcessor {
             },
         });
 
-        // 2. Filter by inactivity
         const cutoff = Date.now() - automation.timeoutMs;
 
         for (const sl of sessionLabels) {
-            const lastUserMsg = sl.session.messages[0]?.createdAt;
-            if (!lastUserMsg || lastUserMsg.getTime() > cutoff) continue; // still active, skip
+            await this.triggerIfInactive(automation, sl.session, cutoff);
+        }
+    }
 
-            // 3. Anti-duplicate via Redis (TTL = timeoutMs)
-            const redisKey = `automation:done:${automation.id}:${sl.session.id}`;
-            const already = await redis.get(redisKey);
-            if (already) continue;
+    /** Sessions that have NO labels at all and are inactive */
+    private static async processWithoutLabel(automation: any): Promise<void> {
+        const sessions = await prisma.session.findMany({
+            where: {
+                botId: automation.botId,
+                sessionLabels: { none: {} },
+            },
+            include: {
+                messages: {
+                    where: { fromMe: false },
+                    orderBy: { createdAt: "desc" },
+                    take: 1,
+                    select: { createdAt: true },
+                },
+            },
+        });
 
-            // 4. Mark as processed
-            await redis.set(redisKey, "1", "PX", automation.timeoutMs);
+        const cutoff = Date.now() - automation.timeoutMs;
 
-            // 5. Invoke AI with synthetic message
-            const syntheticMessage = {
-                id: `auto_${Date.now()}_${Math.random().toString(36).slice(2)}`,
-                content: `[Automatización: ${automation.name}] ${automation.prompt}`,
-                type: "TEXT",
-                fromMe: false,
-                externalId: null,
-                metadata: null,
-            } as unknown as Message;
+        for (const session of sessions) {
+            await this.triggerIfInactive(automation, session, cutoff);
+        }
+    }
 
-            try {
-                console.log(`[Automation] Triggering "${automation.name}" for session ${sl.session.id}`);
-                await aiEngine.processMessages(sl.session.id, [syntheticMessage]);
-            } catch (err) {
-                console.error(`[Automation] Error processing session ${sl.session.id}:`, err);
-            }
+    private static async triggerIfInactive(automation: any, session: any, cutoff: number): Promise<void> {
+        const lastUserMsg = session.messages[0]?.createdAt;
+        if (!lastUserMsg || lastUserMsg.getTime() > cutoff) return;
+
+        const redisKey = `automation:done:${automation.id}:${session.id}`;
+        const already = await redis.get(redisKey);
+        if (already) return;
+
+        await redis.set(redisKey, "1", "PX", automation.timeoutMs);
+
+        const syntheticMessage = {
+            id: `auto_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+            content: `[Automatización: ${automation.name}] ${automation.prompt}`,
+            type: "TEXT",
+            fromMe: false,
+            externalId: null,
+            metadata: null,
+        } as unknown as Message;
+
+        try {
+            console.log(`[Automation] Triggering "${automation.name}" for session ${session.id}`);
+            await aiEngine.processMessages(session.id, [syntheticMessage]);
+        } catch (err) {
+            console.error(`[Automation] Error processing session ${session.id}:`, err);
         }
     }
 }

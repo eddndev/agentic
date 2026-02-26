@@ -674,9 +674,9 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                     <!-- Label -->
                     <div>
                         <label class="block text-xs font-sans text-wa-text-secondary mb-2" x-text="$t('automation_label')">Label</label>
-                        <select x-model="automationForm.labelName" required
+                        <select x-model="automationForm.labelName"
                             class="w-full bg-wa-bg-hover border border-wa-border text-white text-sm p-3 focus:border-wa-green focus:outline-none rounded-lg">
-                            <option value="">Select label...</option>
+                            <option value="">Sin etiqueta (todos sin etiquetar)</option>
                             <template x-for="lbl in botLabels" :key="lbl.id">
                                 <option :value="lbl.name" x-text="lbl.name"></option>
                             </template>
@@ -1618,7 +1618,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                     await ApiClient.post(`/bots/${this.botId}/automations`, {
                         name: this.automationForm.name,
                         event: this.automationForm.event,
-                        labelName: this.automationForm.labelName,
+                        labelName: this.automationForm.labelName || null,
                         timeoutMs,
                         prompt: this.automationForm.prompt,
                     });
