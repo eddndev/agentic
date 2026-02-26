@@ -105,6 +105,17 @@ export default {
     no_logs: "No logs found",
     global_logs: "Global Logs",
     all_bots: "All Bots",
+    system_logs: "System Logs",
+    level_info: "Info",
+    level_warn: "Warn",
+    level_error: "Error",
+    level_all: "All",
+    live: "Live",
+    paused: "Paused",
+    search: "Search",
+    message: "Message",
+    timestamp: "Timestamp",
+    level: "Level",
 
     // AI & Tools
     ai_config: "AI Config",

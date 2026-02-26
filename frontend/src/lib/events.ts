@@ -41,3 +41,31 @@ export class BotEventSource {
         this.handlers.clear();
     }
 }
+
+export class SystemLogSource {
+    private es: EventSource | null = null;
+    private handler: ((log: any) => void) | null = null;
+
+    connect(onLog: (log: any) => void): boolean {
+        const token = localStorage.getItem('token');
+        if (!token) return false;
+        this.handler = onLog;
+        const url = `${API_URL}/events/system-logs?token=${encodeURIComponent(token)}`;
+        this.es = new EventSource(url);
+        this.es.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'system:log' && this.handler) {
+                    this.handler(data.log);
+                }
+            } catch {}
+        };
+        return true;
+    }
+
+    close(): void {
+        this.es?.close();
+        this.es = null;
+        this.handler = null;
+    }
+}

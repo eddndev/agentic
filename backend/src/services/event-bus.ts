@@ -1,4 +1,5 @@
 import { EventEmitter } from 'node:events';
+import type { LogEntry } from './system-logger';
 
 export type BotEvent =
     | { type: 'bot:qr';           botId: string; qr: string }
@@ -7,6 +8,8 @@ export type BotEvent =
     | { type: 'message:received'; botId: string; sessionId: string; message: any }
     | { type: 'message:sent';     botId: string; sessionId: string; content: string }
     | { type: 'session:created';  botId: string; session: any };
+
+export type SystemEvent = { type: 'system:log'; log: LogEntry };
 
 class EventBus extends EventEmitter {
     constructor() {
@@ -24,6 +27,15 @@ class EventBus extends EventEmitter {
         };
         this.on('bot-event', handler);
         return () => this.off('bot-event', handler);
+    }
+
+    emitSystemEvent(payload: SystemEvent): boolean {
+        return super.emit('system-event', payload);
+    }
+
+    subscribeSystem(callback: (event: SystemEvent) => void): () => void {
+        this.on('system-event', callback);
+        return () => this.off('system-event', callback);
     }
 }
 

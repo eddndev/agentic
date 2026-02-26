@@ -2,6 +2,10 @@ import { Elysia } from "elysia";
 import { node } from "@elysiajs/node";
 import { Worker } from "bullmq";
 import { Redis } from "ioredis";
+import { initSystemLogger } from "./services/system-logger";
+
+// --- System Logger (intercept console before anything else) ---
+initSystemLogger();
 
 // --- Configuration ---
 const REDIS_URL = process.env['REDIS_URL'] || "redis://localhost:6379";
@@ -132,6 +136,7 @@ import { toolController } from "./api/tool.controller";
 import { sessionController } from "./api/session.controller";
 import { eventsController } from "./api/events.controller";
 import { automationController } from "./api/automation.controller";
+import { logsController } from "./api/logs.controller";
 const ALLOWED_ORIGINS = new Set([
     'https://agentic.w-gateway.cc',
     'http://localhost:4321',
@@ -171,6 +176,7 @@ const app = new Elysia({ adapter: node() })
     .use(sessionController)
     .use(eventsController)
     .use(automationController)
+    .use(logsController)
     .get("/", () => "Agentic Orchestrator Active")
     .get("/health", () => ({ status: "ok", timestamp: new Date().toISOString() }))
     .get("/info", () => ({

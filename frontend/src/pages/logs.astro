@@ -9,194 +9,286 @@ import Layout from "../layouts/Layout.astro";
             <h1 class="text-xl font-bold text-white" x-text="$t('global_logs')">Global Logs</h1>
         </div>
 
-        <div class="bg-wa-bg-panel border border-wa-border p-4 sm:p-6 relative rounded-xl">
+        <!-- Tabs -->
+        <div class="flex gap-1 mb-4 border-b border-wa-border">
+            <button
+                @click="activeTab = 'system'"
+                :class="activeTab === 'system' ? 'text-wa-green border-b-2 border-wa-green' : 'text-wa-text-secondary hover:text-white'"
+                class="px-4 py-2 text-sm font-medium transition-colors"
+                x-text="$t('system_logs')"
+            >System Logs</button>
+            <button
+                @click="activeTab = 'executions'"
+                :class="activeTab === 'executions' ? 'text-wa-green border-b-2 border-wa-green' : 'text-wa-text-secondary hover:text-white'"
+                class="px-4 py-2 text-sm font-medium transition-colors"
+                x-text="$t('executions')"
+            >Executions</button>
+        </div>
 
-            <!-- Filters -->
-            <div class="flex flex-wrap gap-4 mb-6 items-end">
-                <!-- Bot Filter -->
-                <div>
-                    <label
-                        class="block text-[10px] font-sans text-wa-text-secondary mb-1"
-                        x-text="$t('col_bot')">Bot</label
-                    >
-                    <select
-                        x-model="filters.botId"
-                        @change="logsPagination.offset = 0; loadLogs()"
-                        class="bg-wa-bg-deep border border-wa-border text-white text-xs p-2 min-w-[150px] focus:border-wa-green focus:outline-none rounded-lg"
-                    >
-                        <option value="" x-text="$t('all_bots')">All Bots</option>
-                        <template x-for="bot in bots" :key="bot.id">
-                            <option :value="bot.id" x-text="bot.name"></option>
-                        </template>
-                    </select>
+        <!-- ==================== SYSTEM LOGS TAB ==================== -->
+        <div x-show="activeTab === 'system'" x-cloak>
+            <div class="bg-wa-bg-panel border border-wa-border p-4 sm:p-6 relative rounded-xl">
+                <!-- Filters row -->
+                <div class="flex flex-wrap gap-4 mb-4 items-end">
+                    <!-- Level filter -->
+                    <div>
+                        <label class="block text-[10px] font-sans text-wa-text-secondary mb-1" x-text="$t('level')">Level</label>
+                        <select
+                            x-model="sysFilters.level"
+                            @change="loadSystemLogs()"
+                            class="bg-wa-bg-deep border border-wa-border text-white text-xs p-2 min-w-[100px] focus:border-wa-green focus:outline-none rounded-lg"
+                        >
+                            <option value="" x-text="$t('level_all')">All</option>
+                            <option value="info" x-text="$t('level_info')">Info</option>
+                            <option value="warn" x-text="$t('level_warn')">Warn</option>
+                            <option value="error" x-text="$t('level_error')">Error</option>
+                        </select>
+                    </div>
+
+                    <!-- Search -->
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-[10px] font-sans text-wa-text-secondary mb-1" x-text="$t('search')">Search</label>
+                        <input
+                            type="text"
+                            x-model="sysFilters.search"
+                            @input.debounce="loadSystemLogs()"
+                            class="w-full bg-wa-bg-deep border border-wa-border text-white text-xs p-2 focus:border-wa-green focus:outline-none placeholder-gray-700 rounded-lg"
+                            placeholder="Filter logs..."
+                        />
+                    </div>
+
+                    <!-- Live indicator -->
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border"
+                            :class="sysLive
+                                ? 'text-green-400 border-green-500/30 bg-green-500/10'
+                                : 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10'"
+                        >
+                            <span class="w-2 h-2 rounded-full" :class="sysLive ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'"></span>
+                            <span x-text="sysLive ? $t('live') : $t('paused')"></span>
+                        </span>
+                    </div>
                 </div>
 
-                <!-- Status Filter -->
-                <div>
-                    <label
-                        class="block text-[10px] font-sans text-wa-text-secondary mb-1"
-                        x-text="$t('filter_status')">Status</label
-                    >
-                    <select
-                        x-model="filters.status"
-                        @change="logsPagination.offset = 0; loadLogs()"
-                        class="bg-wa-bg-deep border border-wa-border text-white text-xs p-2 min-w-[120px] focus:border-wa-green focus:outline-none rounded-lg"
-                    >
-                        <option value="ALL" x-text="$t('status_all')">All</option>
-                        <option value="RUNNING" x-text="$t('status_running') || 'Running'">Running</option>
-                        <option value="COMPLETED" x-text="$t('status_completed')">Completed</option>
-                        <option value="FAILED" x-text="$t('status_failed')">Failed</option>
-                    </select>
-                </div>
-
-                <!-- Search -->
-                <div class="flex-1 min-w-[200px]">
-                    <label
-                        class="block text-[10px] font-sans text-wa-text-secondary mb-1"
-                        x-text="$t('filter_user')">User</label
-                    >
-                    <input
-                        type="text"
-                        x-model="filters.search"
-                        @input.debounce="logsPagination.offset = 0; loadLogs()"
-                        class="w-full bg-wa-bg-deep border border-wa-border text-white text-xs p-2 focus:border-wa-green focus:outline-none placeholder-gray-700 rounded-lg"
-                        :placeholder="$t('filter_user') + ' / Trigger...'"
-                    />
-                </div>
-
-                <!-- Date From -->
-                <div>
-                    <label
-                        class="block text-[10px] font-sans text-wa-text-secondary mb-1"
-                        x-text="$t('filter_date_from')">From</label
-                    >
-                    <input
-                        type="date"
-                        x-model="filters.startDate"
-                        @change="logsPagination.offset = 0; loadLogs()"
-                        class="bg-wa-bg-deep border border-wa-border text-white text-xs p-2 focus:border-wa-green focus:outline-none rounded-lg"
-                    />
-                </div>
-
-                <!-- Date To -->
-                <div>
-                    <label
-                        class="block text-[10px] font-sans text-wa-text-secondary mb-1"
-                        x-text="$t('filter_date_to')">To</label
-                    >
-                    <input
-                        type="date"
-                        x-model="filters.endDate"
-                        @change="logsPagination.offset = 0; loadLogs()"
-                        class="bg-wa-bg-deep border border-wa-border text-white text-xs p-2 focus:border-wa-green focus:outline-none rounded-lg"
-                    />
-                </div>
-
-                <!-- Refresh -->
-                <button
-                    @click="loadLogs()"
-                    class="px-4 py-2 border border-wa-border text-wa-text-secondary hover:text-white hover:bg-wa-bg-hover transition-colors rounded-lg"
-                    :title="$t('refresh')"
+                <!-- System logs table -->
+                <div
+                    class="overflow-y-auto max-h-[600px] font-mono text-xs"
+                    x-ref="sysLogContainer"
+                    @mouseenter="sysLive = false"
+                    @mouseleave="sysLive = true; $nextTick(() => scrollToBottom())"
                 >
-                    <span :class="{'animate-spin': loadingLogs}">⟳</span>
-                </button>
-            </div>
-
-            <!-- Logs Table -->
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[700px]">
-                    <thead>
-                        <tr class="text-[10px] font-sans text-wa-text-secondary border-b border-wa-border">
-                            <th class="p-3 whitespace-nowrap" x-text="$t('col_status')">Status</th>
-                            <th class="p-3 whitespace-nowrap" x-text="$t('col_date')">Date</th>
-                            <th class="p-3 whitespace-nowrap" x-text="$t('col_bot')">Bot</th>
-                            <th class="p-3 whitespace-nowrap" x-text="$t('col_user')">User</th>
-                            <th class="p-3 whitespace-nowrap" x-text="$t('col_flow')">Flow</th>
-                            <th class="p-3 whitespace-nowrap" x-text="$t('col_trigger')">Trigger</th>
-                            <th class="p-3 whitespace-nowrap" x-text="$t('col_error')">Error</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-xs font-mono">
-                        <template x-if="loadingLogs">
-                            <tr><td colspan="7" class="p-8 text-center text-wa-text-secondary" x-text="$t('loading')">Loading...</td></tr>
-                        </template>
-                        <template x-if="!loadingLogs && logs.length === 0">
-                            <tr><td colspan="7" class="p-8 text-center text-wa-text-secondary" x-text="$t('no_logs')">No logs found</td></tr>
-                        </template>
-
-                        <template x-for="log in logs" :key="log.id">
-                            <tr class="border-b border-wa-border hover:bg-wa-bg-hover transition-colors">
-                                <td class="p-3">
-                                    <span x-show="log.status === 'COMPLETED'" class="text-green-500">✔</span>
-                                    <span x-show="log.status === 'FAILED'" class="text-red-500">✖</span>
-                                    <span x-show="log.status === 'RUNNING'" class="text-blue-500 animate-pulse">●</span>
-                                </td>
-                                <td class="p-3 text-wa-text-secondary" x-text="formatDate(log.startedAt)"></td>
-                                <td class="p-3">
-                                    <a
-                                        :href="'/bots/' + log.flow?.bot?.id"
-                                        class="text-wa-green hover:underline"
-                                        x-text="log.flow?.bot?.name || '-'"
-                                    ></a>
-                                </td>
-                                <td class="p-3">
-                                    <div class="text-white font-medium" x-text="log.session?.name || 'Unknown'"></div>
-                                    <div class="text-[10px] text-wa-text-secondary" x-text="log.platformUserId"></div>
-                                </td>
-                                <td class="p-3 text-wa-green" x-text="log.flow?.name || '-'"></td>
-                                <td class="p-3 text-wa-text-secondary">
-                                    <span x-show="log.trigger" class="bg-wa-bg-hover px-1 py-0.5 rounded-md" x-text="log.trigger"></span>
-                                    <span x-show="!log.trigger">-</span>
-                                </td>
-                                <td class="p-3">
-                                    <template x-if="log.error">
-                                        <div class="group relative inline-block cursor-help">
-                                            <span class="text-red-400 truncate max-w-[150px] block" x-text="log.error"></span>
-                                            <div class="absolute bottom-full left-0 mb-1 w-64 p-2 bg-black border border-red-500/30 text-red-200 text-[10px] rounded hidden group-hover:block z-50 shadow-xl">
-                                                <span x-text="log.error"></span>
-                                            </div>
-                                        </div>
-                                    </template>
-                                    <span x-show="!log.error" class="text-wa-text-secondary">-</span>
-                                </td>
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 bg-wa-bg-panel z-10">
+                            <tr class="text-[10px] font-sans text-wa-text-secondary border-b border-wa-border">
+                                <th class="p-2 w-16" x-text="$t('level')">Level</th>
+                                <th class="p-2 w-44" x-text="$t('timestamp')">Timestamp</th>
+                                <th class="p-2" x-text="$t('message')">Message</th>
                             </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination Controls -->
-            <div class="flex items-center justify-between mt-6 pt-4 border-t border-wa-border flex-wrap gap-4">
-                <div class="text-xs font-sans text-wa-text-secondary">
-                    <span x-text="$t('showing') || 'Showing'"></span>
-                    <span x-text="Math.min(logsPagination.offset + 1, logsPagination.total)"></span>
-                    -
-                    <span x-text="Math.min(logsPagination.offset + logsPagination.limit, logsPagination.total)"></span>
-                    <span x-text="$t('of') || 'of'"></span>
-                    <span x-text="logsPagination.total" class="text-white"></span>
-                    <span x-text="$t('records') || 'records'"></span>
+                        </thead>
+                        <tbody>
+                            <template x-if="sysLogs.length === 0 && !loadingSysLogs">
+                                <tr><td colspan="3" class="p-8 text-center text-wa-text-secondary" x-text="$t('no_logs')">No logs found</td></tr>
+                            </template>
+                            <template x-for="log in sysLogs" :key="log.id">
+                                <tr class="border-b border-wa-border/50 hover:bg-wa-bg-hover transition-colors">
+                                    <td class="p-2">
+                                        <span
+                                            class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold uppercase"
+                                            :class="{
+                                                'bg-blue-500/20 text-blue-400': log.level === 'info',
+                                                'bg-yellow-500/20 text-yellow-400': log.level === 'warn',
+                                                'bg-red-500/20 text-red-400': log.level === 'error',
+                                            }"
+                                            x-text="log.level"
+                                        ></span>
+                                    </td>
+                                    <td class="p-2 text-wa-text-secondary whitespace-nowrap" x-text="formatSysDate(log.timestamp)"></td>
+                                    <td class="p-2 text-white break-all whitespace-pre-wrap" x-text="log.message"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="flex items-center gap-2">
+            </div>
+        </div>
+
+        <!-- ==================== EXECUTIONS TAB ==================== -->
+        <div x-show="activeTab === 'executions'" x-cloak>
+            <div class="bg-wa-bg-panel border border-wa-border p-4 sm:p-6 relative rounded-xl">
+
+                <!-- Filters -->
+                <div class="flex flex-wrap gap-4 mb-6 items-end">
+                    <!-- Bot Filter -->
+                    <div>
+                        <label class="block text-[10px] font-sans text-wa-text-secondary mb-1" x-text="$t('col_bot')">Bot</label>
+                        <select
+                            x-model="filters.botId"
+                            @change="logsPagination.offset = 0; loadLogs()"
+                            class="bg-wa-bg-deep border border-wa-border text-white text-xs p-2 min-w-[150px] focus:border-wa-green focus:outline-none rounded-lg"
+                        >
+                            <option value="" x-text="$t('all_bots')">All Bots</option>
+                            <template x-for="bot in bots" :key="bot.id">
+                                <option :value="bot.id" x-text="bot.name"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div>
+                        <label class="block text-[10px] font-sans text-wa-text-secondary mb-1" x-text="$t('filter_status')">Status</label>
+                        <select
+                            x-model="filters.status"
+                            @change="logsPagination.offset = 0; loadLogs()"
+                            class="bg-wa-bg-deep border border-wa-border text-white text-xs p-2 min-w-[120px] focus:border-wa-green focus:outline-none rounded-lg"
+                        >
+                            <option value="ALL" x-text="$t('status_all')">All</option>
+                            <option value="RUNNING" x-text="$t('status_running') || 'Running'">Running</option>
+                            <option value="COMPLETED" x-text="$t('status_completed')">Completed</option>
+                            <option value="FAILED" x-text="$t('status_failed')">Failed</option>
+                        </select>
+                    </div>
+
+                    <!-- Search -->
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-[10px] font-sans text-wa-text-secondary mb-1" x-text="$t('filter_user')">User</label>
+                        <input
+                            type="text"
+                            x-model="filters.search"
+                            @input.debounce="logsPagination.offset = 0; loadLogs()"
+                            class="w-full bg-wa-bg-deep border border-wa-border text-white text-xs p-2 focus:border-wa-green focus:outline-none placeholder-gray-700 rounded-lg"
+                            :placeholder="$t('filter_user') + ' / Trigger...'"
+                        />
+                    </div>
+
+                    <!-- Date From -->
+                    <div>
+                        <label class="block text-[10px] font-sans text-wa-text-secondary mb-1" x-text="$t('filter_date_from')">From</label>
+                        <input
+                            type="date"
+                            x-model="filters.startDate"
+                            @change="logsPagination.offset = 0; loadLogs()"
+                            class="bg-wa-bg-deep border border-wa-border text-white text-xs p-2 focus:border-wa-green focus:outline-none rounded-lg"
+                        />
+                    </div>
+
+                    <!-- Date To -->
+                    <div>
+                        <label class="block text-[10px] font-sans text-wa-text-secondary mb-1" x-text="$t('filter_date_to')">To</label>
+                        <input
+                            type="date"
+                            x-model="filters.endDate"
+                            @change="logsPagination.offset = 0; loadLogs()"
+                            class="bg-wa-bg-deep border border-wa-border text-white text-xs p-2 focus:border-wa-green focus:outline-none rounded-lg"
+                        />
+                    </div>
+
+                    <!-- Refresh -->
                     <button
-                        @click="prevPage()"
-                        :disabled="logsPagination.offset === 0"
-                        class="px-3 py-1 border border-wa-border text-wa-text-secondary text-xs font-sans hover:bg-wa-bg-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded-lg"
+                        @click="loadLogs()"
+                        class="px-4 py-2 border border-wa-border text-wa-text-secondary hover:text-white hover:bg-wa-bg-hover transition-colors rounded-lg"
+                        :title="$t('refresh')"
                     >
-                        ← <span x-text="$t('prev') || 'Prev'"></span>
+                        <span :class="{'animate-spin': loadingLogs}">⟳</span>
                     </button>
-                    <span class="text-xs font-sans text-wa-text-secondary">
-                        <span x-text="$t('page') || 'Page'"></span>
-                        <span x-text="Math.floor(logsPagination.offset / logsPagination.limit) + 1" class="text-white"></span>
-                        /
-                        <span x-text="Math.ceil(logsPagination.total / logsPagination.limit) || 1"></span>
-                    </span>
-                    <button
-                        @click="nextPage()"
-                        :disabled="logsPagination.offset + logsPagination.limit >= logsPagination.total"
-                        class="px-3 py-1 border border-wa-border text-wa-text-secondary text-xs font-sans hover:bg-wa-bg-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded-lg"
-                    >
-                        <span x-text="$t('next') || 'Next'"></span> →
-                    </button>
+                </div>
+
+                <!-- Logs Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[700px]">
+                        <thead>
+                            <tr class="text-[10px] font-sans text-wa-text-secondary border-b border-wa-border">
+                                <th class="p-3 whitespace-nowrap" x-text="$t('col_status')">Status</th>
+                                <th class="p-3 whitespace-nowrap" x-text="$t('col_date')">Date</th>
+                                <th class="p-3 whitespace-nowrap" x-text="$t('col_bot')">Bot</th>
+                                <th class="p-3 whitespace-nowrap" x-text="$t('col_user')">User</th>
+                                <th class="p-3 whitespace-nowrap" x-text="$t('col_flow')">Flow</th>
+                                <th class="p-3 whitespace-nowrap" x-text="$t('col_trigger')">Trigger</th>
+                                <th class="p-3 whitespace-nowrap" x-text="$t('col_error')">Error</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-xs font-mono">
+                            <template x-if="loadingLogs">
+                                <tr><td colspan="7" class="p-8 text-center text-wa-text-secondary" x-text="$t('loading')">Loading...</td></tr>
+                            </template>
+                            <template x-if="!loadingLogs && logs.length === 0">
+                                <tr><td colspan="7" class="p-8 text-center text-wa-text-secondary" x-text="$t('no_logs')">No logs found</td></tr>
+                            </template>
+
+                            <template x-for="log in logs" :key="log.id">
+                                <tr class="border-b border-wa-border hover:bg-wa-bg-hover transition-colors">
+                                    <td class="p-3">
+                                        <span x-show="log.status === 'COMPLETED'" class="text-green-500">✔</span>
+                                        <span x-show="log.status === 'FAILED'" class="text-red-500">✖</span>
+                                        <span x-show="log.status === 'RUNNING'" class="text-blue-500 animate-pulse">●</span>
+                                    </td>
+                                    <td class="p-3 text-wa-text-secondary" x-text="formatDate(log.startedAt)"></td>
+                                    <td class="p-3">
+                                        <a
+                                            :href="'/bots/' + log.flow?.bot?.id"
+                                            class="text-wa-green hover:underline"
+                                            x-text="log.flow?.bot?.name || '-'"
+                                        ></a>
+                                    </td>
+                                    <td class="p-3">
+                                        <div class="text-white font-medium" x-text="log.session?.name || 'Unknown'"></div>
+                                        <div class="text-[10px] text-wa-text-secondary" x-text="log.platformUserId"></div>
+                                    </td>
+                                    <td class="p-3 text-wa-green" x-text="log.flow?.name || '-'"></td>
+                                    <td class="p-3 text-wa-text-secondary">
+                                        <span x-show="log.trigger" class="bg-wa-bg-hover px-1 py-0.5 rounded-md" x-text="log.trigger"></span>
+                                        <span x-show="!log.trigger">-</span>
+                                    </td>
+                                    <td class="p-3">
+                                        <template x-if="log.error">
+                                            <div class="group relative inline-block cursor-help">
+                                                <span class="text-red-400 truncate max-w-[150px] block" x-text="log.error"></span>
+                                                <div class="absolute bottom-full left-0 mb-1 w-64 p-2 bg-black border border-red-500/30 text-red-200 text-[10px] rounded hidden group-hover:block z-50 shadow-xl">
+                                                    <span x-text="log.error"></span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <span x-show="!log.error" class="text-wa-text-secondary">-</span>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div class="flex items-center justify-between mt-6 pt-4 border-t border-wa-border flex-wrap gap-4">
+                    <div class="text-xs font-sans text-wa-text-secondary">
+                        <span x-text="$t('showing') || 'Showing'"></span>
+                        <span x-text="Math.min(logsPagination.offset + 1, logsPagination.total)"></span>
+                        -
+                        <span x-text="Math.min(logsPagination.offset + logsPagination.limit, logsPagination.total)"></span>
+                        <span x-text="$t('of') || 'of'"></span>
+                        <span x-text="logsPagination.total" class="text-white"></span>
+                        <span x-text="$t('records') || 'records'"></span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button
+                            @click="prevPage()"
+                            :disabled="logsPagination.offset === 0"
+                            class="px-3 py-1 border border-wa-border text-wa-text-secondary text-xs font-sans hover:bg-wa-bg-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded-lg"
+                        >
+                            ← <span x-text="$t('prev') || 'Prev'"></span>
+                        </button>
+                        <span class="text-xs font-sans text-wa-text-secondary">
+                            <span x-text="$t('page') || 'Page'"></span>
+                            <span x-text="Math.floor(logsPagination.offset / logsPagination.limit) + 1" class="text-white"></span>
+                            /
+                            <span x-text="Math.ceil(logsPagination.total / logsPagination.limit) || 1"></span>
+                        </span>
+                        <button
+                            @click="nextPage()"
+                            :disabled="logsPagination.offset + logsPagination.limit >= logsPagination.total"
+                            class="px-3 py-1 border border-wa-border text-wa-text-secondary text-xs font-sans hover:bg-wa-bg-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded-lg"
+                        >
+                            <span x-text="$t('next') || 'Next'"></span> →
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -206,9 +298,20 @@ import Layout from "../layouts/Layout.astro";
 <script>
     import Alpine from "alpinejs";
     import { ApiClient } from "../lib/api";
+    import { SystemLogSource } from "../lib/events";
 
     document.addEventListener("alpine:init", () => {
         Alpine.data("globalLogs", () => ({
+            activeTab: "system" as "system" | "executions",
+
+            // --- System Logs ---
+            sysLogs: [] as any[],
+            loadingSysLogs: false,
+            sysLive: true,
+            sysFilters: { level: "", search: "" },
+            sysSource: null as SystemLogSource | null,
+
+            // --- Executions (existing) ---
             bots: [] as { id: string; name: string }[],
             logs: [] as any[],
             loadingLogs: false,
@@ -222,10 +325,58 @@ import Layout from "../layouts/Layout.astro";
             },
 
             async init() {
+                await this.loadSystemLogs();
+                this.connectSSE();
                 await this.loadBots();
-                await this.loadLogs();
             },
 
+            // ---- System Logs methods ----
+            async loadSystemLogs() {
+                this.loadingSysLogs = true;
+                try {
+                    const params = new URLSearchParams({ limit: "200", offset: "0" });
+                    if (this.sysFilters.level) params.append("level", this.sysFilters.level);
+                    if (this.sysFilters.search) params.append("search", this.sysFilters.search);
+                    const res = await ApiClient.get(`/logs/system?${params.toString()}`);
+                    // API returns newest-first, reverse to show oldest at top (append new at bottom)
+                    this.sysLogs = (res.data || []).reverse();
+                    this.$nextTick(() => this.scrollToBottom());
+                } catch (e) {
+                    console.error("Failed to load system logs", e);
+                } finally {
+                    this.loadingSysLogs = false;
+                }
+            },
+
+            connectSSE() {
+                this.sysSource = new SystemLogSource();
+                this.sysSource.connect((log: any) => {
+                    // Apply client-side filter
+                    if (this.sysFilters.level && log.level !== this.sysFilters.level) return;
+                    if (this.sysFilters.search && !log.message.toLowerCase().includes(this.sysFilters.search.toLowerCase())) return;
+
+                    this.sysLogs.push(log);
+                    // Keep max 2000 in DOM
+                    if (this.sysLogs.length > 2000) this.sysLogs.splice(0, this.sysLogs.length - 2000);
+
+                    if (this.sysLive) {
+                        this.$nextTick(() => this.scrollToBottom());
+                    }
+                });
+            },
+
+            scrollToBottom() {
+                const container = this.$refs.sysLogContainer as HTMLElement | undefined;
+                if (container) container.scrollTop = container.scrollHeight;
+            },
+
+            formatSysDate(ts: string) {
+                if (!ts) return "-";
+                const d = new Date(ts);
+                return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 });
+            },
+
+            // ---- Executions methods (unchanged) ----
             async loadBots() {
                 try {
                     const res = await ApiClient.get("/bots");
@@ -274,6 +425,10 @@ import Layout from "../layouts/Layout.astro";
             formatDate(dateStr: string) {
                 if (!dateStr) return "-";
                 return new Date(dateStr).toLocaleString();
+            },
+
+            destroy() {
+                this.sysSource?.close();
             },
         }));
     });
