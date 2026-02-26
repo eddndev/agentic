@@ -29,6 +29,8 @@ export class AutomationProcessor {
 
     /** Sessions that HAVE the specified label and are inactive */
     private static async processWithLabel(automation: any): Promise<void> {
+        const ignoredLabels: string[] = automation.bot.ignoredLabels || [];
+
         const sessionLabels = await prisma.sessionLabel.findMany({
             where: {
                 label: {
@@ -36,6 +38,13 @@ export class AutomationProcessor {
                     name: automation.labelName,
                     deleted: false,
                 },
+                ...(ignoredLabels.length > 0 && {
+                    session: {
+                        labels: {
+                            none: { labelId: { in: ignoredLabels } },
+                        },
+                    },
+                }),
             },
             include: {
                 session: {
