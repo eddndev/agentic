@@ -181,6 +181,137 @@ export const botController = new Elysia({ prefix: "/bots" })
             return { error: "Failed to clear conversations" };
         }
     })
+    // Clone bot with all flows, tools, and automations
+    .post("/:id/clone", async ({ params: { id }, body, set }) => {
+        const { name, identifier } = body as { name: string; identifier: string };
+
+        if (!name || !identifier) {
+            set.status = 400;
+            return { error: "Name and identifier are required" };
+        }
+
+        const source = await prisma.bot.findUnique({
+            where: { id },
+            include: {
+                flows: { include: { steps: true, triggers: true } },
+                tools: true,
+                automations: true,
+            },
+        });
+
+        if (!source) {
+            set.status = 404;
+            return { error: "Bot not found" };
+        }
+
+        try {
+            const result = await prisma.$transaction(async (tx) => {
+                // 1. Create new bot with copied settings
+                const newBot = await tx.bot.create({
+                    data: {
+                        name,
+                        identifier,
+                        platform: source.platform,
+                        ipv6Address: generateRandomIPv6(),
+                        credentials: {},
+                        aiEnabled: source.aiEnabled,
+                        aiProvider: source.aiProvider,
+                        aiModel: source.aiModel,
+                        systemPrompt: source.systemPrompt,
+                        temperature: source.temperature,
+                        messageDelay: source.messageDelay,
+                        excludeGroups: source.excludeGroups,
+                        ignoredLabels: source.ignoredLabels,
+                    },
+                });
+
+                // 2. Clone flows and build oldId -> newId mapping
+                const flowIdMap = new Map<string, string>();
+                for (const flow of source.flows) {
+                    const newFlow = await tx.flow.create({
+                        data: {
+                            name: flow.name,
+                            description: flow.description,
+                            botId: newBot.id,
+                            cooldownMs: flow.cooldownMs,
+                            usageLimit: flow.usageLimit,
+                            excludesFlows: flow.excludesFlows,
+                            steps: {
+                                create: flow.steps.map((s) => ({
+                                    type: s.type,
+                                    content: s.content,
+                                    mediaUrl: s.mediaUrl,
+                                    metadata: s.metadata as any,
+                                    delayMs: s.delayMs,
+                                    jitterPct: s.jitterPct,
+                                    order: s.order,
+                                })),
+                            },
+                            triggers: {
+                                create: flow.triggers.map((t) => ({
+                                    botId: newBot.id,
+                                    keyword: t.keyword,
+                                    matchType: t.matchType,
+                                    scope: t.scope,
+                                    isActive: t.isActive,
+                                })),
+                            },
+                        },
+                    });
+                    flowIdMap.set(flow.id, newFlow.id);
+                }
+
+                // 3. Clone tools, remapping flowId references
+                for (const tool of source.tools) {
+                    await tx.tool.create({
+                        data: {
+                            name: tool.name,
+                            description: tool.description,
+                            actionType: tool.actionType,
+                            actionConfig: tool.actionConfig as any,
+                            parameters: tool.parameters as any,
+                            status: tool.status,
+                            flowId: tool.flowId ? flowIdMap.get(tool.flowId) || null : null,
+                            botId: newBot.id,
+                        },
+                    });
+                }
+
+                // 4. Clone automations
+                for (const auto of source.automations) {
+                    await tx.automation.create({
+                        data: {
+                            name: auto.name,
+                            description: auto.description,
+                            event: auto.event,
+                            labelName: auto.labelName,
+                            timeoutMs: auto.timeoutMs,
+                            prompt: auto.prompt,
+                            enabled: auto.enabled,
+                            botId: newBot.id,
+                        },
+                    });
+                }
+
+                return newBot;
+            });
+
+            return result;
+        } catch (e: any) {
+            if (e.code === "P2002") {
+                set.status = 409;
+                return { error: "Bot identifier already exists" };
+            }
+            console.error("[POST /bots/:id/clone] Error:", e);
+            set.status = 500;
+            return { error: "Failed to clone bot" };
+        }
+    }, {
+        body: t.Object({
+            name: t.String(),
+            identifier: t.String(),
+        }),
+    })
     .delete("/:id", async ({ params: { id }, set }) => {
         try {
             await prisma.bot.delete({

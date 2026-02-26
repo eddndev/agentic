@@ -18,9 +18,9 @@ export const automationController = new Elysia({ prefix: "/bots" })
     .post("/:id/automations", async ({ params: { id }, body, set }) => {
         const { name, description, enabled, event, labelName, timeoutMs, prompt } = body as any;
 
-        if (!name || !event || !labelName || !timeoutMs || !prompt) {
+        if (!name || !event || !timeoutMs || !prompt) {
             set.status = 400;
-            return { error: "name, event, labelName, timeoutMs, and prompt are required" };
+            return { error: "name, event, timeoutMs, and prompt are required" };
         }
 
         return prisma.automation.create({

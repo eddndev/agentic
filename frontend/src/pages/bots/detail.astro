@@ -102,6 +102,25 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                 </div>
                 <div class="flex gap-3 flex-wrap">
                     <button
+                        @click="cloneBot()"
+                        class="px-4 py-2 border border-wa-border text-wa-text-secondary font-sans text-xs hover:bg-wa-bg-hover transition-colors rounded-lg"
+                        title="Clone Bot"
+                    >
+                        <svg
+                            class="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                            ></path>
+                        </svg>
+                    </button>
+                    <button
                         @click="editBot()"
                         class="px-4 py-2 border border-wa-border text-wa-text-secondary font-sans text-xs hover:bg-wa-bg-hover transition-colors rounded-lg"
                         :title="$t('edit')"
@@ -1156,6 +1175,74 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                 </form>
             </div>
         </div>
+        <!-- Clone Bot Modal -->
+        <div
+            x-show="showCloneModal"
+            x-cloak
+            class="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style="display: none;"
+        >
+            <div
+                class="absolute inset-0 bg-black/70"
+                @click="showCloneModal = false"
+            >
+            </div>
+
+            <div
+                class="relative bg-wa-bg-panel border border-wa-border p-6 sm:p-8 w-full max-w-md rounded-xl"
+            >
+                <h2 class="text-xl font-bold tracking-tight mb-6">
+                    Clone Bot
+                </h2>
+
+                <form @submit.prevent="submitCloneBot()" class="space-y-4">
+                    <div>
+                        <label
+                            class="block text-xs text-wa-text-secondary font-sans mb-2"
+                            x-text="$t('bot_name') || 'Name'"></label>
+                        <input
+                            type="text"
+                            x-model="cloneForm.name"
+                            required
+                            class="w-full bg-wa-bg-hover border border-wa-border p-3 text-sm focus:border-wa-green focus:outline-none text-white rounded-lg"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-xs text-wa-text-secondary font-sans mb-2"
+                            x-text="$t('bot_identifier') || 'Identifier'"
+                        ></label>
+                        <input
+                            type="text"
+                            x-model="cloneForm.identifier"
+                            required
+                            class="w-full bg-wa-bg-hover border border-wa-border p-3 text-sm focus:border-wa-green focus:outline-none text-white rounded-lg"
+                            placeholder="+1234567890"
+                        />
+                    </div>
+
+                    <div class="flex gap-4 pt-4">
+                        <button
+                            type="button"
+                            @click="showCloneModal = false"
+                            class="flex-1 px-4 py-3 border border-wa-border text-wa-text-secondary font-sans text-xs hover:bg-wa-bg-hover rounded-lg"
+                            x-text="$t('cancel') || 'Cancel'"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="savingClone"
+                            class="flex-1 px-4 py-3 bg-wa-green text-white font-sans text-xs hover:bg-wa-green-hover disabled:opacity-50 rounded-lg"
+                            x-text="savingClone ? ($t('loading') || 'Cloning...') : 'Clone'"
+                        >
+                            Clone
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </Layout>
 
@@ -1222,6 +1309,14 @@ import ClientModal from "../../components/clients/ClientModal.astro";
             importData: {
                 sourceBotId: "",
                 sourceFlowId: "",
+            },
+
+            // Clone Bot State
+            showCloneModal: false,
+            savingClone: false,
+            cloneForm: {
+                name: "",
+                identifier: "",
             },
 
             // Edit Bot State
@@ -1364,6 +1459,30 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                         </div>
                     </div>
                 `;
+            },
+
+            cloneBot() {
+                this.cloneForm.name = `${this.bot.name} (Copy)`;
+                this.cloneForm.identifier = "";
+                this.showCloneModal = true;
+            },
+
+            async submitCloneBot() {
+                if (!this.cloneForm.name || !this.cloneForm.identifier) return;
+
+                this.savingClone = true;
+                try {
+                    const newBot = await ApiClient.post(`/bots/${this.botId}/clone`, {
+                        name: this.cloneForm.name,
+                        identifier: this.cloneForm.identifier,
+                    });
+                    window.location.href = `/bots/detail?id=${newBot.id}`;
+                } catch (e: unknown) {
+                    const error = e as Error;
+                    alert(error.message || "Failed to clone bot");
+                } finally {
+                    this.savingClone = false;
+                }
             },
 
             editBot() {
