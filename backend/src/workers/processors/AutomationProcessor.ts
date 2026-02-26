@@ -63,7 +63,7 @@ export class AutomationProcessor {
         const sessions = await prisma.session.findMany({
             where: {
                 botId: automation.botId,
-                sessionLabels: { none: {} },
+                labels: { none: {} },
             },
             include: {
                 messages: {
