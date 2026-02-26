@@ -92,6 +92,9 @@ export class AutomationProcessor {
     }
 
     private static async triggerIfInactive(automation: any, session: any, cutoff: number): Promise<void> {
+        // Skip the bot's own session
+        if (session.identifier === automation.bot.identifier) return;
+
         const lastUserMsg = session.messages[0]?.createdAt;
         if (!lastUserMsg || lastUserMsg.getTime() > cutoff) return;
 
