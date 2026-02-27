@@ -222,7 +222,7 @@ export const botController = new Elysia({ prefix: "/bots" })
                         temperature: source.temperature,
                         messageDelay: source.messageDelay,
                         excludeGroups: source.excludeGroups,
-                        ignoredLabels: source.ignoredLabels,
+                        ignoredLabels: [],
                     },
                 });
 

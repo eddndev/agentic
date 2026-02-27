@@ -622,7 +622,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
 
                 <div class="flex justify-between items-center mb-6 gap-3 flex-wrap">
                     <h3 class="text-xs text-wa-green tracking-normal" x-text="$t('automations')">Automations</h3>
-                    <button @click="showCreateAutomation = true"
+                    <button @click="openCreateAutomation()"
                         class="px-6 py-2 bg-wa-green text-white font-sans text-xs tracking-normal hover:bg-wa-green-hover transition-colors rounded-lg flex items-center gap-2">
                         <span>+</span>
                         <span x-text="$t('create_automation')">Create Automation</span>
@@ -655,6 +655,13 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                                             <span class="absolute w-4 h-4 bg-white rounded-full top-0.5 transition-all"
                                                 :class="auto.enabled ? 'left-5' : 'left-0.5'"></span>
                                         </button>
+                                        <!-- Edit -->
+                                        <button @click="editAutomation(auto)"
+                                            class="p-1 text-wa-text-secondary hover:text-wa-green transition-colors">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
                                         <!-- Delete -->
                                         <button @click="deleteAutomation(auto.id)"
                                             class="p-1 text-wa-text-secondary hover:text-red-400 transition-colors">
@@ -673,7 +680,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                 <template x-if="automations.length === 0">
                     <div class="text-center py-12 border border-dashed border-wa-border mt-4 rounded-xl">
                         <p class="text-xs font-sans text-wa-text-secondary mb-4" x-text="$t('no_automations')">No automations configured</p>
-                        <button @click="showCreateAutomation = true"
+                        <button @click="openCreateAutomation()"
                             class="inline-block px-6 py-2 bg-wa-green text-white font-sans text-xs tracking-normal hover:bg-wa-green-hover transition-colors rounded-lg">
                             + <span x-text="$t('create_automation')">Create Automation</span>
                         </button>
@@ -682,16 +689,17 @@ import ClientModal from "../../components/clients/ClientModal.astro";
             </div>
         </div>
 
-        <!-- Create Automation Modal -->
-        <div x-show="showCreateAutomation"
+        <!-- Create/Edit Automation Modal -->
+        <div x-show="showAutomationModal"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
             style="display: none;">
             <div class="bg-wa-bg-deep border border-wa-border p-6 sm:p-8 max-w-md w-full relative rounded-xl"
-                @click.outside="showCreateAutomation = false">
+                @click.outside="showAutomationModal = false">
 
-                <h2 class="text-xl font-bold mb-6 tracking-tight" x-text="$t('create_automation')">Create Automation</h2>
+                <h2 class="text-xl font-bold mb-6 tracking-tight"
+                    x-text="editingAutomationId ? 'Edit Automation' : $t('create_automation')">Create Automation</h2>
 
-                <form @submit.prevent="createAutomation()" class="space-y-4">
+                <form @submit.prevent="saveAutomation()" class="space-y-4">
                     <!-- Name -->
                     <div>
                         <label class="block text-xs font-sans text-wa-text-secondary mb-2" x-text="$t('automation_name')">Name</label>
@@ -745,12 +753,12 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                     </div>
 
                     <div class="pt-4 flex justify-end gap-3">
-                        <button type="button" @click="showCreateAutomation = false"
+                        <button type="button" @click="showAutomationModal = false"
                             class="px-4 py-2 border border-wa-border text-wa-text-secondary text-xs hover:bg-wa-bg-hover transition-colors rounded-lg"
                             x-text="$t('cancel')">Cancel</button>
                         <button type="submit"
                             class="px-6 py-2 bg-wa-green text-white text-xs hover:bg-wa-green-hover transition-colors rounded-lg"
-                            x-text="$t('create_automation')">Create</button>
+                            x-text="editingAutomationId ? ($t('save') || 'Save') : $t('create_automation')">Create</button>
                     </div>
                 </form>
             </div>
@@ -1363,7 +1371,8 @@ import ClientModal from "../../components/clients/ClientModal.astro";
 
             // Automations State
             automations: [] as any[],
-            showCreateAutomation: false,
+            showAutomationModal: false,
+            editingAutomationId: null as string | null,
             automationForm: {
                 name: "",
                 event: "INACTIVITY" as string,
@@ -1756,23 +1765,62 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                 }
             },
 
-            async createAutomation() {
+            openCreateAutomation() {
+                this.editingAutomationId = null;
+                this.automationForm = { name: "", event: "INACTIVITY", labelName: "", timeoutValue: 3, timeoutUnit: "days", prompt: "" };
+                this.showAutomationModal = true;
+            },
+
+            editAutomation(auto: any) {
+                this.editingAutomationId = auto.id;
+                const ms = auto.timeoutMs;
+                let timeoutValue: number;
+                let timeoutUnit: string;
+                if (ms >= 86400000 && ms % 86400000 === 0) {
+                    timeoutValue = ms / 86400000;
+                    timeoutUnit = "days";
+                } else if (ms >= 3600000 && ms % 3600000 === 0) {
+                    timeoutValue = ms / 3600000;
+                    timeoutUnit = "hours";
+                } else {
+                    timeoutValue = ms / 60000;
+                    timeoutUnit = "minutes";
+                }
+                this.automationForm = {
+                    name: auto.name,
+                    event: auto.event,
+                    labelName: auto.labelName || "",
+                    timeoutValue,
+                    timeoutUnit,
+                    prompt: auto.prompt,
+                };
+                this.showAutomationModal = true;
+            },
+
+            async saveAutomation() {
                 const timeoutMs = this.automationForm.timeoutUnit === "days"
                     ? this.automationForm.timeoutValue * 24 * 60 * 60 * 1000
                     : this.automationForm.timeoutUnit === "hours"
                     ? this.automationForm.timeoutValue * 60 * 60 * 1000
                     : this.automationForm.timeoutValue * 60 * 1000;
 
+                const payload = {
+                    name: this.automationForm.name,
+                    event: this.automationForm.event,
+                    labelName: this.automationForm.labelName || null,
+                    timeoutMs,
+                    prompt: this.automationForm.prompt,
+                };
+
                 try {
-                    await ApiClient.post(`/bots/${this.botId}/automations`, {
-                        name: this.automationForm.name,
-                        event: this.automationForm.event,
-                        labelName: this.automationForm.labelName || null,
-                        timeoutMs,
-                        prompt: this.automationForm.prompt,
-                    });
-                    this.showCreateAutomation = false;
+                    if (this.editingAutomationId) {
+                        await ApiClient.put(`/bots/${this.botId}/automations/${this.editingAutomationId}`, payload);
+                    } else {
+                        await ApiClient.post(`/bots/${this.botId}/automations`, payload);
+                    }
+                    this.showAutomationModal = false;
                     this.automationForm = { name: "", event: "INACTIVITY", labelName: "", timeoutValue: 3, timeoutUnit: "days", prompt: "" };
+                    this.editingAutomationId = null;
                     await this.loadAutomations();
                 } catch (e: any) {
                     alert("Failed: " + (e.message || "Unknown error"));
