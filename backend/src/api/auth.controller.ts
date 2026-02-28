@@ -18,7 +18,8 @@ export const authController = new Elysia({ prefix: "/auth" })
             const token = await jwt.sign({
                 id: user.id,
                 email: user.email,
-                role: "ADMIN" // Simplified role for now
+                role: "ADMIN", // Simplified role for now
+                exp: Math.floor(Date.now() / 1000) + 86400 // 24h
             });
 
             return {

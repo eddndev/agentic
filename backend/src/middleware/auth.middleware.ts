@@ -26,7 +26,7 @@ export const authMiddleware = (app: Elysia) =>
             }
 
             const profile = await jwt.verify(tokenValue);
-            if (!profile) {
+            if (!profile || !profile.exp) {
                 return { user: null };
             }
 

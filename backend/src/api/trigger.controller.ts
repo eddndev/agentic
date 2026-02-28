@@ -1,8 +1,11 @@
 import { Elysia, t } from "elysia";
 import { prisma } from "../services/postgres.service";
 import { MatchType } from "@prisma/client";
+import { authMiddleware } from "../middleware/auth.middleware";
 
 export const triggerController = new Elysia({ prefix: "/triggers" })
+    .use(authMiddleware)
+    .guard({ isSignIn: true })
     .get("/", async ({ query }) => {
         const { botId, flowId } = query as { botId?: string, flowId?: string };
 

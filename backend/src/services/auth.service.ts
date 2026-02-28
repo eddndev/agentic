@@ -42,7 +42,10 @@ export class AuthService {
     /**
      * Get user by ID (for generic lookups usually)
      */
-    static async getUserById(id: string): Promise<User | null> {
-        return prisma.user.findUnique({ where: { id } });
+    static async getUserById(id: string): Promise<Omit<User, 'passwordHash'> | null> {
+        const user = await prisma.user.findUnique({ where: { id } });
+        if (!user) return null;
+        const { passwordHash, ...safeUser } = user;
+        return safeUser;
     }
 }

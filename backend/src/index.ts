@@ -139,6 +139,7 @@ import { automationController } from "./api/automation.controller";
 import { logsController } from "./api/logs.controller";
 const ALLOWED_ORIGINS = new Set([
     'https://agentic.w-gateway.cc',
+    'https://agentic-api.w-gateway.cc',
     'http://localhost:4321',
     'http://localhost:5173',
 ]);
@@ -153,10 +154,13 @@ const app = new Elysia({ adapter: node() })
         if (!origin && typeof headers === 'object') {
             origin = (headers as any).origin || '';
         }
-        set.headers['Access-Control-Allow-Origin'] = ALLOWED_ORIGINS.has(origin) ? origin : '*';
+
+        if (ALLOWED_ORIGINS.has(origin)) {
+            set.headers['Access-Control-Allow-Origin'] = origin;
+            set.headers['Access-Control-Allow-Credentials'] = 'true';
+        }
         set.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
         set.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
-        set.headers['Access-Control-Allow-Credentials'] = 'true';
         set.headers['Vary'] = 'Origin';
 
         if (request.method === 'OPTIONS') {

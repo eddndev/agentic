@@ -2,8 +2,11 @@ import { Elysia, t } from "elysia";
 import { prisma } from "../services/postgres.service";
 import { StepType } from "@prisma/client";
 import { syncFlowTool } from "../services/flow-tool-sync";
+import { authMiddleware } from "../middleware/auth.middleware";
 
 export const flowController = new Elysia({ prefix: "/flows" })
+    .use(authMiddleware)
+    .guard({ isSignIn: true })
     .get("/", async ({ query }) => {
         const { botId } = query as { botId?: string };
 
