@@ -67,21 +67,19 @@ model Session {
 }
 
 model Trigger {
-  id         String        @id @default(uuid())
-  botId      String
-  sessionId  String?
-  keyword    String
-  matchType  MatchType     @default(CONTAINS)
-  isActive   Boolean       @default(true)
-  targetType TriggerTarget @default(FLOW)
-  flowId     String?
-  toolName   String?
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-  scope      TriggerScope  @default(INCOMING)
-  bot        Bot           @relation(fields: [botId], references: [id], onDelete: Cascade)
-  flow       Flow?         @relation(fields: [flowId], references: [id], onDelete: Cascade)
-  session    Session?      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  id        String       @id @default(uuid())
+  botId     String
+  sessionId String?
+  keyword   String
+  matchType MatchType    @default(CONTAINS)
+  isActive  Boolean      @default(true)
+  flowId    String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  scope     TriggerScope @default(INCOMING)
+  bot       Bot          @relation(fields: [botId], references: [id], onDelete: Cascade)
+  flow      Flow         @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  session   Session?     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 }
 
 model Flow {
@@ -274,10 +272,6 @@ enum StepType {
   DOCUMENT
   PTT
   CONDITIONAL_TIME
-}
-
-enum TriggerTarget {
-  FLOW
   TOOL
 }
 

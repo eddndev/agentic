@@ -267,6 +267,11 @@ import MediaPicker from "../components/MediaPicker.astro";
                             class="px-3 py-1 bg-wa-green/20 text-wa-green hover:bg-wa-green/40 text-[10px] font-sans border border-wa-green/30 rounded-lg"
                             title="Time Condition"
                         >🕒 TIME</button>
+                        <button
+                            @click="addStep('TOOL')"
+                            class="px-3 py-1 bg-purple-500/20 text-purple-400 hover:bg-purple-500/40 text-[10px] font-sans border border-purple-500/30 rounded-lg"
+                            title="Execute Tool"
+                        >⚡ TOOL</button>
                     </div>
                 </div>
 
@@ -399,6 +404,32 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                         @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
                                                     ></textarea>
                                                 </template>
+                                            </div>
+                                        </template>
+
+                                        <!-- Tool Step -->
+                                        <template x-if="step.type === 'TOOL'">
+                                            <div x-init="!step.metadata && (step.metadata = { toolName: '' })">
+                                                <div class="text-[10px] text-wa-text-secondary font-sans mb-2">Select a tool to execute:</div>
+                                                <select
+                                                    x-model="step.metadata.toolName"
+                                                    class="w-full bg-wa-bg-hover text-gray-200 text-xs px-2 py-1.5 border border-wa-border focus:outline-none focus:border-purple-400 rounded-lg font-mono"
+                                                >
+                                                    <option value="">-- Select tool --</option>
+                                                    <optgroup label="Built-in">
+                                                        <option value="toggle_session_ai">toggle_session_ai</option>
+                                                        <option value="clear_conversation">clear_conversation</option>
+                                                        <option value="get_current_time">get_current_time</option>
+                                                        <option value="get_labels">get_labels</option>
+                                                        <option value="assign_label">assign_label</option>
+                                                        <option value="remove_label">remove_label</option>
+                                                    </optgroup>
+                                                    <optgroup label="Custom" x-show="availableTools.length > 0">
+                                                        <template x-for="tool in availableTools" :key="tool.name">
+                                                            <option :value="tool.name" x-text="tool.name"></option>
+                                                        </template>
+                                                    </optgroup>
+                                                </select>
                                             </div>
                                         </template>
 
@@ -535,6 +566,7 @@ import MediaPicker from "../components/MediaPicker.astro";
         type: string;
         content: string;
         mediaUrl?: string;
+        metadata?: any;
         delayMs: number;
         jitterPct: number;
         order: number;
@@ -555,6 +587,7 @@ import MediaPicker from "../components/MediaPicker.astro";
             ready: false,
             saving: false,
             availableFlows: [] as { id: string; name: string }[],
+            availableTools: [] as { name: string }[],
             bot: { id: null } as {
                 id: string | null;
                 platform?: string;
@@ -647,6 +680,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                     }
                     this.flow.name = "New Flow";
                     this.ready = true;
+                    this.loadAvailableTools();
                 } else {
                     // No context, redirect to bots
                     window.location.href = "/bots";
@@ -718,9 +752,20 @@ import MediaPicker from "../components/MediaPicker.astro";
                     }
                     this.ready = true;
                     this.loadAvailableFlows();
+                    this.loadAvailableTools();
                 } catch (e) {
                     alert("Failed to load flow");
                     window.location.href = "/bots";
+                }
+            },
+
+            async loadAvailableTools() {
+                if (!this.botId) return;
+                try {
+                    const tools = await ApiClient.get(`/tools?botId=${this.botId}`);
+                    this.availableTools = tools.filter((t: any) => t.status === 'ACTIVE');
+                } catch (e) {
+                    console.error("Failed to load available tools", e);
                 }
             },
 
@@ -750,7 +795,7 @@ import MediaPicker from "../components/MediaPicker.astro";
             },
 
             addStep(type: string) {
-                this.flow.steps.push({
+                const step: any = {
                     tempId: Date.now(),
                     type,
                     content: "",
@@ -758,7 +803,11 @@ import MediaPicker from "../components/MediaPicker.astro";
                     delayMs: 1000,
                     jitterPct: 10,
                     order: this.flow.steps.length,
-                });
+                };
+                if (type === 'TOOL') {
+                    step.metadata = { toolName: '' };
+                }
+                this.flow.steps.push(step);
 
                 // @ts-ignore
                 this.$nextTick(() => {

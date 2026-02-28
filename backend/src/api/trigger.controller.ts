@@ -29,17 +29,11 @@ export const triggerController = new Elysia({ prefix: "/triggers" })
         return trigger;
     })
     .post("/", async ({ body, set }) => {
-        const { botId, flowId, keyword, matchType, isActive, scope, targetType, toolName } = body as any;
+        const { botId, flowId, keyword, matchType, isActive, scope } = body as any;
 
-        // Validation: TOOL requires toolName, FLOW requires flowId
-        if (targetType === "TOOL") {
-            if (!toolName) {
-                set.status = 400;
-                return "toolName is required when targetType is TOOL";
-            }
-        } else if (!flowId) {
+        if (!flowId) {
             set.status = 400;
-            return "flowId is required when targetType is FLOW";
+            return "flowId is required";
         }
 
         try {
@@ -50,9 +44,7 @@ export const triggerController = new Elysia({ prefix: "/triggers" })
                     matchType: (matchType as MatchType) || MatchType.CONTAINS,
                     scope: (scope as any) || "INCOMING",
                     isActive: isActive ?? true,
-                    targetType: (targetType as any) || "FLOW",
-                    flowId: flowId || null,
-                    toolName: toolName || null,
+                    flowId,
                 }
             });
             return trigger;
@@ -64,16 +56,14 @@ export const triggerController = new Elysia({ prefix: "/triggers" })
         body: t.Object({
             botId: t.String(),
             keyword: t.String(),
-            flowId: t.Optional(t.String()),
+            flowId: t.String(),
             matchType: t.Optional(t.String()),
             scope: t.Optional(t.String()),
             isActive: t.Optional(t.Boolean()),
-            targetType: t.Optional(t.String()),
-            toolName: t.Optional(t.String()),
         })
     })
     .put("/:id", async ({ params: { id }, body, set }) => {
-        const { keyword, matchType, isActive, flowId, scope, targetType, toolName } = body as any;
+        const { keyword, matchType, isActive, flowId, scope } = body as any;
 
         try {
             const trigger = await prisma.trigger.update({
@@ -83,9 +73,7 @@ export const triggerController = new Elysia({ prefix: "/triggers" })
                     matchType: matchType as MatchType,
                     scope: scope as any,
                     isActive,
-                    targetType: targetType as any,
                     flowId: flowId ?? undefined,
-                    toolName: toolName ?? undefined,
                 }
             });
             return trigger;

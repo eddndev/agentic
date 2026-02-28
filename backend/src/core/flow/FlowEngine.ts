@@ -1,9 +1,8 @@
 import { prisma } from "../../services/postgres.service";
-import { Message, Trigger, TriggerScope, TriggerTarget } from "@prisma/client";
+import { Message, Trigger, TriggerScope } from "@prisma/client";
 import { TriggerMatcher } from "../matcher/TriggerMatcher";
 import { redis } from "../../services/redis.service";
 import { queueService } from "../../services/queue.service";
-import { ToolExecutor } from "../ai/ToolExecutor";
 
 /**
  * Orchestrates the lifecycle of Flow Executions.
@@ -54,31 +53,8 @@ export class FlowEngine {
 
         const trigger = match.trigger as Trigger & { flow: any };
 
-        // ── TOOL trigger: execute tool directly, no flow machinery ──
-        if (trigger.targetType === TriggerTarget.TOOL) {
-            if (!trigger.toolName) {
-                console.error(`[FlowEngine] TOOL trigger '${trigger.keyword}' has no toolName`);
-                return;
-            }
-
-            const fullSession = await prisma.session.findUnique({ where: { id: sessionId } });
-            if (!fullSession) return;
-
-            console.log(`[FlowEngine] Matched Trigger '${trigger.keyword}' -> Tool ${trigger.toolName}`);
-
-            const result = await ToolExecutor.execute(
-                session.botId,
-                fullSession,
-                { name: trigger.toolName, arguments: {} },
-            );
-
-            console.log(`[FlowEngine] Tool '${trigger.toolName}' result:`, result);
-            return;
-        }
-
-        // ── FLOW trigger (default): existing logic ──
-        if (!trigger.flowId || !trigger.flow) {
-            console.error(`[FlowEngine] FLOW trigger '${trigger.keyword}' has no flowId`);
+        if (!trigger.flow) {
+            console.error(`[FlowEngine] Trigger '${trigger.keyword}' has no flow`);
             return;
         }
 
@@ -99,7 +75,7 @@ export class FlowEngine {
                 // 4a. Validate Cooldown
                 if (trigger.flow.cooldownMs > 0) {
                     const lastExecution = await tx.execution.findFirst({
-                        where: { sessionId, flowId: trigger.flowId! },
+                        where: { sessionId, flowId: trigger.flowId },
                         orderBy: { startedAt: 'desc' }
                     });
 
@@ -114,7 +90,7 @@ export class FlowEngine {
                 // 4b. Validate Usage Limit
                 if (trigger.flow.usageLimit > 0) {
                     const usageCount = await tx.execution.count({
-                        where: { sessionId, flowId: trigger.flowId! }
+                        where: { sessionId, flowId: trigger.flowId }
                     });
 
                     if (usageCount >= trigger.flow.usageLimit) {
@@ -142,7 +118,7 @@ export class FlowEngine {
                 return await tx.execution.create({
                     data: {
                         sessionId,
-                        flowId: trigger.flowId!,
+                        flowId: trigger.flowId,
                         platformUserId: message.sender,
                         status: "RUNNING",
                         currentStep: 0,
@@ -177,7 +153,7 @@ export class FlowEngine {
                     await prisma.execution.create({
                         data: {
                             sessionId,
-                            flowId: trigger.flowId!,
+                            flowId: trigger.flowId,
                             platformUserId: message.sender,
                             status: "FAILED",
                             currentStep: 0,

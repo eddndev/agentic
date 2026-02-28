@@ -3,6 +3,7 @@ import { prisma } from "../../services/postgres.service";
 import { flowEngine } from "../../core/flow";
 import { Step, Execution, Session, Platform } from "@prisma/client";
 import { sendMessage } from "../../services/message-sender";
+import { ToolExecutor } from "../../core/ai/ToolExecutor";
 
 interface StepJobData {
     executionId: string;
@@ -38,7 +39,11 @@ export class StepProcessor {
 
         // 2. Execute Logic (with error handling)
         try {
-            await this.executeSending(step, execution);
+            if (step.type === 'TOOL') {
+                await this.executeToolStep(step, execution);
+            } else {
+                await this.executeSending(step, execution);
+            }
         } catch (error: any) {
             const errorMsg = error?.message || String(error);
             console.error(`[StepProcessor] Step ${stepId} failed:`, errorMsg);
@@ -97,6 +102,26 @@ export class StepProcessor {
             // Fallback for other platforms (Telegram, etc.)
             console.log(`📡 [${platform}] Sending to ${target}: ${step.type}`);
         }
+    }
+
+    private static async executeToolStep(step: Step, execution: Execution & { session: Session }) {
+        const metadata = step.metadata as any;
+        const toolName = metadata?.toolName;
+
+        if (!toolName) {
+            console.warn(`[StepProcessor] TOOL step ${step.id} missing toolName in metadata`);
+            return;
+        }
+
+        console.log(`[StepProcessor] Executing TOOL step: ${toolName}`);
+
+        const result = await ToolExecutor.execute(
+            execution.session.botId,
+            execution.session,
+            { name: toolName, arguments: {} },
+        );
+
+        console.log(`[StepProcessor] Tool '${toolName}' result:`, result);
     }
 
     private static async executeConditionalTime(botId: string, target: string, step: Step) {
