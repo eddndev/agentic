@@ -357,7 +357,7 @@ export class ToolExecutor {
                         content: messageText,
                         fromMe: true,
                         type: "TEXT",
-                        externalId: null,
+                        externalId: `followup_${Date.now()}_${Math.random().toString(36).slice(2)}`,
                         sender: targetSession.bot.identifier || "bot",
                     },
                 });

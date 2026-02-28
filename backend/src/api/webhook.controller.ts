@@ -31,14 +31,17 @@ export const webhookController = new Elysia({ prefix: "/webhook" })
                 return `Bot '${botIdentifier}' not found`;
             }
 
-            // Verify webhook secret if configured on the bot
+            // Verify webhook secret (required — configure one in bot credentials)
             const webhookSecret = (bot.credentials as any)?.webhookSecret;
-            if (webhookSecret) {
-                const providedSecret = headers['x-webhook-secret'];
-                if (providedSecret !== webhookSecret) {
-                    set.status = 401;
-                    return "Invalid webhook secret";
-                }
+            if (!webhookSecret) {
+                console.warn(`[Webhook] Bot '${botIdentifier}' has no webhookSecret configured — rejecting request`);
+                set.status = 403;
+                return "Webhook secret not configured for this bot";
+            }
+            const providedSecret = headers['x-webhook-secret'];
+            if (providedSecret !== webhookSecret) {
+                set.status = 401;
+                return "Invalid webhook secret";
             }
 
             // 2. Resolve Session (User Connection)

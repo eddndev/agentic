@@ -77,13 +77,21 @@ server {
         index index.html;
     }
 
+    # SSE endpoints — disable buffering for real-time events
+    location /api/events/ {
+        proxy_pass http://127.0.0.1:8080/events/;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header Connection '';
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 86400s;
+        add_header X-Accel-Buffering no;
+    }
+
     # Backend API Proxy
     location /api/ {
-        # Strip /api prefix if your backend doesn't expect it, 
-        # BUT based on your routes, if you use grouping, check this.
-        # Assuming backend runs on root paths, we might need rewrite.
-        # If backend expects /api/auth, pass as is.
-        proxy_pass http://127.0.0.1:8080/; 
+        proxy_pass http://127.0.0.1:8080/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
