@@ -118,7 +118,7 @@ export class StepProcessor {
         const result = await ToolExecutor.execute(
             execution.session.botId,
             execution.session,
-            { name: toolName, arguments: {} },
+            { name: toolName, arguments: metadata.toolArgs || {} },
         );
 
         console.log(`[StepProcessor] Tool '${toolName}' result:`, result);
