@@ -33,6 +33,9 @@ export class GeminiProvider implements AIProvider {
             contents: this.formatContents(request.messages),
             generationConfig: {
                 temperature: request.temperature ?? 0.7,
+                thinkingConfig: {
+                    thinkingLevel: request.thinkingLevel ?? "LOW",
+                },
             },
         };
 

@@ -19,8 +19,8 @@ const MAX_PENDING_RETRIES = 3;
 
 /** Maps primary model to a cheaper Gemini fallback */
 const FALLBACK_MAP: Record<string, { provider: "GEMINI" | "OPENAI"; model: string }> = {
-    GEMINI: { provider: "GEMINI", model: "gemini-2.5-flash" },
-    OPENAI: { provider: "OPENAI", model: "gpt-5-nano" },
+    GEMINI: { provider: "OPENAI", model: "gpt-5-mini" },
+    OPENAI: { provider: "GEMINI", model: "gemini-2.5-flash" },
 };
 
 export class AIEngine {
@@ -174,6 +174,7 @@ export class AIEngine {
                 messages: aiMessages,
                 tools: toolDefinitions.length > 0 ? toolDefinitions : undefined,
                 temperature: bot.temperature,
+                thinkingLevel: bot.thinkingLevel ?? "LOW",
             };
 
             let response = await this.chatWithFallback(
@@ -269,6 +270,7 @@ export class AIEngine {
                     messages: updatedMessages,
                     tools: toolDefinitions.length > 0 ? toolDefinitions : undefined,
                     temperature: bot.temperature,
+                    thinkingLevel: bot.thinkingLevel ?? "LOW",
                 };
 
                 response = await this.chatWithFallback(

@@ -274,8 +274,8 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                         <label class="block text-xs font-sans text-wa-text-secondary mb-2" x-text="$t('ai_provider')">Provider</label>
                         <select x-model="aiConfig.aiProvider"
                             class="w-full bg-wa-bg-deep border border-wa-border text-white text-sm p-3 focus:border-wa-green focus:outline-none rounded-lg">
-                            <option value="OPENAI">OpenAI (GPT-5-mini)</option>
                             <option value="GEMINI">Google Gemini</option>
+                            <option value="OPENAI">OpenAI</option>
                         </select>
                     </div>
 
@@ -284,7 +284,19 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                         <label class="block text-xs font-sans text-wa-text-secondary mb-2" x-text="$t('ai_model')">Model</label>
                         <input type="text" x-model="aiConfig.aiModel"
                             class="w-full bg-wa-bg-deep border border-wa-border text-white text-sm p-3 focus:border-wa-green focus:outline-none rounded-lg"
-                            placeholder="gpt-5-mini" />
+                            placeholder="gemini-2.5-flash" />
+                    </div>
+
+                    <!-- Thinking Level (Gemini only) -->
+                    <div x-show="aiConfig.aiProvider === 'GEMINI'" x-transition>
+                        <label class="block text-xs font-sans text-wa-text-secondary mb-2">Thinking Level</label>
+                        <select x-model="aiConfig.thinkingLevel"
+                            class="w-full bg-wa-bg-deep border border-wa-border text-white text-sm p-3 focus:border-wa-green focus:outline-none rounded-lg">
+                            <option value="LOW">LOW (~300 tokens, rápido)</option>
+                            <option value="MEDIUM">MEDIUM (~2,000 tokens)</option>
+                            <option value="HIGH">HIGH (~8,000+ tokens, costoso)</option>
+                        </select>
+                        <p class="text-[10px] text-wa-text-secondary mt-1">Controla cuánto "piensa" el modelo antes de responder. LOW es suficiente para tool-calling.</p>
                     </div>
 
                     <!-- System Prompt -->
@@ -1357,10 +1369,11 @@ import ClientModal from "../../components/clients/ClientModal.astro";
             // AI Config State
             aiConfig: {
                 aiEnabled: false,
-                aiProvider: "OPENAI",
-                aiModel: "gpt-5-mini",
+                aiProvider: "GEMINI",
+                aiModel: "gemini-2.5-flash",
                 systemPrompt: "",
                 temperature: 0.7,
+                thinkingLevel: "LOW",
                 messageDelay: 0,
                 excludeGroups: false,
                 ignoredLabels: [] as string[],
@@ -1428,10 +1441,11 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                     // Initialize AI config from bot data
                     this.aiConfig = {
                         aiEnabled: this.bot.aiEnabled || false,
-                        aiProvider: this.bot.aiProvider || "OPENAI",
-                        aiModel: this.bot.aiModel || "gpt-5-mini",
+                        aiProvider: this.bot.aiProvider || "GEMINI",
+                        aiModel: this.bot.aiModel || "gemini-2.5-flash",
                         systemPrompt: this.bot.systemPrompt || "",
                         temperature: this.bot.temperature ?? 0.7,
+                        thinkingLevel: this.bot.thinkingLevel || "LOW",
                         messageDelay: this.bot.messageDelay ?? 0,
                         excludeGroups: this.bot.excludeGroups || false,
                         ignoredLabels: this.bot.ignoredLabels || [],
@@ -1713,6 +1727,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                         aiModel: this.aiConfig.aiModel,
                         systemPrompt: this.aiConfig.systemPrompt || null,
                         temperature: this.aiConfig.temperature,
+                        thinkingLevel: this.aiConfig.aiProvider === "GEMINI" ? this.aiConfig.thinkingLevel : null,
                         messageDelay: this.aiConfig.messageDelay,
                         excludeGroups: this.aiConfig.excludeGroups,
                         ignoredLabels: this.aiConfig.ignoredLabels,

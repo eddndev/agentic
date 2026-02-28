@@ -28,10 +28,11 @@ model Bot {
   updatedAt    DateTime   @updatedAt
   ipv6Address  String?
   aiEnabled    Boolean    @default(false)
-  aiModel      String     @default("gpt-5-mini")
-  aiProvider   AIProvider @default(OPENAI)
+  aiModel      String     @default("gemini-2.5-flash")
+  aiProvider   AIProvider @default(GEMINI)
   systemPrompt String?
   temperature  Float      @default(0.7)
+  thinkingLevel String?   @default("LOW")
   paused       Boolean    @default(false)
   messageDelay Int        @default(0)
   clients      Client[]

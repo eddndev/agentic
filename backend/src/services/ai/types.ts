@@ -24,6 +24,7 @@ export interface AICompletionRequest {
     messages: AIMessage[];
     tools?: AIToolDefinition[];
     temperature?: number;
+    thinkingLevel?: "LOW" | "MEDIUM" | "HIGH";
 }
 
 export interface AICompletionResponse {

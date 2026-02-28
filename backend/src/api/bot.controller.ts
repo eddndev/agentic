@@ -113,7 +113,7 @@ export const botController = new Elysia({ prefix: "/bots" })
     .put("/:id", async ({ params: { id }, body, set }) => {
         const { name, identifier, platform, credentials, ipv6Address,
             aiEnabled, aiProvider, aiModel, systemPrompt, temperature, messageDelay,
-            excludeGroups, ignoredLabels, paused } = body as any;
+            excludeGroups, ignoredLabels, paused, thinkingLevel } = body as any;
 
         try {
             // Check if system prompt or provider/model changed — if so, clear conversations
@@ -143,6 +143,7 @@ export const botController = new Elysia({ prefix: "/bots" })
             if (excludeGroups !== undefined) data.excludeGroups = excludeGroups;
             if (ignoredLabels !== undefined) data.ignoredLabels = ignoredLabels;
             if (paused !== undefined) data.paused = paused;
+            if (thinkingLevel !== undefined) data.thinkingLevel = thinkingLevel;
 
             const bot = await prisma.bot.update({ where: { id }, data });
 
