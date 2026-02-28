@@ -239,7 +239,7 @@ export class ToolExecutor {
                     where: { sessionId_labelId: { sessionId: session.id, labelId: labelToRemove.id } },
                 });
                 if (!existingAssoc) {
-                    return { success: false, data: `El chat no tiene la etiqueta '${labelToRemove.name}'.` };
+                    return { success: true, data: `El chat no tiene la etiqueta '${labelToRemove.name}', se omitió.` };
                 }
 
                 // Sync with WhatsApp
