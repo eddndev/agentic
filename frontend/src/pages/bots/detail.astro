@@ -219,6 +219,13 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                 <span x-text="$t('automations')">Automations</span>
             </button>
             <button
+                @click="activeTab = 'notifications'"
+                class="px-3 sm:px-6 py-2 font-sans text-xs sm:text-sm transition-all rounded-lg"
+                :class="activeTab === 'notifications' ? 'bg-wa-green text-white shadow-lg' : 'text-wa-text-secondary hover:text-white'"
+            >
+                <span>Notificaciones</span>
+            </button>
+            <button
                 @click="activeTab = 'logs'; loadLogs()"
                 class="px-3 sm:px-6 py-2 font-sans text-xs sm:text-sm transition-all rounded-lg"
                 :class="activeTab === 'logs' ? 'bg-wa-green text-white shadow-lg' : 'text-wa-text-secondary hover:text-white'"
@@ -391,116 +398,6 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                         </div>
                     </div>
 
-                    <!-- Notifications Section -->
-                    <div class="border-t border-wa-border pt-6 mt-6">
-                        <h4 class="text-xs text-wa-green tracking-normal mb-4">Notificaciones</h4>
-
-                        <!-- Notification Channel -->
-                        <div class="p-4 bg-wa-bg-deep border border-wa-border rounded-lg mb-4">
-                            <label class="block text-sm font-medium text-white mb-1">Canal de notificaciones</label>
-                            <p class="text-xs text-wa-text-secondary mb-3">
-                                Sesión de WhatsApp donde se enviarán notificaciones del sistema.
-                                También se puede configurar desde el chat con <code class="text-wa-green">set_notification_channel</code>.
-                            </p>
-
-                            <!-- Current channel display -->
-                            <div x-show="notificationConfig.notificationSessionId" class="flex items-center gap-3 mb-3">
-                                <span class="w-2 h-2 rounded-full bg-wa-green flex-shrink-0"></span>
-                                <span class="text-sm text-white" x-text="notificationChannelName"></span>
-                                <button type="button" @click="clearNotifChannel()"
-                                    class="text-red-400 text-xs hover:text-red-300 transition-colors">
-                                    ✕ Quitar
-                                </button>
-                            </div>
-
-                            <!-- Session picker -->
-                            <div x-show="!notificationConfig.notificationSessionId">
-                                <button type="button" @click="loadNotifSessions()"
-                                    class="px-3 py-2 text-xs border border-wa-border text-wa-text-secondary hover:text-white hover:bg-wa-bg-hover rounded-lg transition-colors">
-                                    Seleccionar sesión
-                                </button>
-                                <div x-show="notifSessions.length > 0" class="mt-2 max-h-48 overflow-y-auto border border-wa-border rounded-lg">
-                                    <template x-for="sess in notifSessions" :key="sess.id">
-                                        <button type="button"
-                                            @click="selectNotifSession(sess.id)"
-                                            class="w-full text-left px-3 py-2 text-xs text-wa-text-secondary hover:bg-wa-bg-hover hover:text-white transition-colors border-b border-wa-border/50 last:border-0">
-                                            <span x-text="sess.name || sess.identifier"></span>
-                                            <span class="text-[10px] text-wa-text-secondary ml-2" x-text="sess.identifier"></span>
-                                        </button>
-                                    </template>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Event checkboxes -->
-                        <div class="p-4 bg-wa-bg-deep border border-wa-border rounded-lg">
-                            <label class="block text-sm font-medium text-white mb-1">Eventos a notificar</label>
-                            <p class="text-xs text-wa-text-secondary mb-3">Selecciona qué eventos del sistema generan una notificación.</p>
-
-                            <div class="space-y-2">
-                                <template x-for="evt in [
-                                    { key: 'flow:completed', label: 'Flujo completado' },
-                                    { key: 'flow:failed', label: 'Flujo fallido' },
-                                    { key: 'session:created', label: 'Nueva sesión creada' },
-                                    { key: 'session:labels', label: 'Etiquetas actualizadas' },
-                                    { key: 'bot:connected', label: 'Bot conectado' },
-                                    { key: 'bot:disconnected', label: 'Bot desconectado' },
-                                ]" :key="evt.key">
-                                    <label class="flex items-center gap-3 cursor-pointer group">
-                                        <button type="button"
-                                            @click="toggleNotifEvent(evt.key)"
-                                            class="w-5 h-5 rounded border flex items-center justify-center transition-colors flex-shrink-0"
-                                            :class="notificationConfig.notificationEvents.includes(evt.key)
-                                                ? 'bg-wa-green border-wa-green'
-                                                : 'border-wa-border group-hover:border-wa-text-secondary'">
-                                            <svg x-show="notificationConfig.notificationEvents.includes(evt.key)"
-                                                class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                                            </svg>
-                                        </button>
-                                        <span class="text-sm text-wa-text-secondary group-hover:text-white transition-colors"
-                                            x-text="evt.label"></span>
-                                    </label>
-                                </template>
-                            </div>
-
-                            <div x-show="notificationConfig.notificationEvents.length > 0" class="mt-3 pt-2 border-t border-wa-border/50">
-                                <p class="text-[10px] text-wa-green/70">
-                                    <span x-text="notificationConfig.notificationEvents.length"></span> evento(s) seleccionado(s)
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Per-label filter (visible when session:labels is enabled) -->
-                        <div x-show="notificationConfig.notificationEvents.includes('session:labels')" x-transition
-                            class="p-4 bg-wa-bg-deep border border-wa-border rounded-lg mt-4">
-                            <label class="block text-sm font-medium text-white mb-1">Filtrar por etiquetas</label>
-                            <p class="text-xs text-wa-text-secondary mb-3">Si seleccionas etiquetas, solo se notificará cuando estas cambien. Si no seleccionas ninguna, se notifican todas.</p>
-
-                            <div class="flex flex-wrap gap-2">
-                                <template x-for="lbl in botLabels" :key="lbl.id">
-                                    <button type="button"
-                                        @click="toggleNotifLabel(lbl.id)"
-                                        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border cursor-pointer select-none"
-                                        :class="notificationConfig.notificationLabels.includes(lbl.id)
-                                            ? 'bg-wa-green/15 border-wa-green/40 text-wa-green'
-                                            : 'bg-wa-bg-hover border-wa-border text-wa-text-secondary hover:border-wa-text-secondary'"
-                                    >
-                                        <span class="w-2.5 h-2.5 rounded-full shrink-0" :style="'background:' + getLabelColor(lbl.color)"></span>
-                                        <span x-text="lbl.name"></span>
-                                    </button>
-                                </template>
-                                <span x-show="botLabels.length === 0" class="text-wa-text-secondary text-xs py-1">No labels synced</span>
-                            </div>
-
-                            <div x-show="notificationConfig.notificationLabels.length > 0" class="mt-3 pt-2 border-t border-wa-border/50">
-                                <p class="text-[10px] text-wa-green/70">
-                                    <span x-text="notificationConfig.notificationLabels.length"></span> etiqueta(s) seleccionada(s)
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Actions -->
                     <div class="flex gap-3 pt-4 flex-wrap">
                         <button type="submit" :disabled="savingAI"
@@ -510,6 +407,125 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                         <button type="button" @click="clearConversations()"
                             class="px-4 py-3 border border-red-500/30 text-red-400 font-sans text-xs hover:bg-red-500/10 transition-colors rounded-lg"
                             x-text="$t('clear_conversations')">
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Notifications Tab -->
+        <div x-show="activeTab === 'notifications'" style="display: none;">
+            <div class="bg-wa-bg-panel border border-wa-border p-4 sm:p-6 relative max-w-2xl rounded-xl">
+
+                <h3 class="text-xs text-wa-green tracking-normal mb-6">Notificaciones</h3>
+
+                <form @submit.prevent="saveNotifications()" class="space-y-6">
+                    <!-- Notification Channel -->
+                    <div>
+                        <label class="block text-xs font-sans text-wa-text-secondary mb-2">Canal de notificaciones</label>
+
+                        <!-- Current channel display -->
+                        <template x-if="notificationConfig.notificationSessionId">
+                            <div class="flex items-center gap-3 p-3 bg-wa-bg-deep border border-wa-green/30 rounded-lg">
+                                <span class="w-2 h-2 bg-wa-green rounded-full"></span>
+                                <span class="text-sm text-white flex-1" x-text="notificationChannelName"></span>
+                                <button type="button" @click="clearNotifChannel()"
+                                    class="text-xs text-red-400 hover:text-red-300 transition-colors">Quitar</button>
+                            </div>
+                        </template>
+
+                        <!-- No channel -->
+                        <template x-if="!notificationConfig.notificationSessionId">
+                            <div class="space-y-2">
+                                <p class="text-xs text-wa-text-secondary">Sin canal configurado. Selecciona una sesión para recibir notificaciones.</p>
+                                <button type="button" @click="loadNotifSessions()"
+                                    class="px-4 py-2 text-xs border border-wa-border text-wa-text-secondary hover:text-white hover:border-wa-green/30 transition-colors rounded-lg">
+                                    Seleccionar sesión
+                                </button>
+                            </div>
+                        </template>
+
+                        <!-- Session picker -->
+                        <template x-if="notifSessions.length > 0">
+                            <div class="mt-2 space-y-1 max-h-48 overflow-y-auto border border-wa-border rounded-lg p-2 bg-wa-bg-deep">
+                                <template x-for="sess in notifSessions" :key="sess.id">
+                                    <button type="button" @click="selectNotifSession(sess.id)"
+                                        class="w-full text-left px-3 py-2 text-sm text-wa-text-secondary hover:text-white hover:bg-wa-bg-hover rounded transition-colors"
+                                        x-text="sess.name || sess.identifier"></button>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Events Selection -->
+                    <div>
+                        <label class="block text-xs font-sans text-wa-text-secondary mb-3">Eventos a notificar</label>
+                        <div class="space-y-2">
+                            <template x-for="[key, label] in [
+                                ['flow:completed', 'Flujo completado'],
+                                ['flow:failed', 'Flujo fallido'],
+                                ['session:created', 'Sesión creada'],
+                                ['session:labels', 'Etiquetas actualizadas'],
+                                ['bot:connected', 'Bot conectado'],
+                                ['bot:disconnected', 'Bot desconectado'],
+                                ['tool:executed', 'Herramienta ejecutada'],
+                            ]" :key="key">
+                                <label class="flex items-center gap-3 p-3 bg-wa-bg-deep border border-wa-border rounded-lg cursor-pointer hover:border-wa-green/30 transition-colors">
+                                    <input type="checkbox"
+                                        :checked="notificationConfig.notificationEvents.includes(key)"
+                                        @change="toggleNotifEvent(key)"
+                                        class="accent-wa-green w-4 h-4" />
+                                    <span class="text-sm text-white" x-text="label"></span>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Per-label filter (only if session:labels is enabled) -->
+                    <div x-show="notificationConfig.notificationEvents.includes('session:labels')" x-transition>
+                        <label class="block text-xs font-sans text-wa-text-secondary mb-2">Filtrar por etiquetas específicas</label>
+                        <p class="text-[10px] text-wa-text-secondary mb-3">Si no seleccionas ninguna, se notificará para todas las etiquetas.</p>
+
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] text-wa-text-secondary">Etiquetas disponibles</span>
+                            <button type="button" @click="syncLabels()"
+                                :disabled="syncingLabels"
+                                class="inline-flex items-center gap-1.5 px-2 py-1 text-[10px] text-wa-text-secondary hover:text-white transition-colors rounded"
+                                title="Sync labels from WhatsApp">
+                                <span :class="{'animate-spin': syncingLabels}">⟳</span>
+                                <span>Sync</span>
+                            </button>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2">
+                            <template x-for="lbl in botLabels" :key="'notif-' + lbl.id">
+                                <button type="button"
+                                    @click="toggleNotifLabel(lbl.id)"
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border cursor-pointer select-none"
+                                    :class="notificationConfig.notificationLabels.includes(lbl.id)
+                                        ? 'bg-wa-green/15 border-wa-green/40 text-wa-green'
+                                        : 'bg-wa-bg-hover border-wa-border text-wa-text-secondary hover:border-wa-text-secondary'"
+                                >
+                                    <span class="w-2.5 h-2.5 rounded-full shrink-0" :style="'background:' + getLabelColor(lbl.color)"></span>
+                                    <span x-text="lbl.name"></span>
+                                    <span x-show="notificationConfig.notificationLabels.includes(lbl.id)" class="text-wa-green/70 text-[10px] ml-0.5">✓</span>
+                                </button>
+                            </template>
+                            <span x-show="botLabels.length === 0" class="text-wa-text-secondary text-xs py-1">No labels synced</span>
+                        </div>
+
+                        <div x-show="notificationConfig.notificationLabels.length > 0" class="mt-3 pt-2 border-t border-wa-border/50">
+                            <p class="text-[10px] text-wa-green/70">
+                                <span x-text="notificationConfig.notificationLabels.length"></span> etiqueta(s) seleccionada(s) — solo se notificará para estas
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Save -->
+                    <div class="pt-4">
+                        <button type="submit" :disabled="savingNotifications"
+                            class="px-6 py-3 bg-wa-green text-white font-sans text-xs tracking-normal hover:bg-wa-green-hover transition-colors disabled:opacity-50 rounded-lg"
+                            x-text="savingNotifications ? 'Guardando...' : 'Guardar Notificaciones'">
                         </button>
                     </div>
                 </form>
@@ -1493,6 +1509,7 @@ import ClientModal from "../../components/clients/ClientModal.astro";
             syncingLabels: false,
 
             // Notification Config State
+            savingNotifications: false,
             notificationConfig: {
                 notificationSessionId: null as string | null,
                 notificationEvents: [] as string[],
@@ -1873,9 +1890,6 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                         messageDelay: this.aiConfig.messageDelay,
                         excludeGroups: this.aiConfig.excludeGroups,
                         ignoredLabels: this.aiConfig.ignoredLabels,
-                        notificationSessionId: this.notificationConfig.notificationSessionId,
-                        notificationEvents: this.notificationConfig.notificationEvents,
-                        notificationLabels: this.notificationConfig.notificationLabels,
                     });
                     this.bot = updated;
                     alert("AI config saved!");
@@ -1934,6 +1948,23 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                     this.notificationConfig.notificationLabels.splice(idx, 1);
                 } else {
                     this.notificationConfig.notificationLabels.push(labelId);
+                }
+            },
+
+            async saveNotifications() {
+                this.savingNotifications = true;
+                try {
+                    const updated = await ApiClient.put(`/bots/${this.botId}`, {
+                        notificationSessionId: this.notificationConfig.notificationSessionId,
+                        notificationEvents: this.notificationConfig.notificationEvents,
+                        notificationLabels: this.notificationConfig.notificationLabels,
+                    });
+                    this.bot = updated;
+                    alert("Notificaciones guardadas!");
+                } catch (e: any) {
+                    alert("Error al guardar: " + (e.message || "Unknown error"));
+                } finally {
+                    this.savingNotifications = false;
                 }
             },
 

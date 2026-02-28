@@ -429,6 +429,8 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                         <option value="get_sessions_by_label">get_sessions_by_label</option>
                                                         <option value="reply_to_message">reply_to_message</option>
                                                         <option value="send_followup_message">send_followup_message</option>
+                                                        <option value="set_notification_channel">set_notification_channel</option>
+                                                        <option value="notify">notify</option>
                                                     </optgroup>
                                                     <optgroup label="Custom" x-show="availableTools.length > 0">
                                                         <template x-for="tool in availableTools" :key="tool.name">
@@ -438,7 +440,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                 </select>
 
                                                 <!-- Tool Args: No config tools -->
-                                                <div x-show="['toggle_session_ai', 'activate_session_ai', 'deactivate_session_ai', 'clear_conversation', 'get_labels'].includes(step.metadata.toolName)" class="mt-3">
+                                                <div x-show="['toggle_session_ai', 'activate_session_ai', 'deactivate_session_ai', 'clear_conversation', 'get_labels', 'set_notification_channel'].includes(step.metadata.toolName)" class="mt-3">
                                                     <span class="inline-block bg-wa-bg-deep/50 border border-wa-border text-wa-text-secondary text-[10px] font-mono px-2 py-1 rounded-lg">No requiere configuración</span>
                                                 </div>
 
@@ -532,8 +534,23 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                         class="w-full bg-wa-bg-deep/50 border border-wa-border p-2 text-xs font-mono rounded-lg focus:border-purple-400 focus:outline-none resize-none"></textarea>
                                                 </div>
 
+                                                <!-- Tool Args: notify -->
+                                                <div x-show="step.metadata.toolName === 'notify'" class="mt-3 space-y-2">
+                                                    <label class="text-[10px] text-wa-text-secondary font-sans">message <span class="text-red-400">*</span></label>
+                                                    <textarea x-model="step.metadata.toolArgs.message" rows="2" required
+                                                        placeholder="Texto de la notificación"
+                                                        class="w-full bg-wa-bg-deep/50 border border-wa-border p-2 text-xs font-mono rounded-lg focus:border-purple-400 focus:outline-none resize-none"></textarea>
+                                                    <label class="text-[10px] text-wa-text-secondary font-sans">priority</label>
+                                                    <select x-model="step.metadata.toolArgs.priority"
+                                                        class="w-full bg-wa-bg-deep/50 border border-wa-border p-2 text-xs font-mono rounded-lg focus:border-purple-400 focus:outline-none">
+                                                        <option value="normal">normal</option>
+                                                        <option value="low">low</option>
+                                                        <option value="high">high</option>
+                                                    </select>
+                                                </div>
+
                                                 <!-- Tool Args: Custom tools (JSON textarea) -->
-                                                <div x-show="step.metadata.toolName && !['toggle_session_ai','activate_session_ai','deactivate_session_ai','clear_conversation','get_labels','assign_label','remove_label','get_current_time','get_sessions_by_label','reply_to_message','send_followup_message'].includes(step.metadata.toolName)" class="mt-3 space-y-2">
+                                                <div x-show="step.metadata.toolName && !['toggle_session_ai','activate_session_ai','deactivate_session_ai','clear_conversation','get_labels','set_notification_channel','assign_label','remove_label','get_current_time','get_sessions_by_label','reply_to_message','send_followup_message','notify'].includes(step.metadata.toolName)" class="mt-3 space-y-2">
                                                     <label class="text-[10px] text-wa-text-secondary font-sans">Arguments (JSON)</label>
                                                     <textarea
                                                         :value="JSON.stringify(step.metadata.toolArgs, null, 2)"
